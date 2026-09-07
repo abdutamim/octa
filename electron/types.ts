@@ -3,6 +3,138 @@ export type Locale = 'ar' | 'en'
 export type AiProvider = 'gemini' | 'vertex'
 export type TranscriptionLanguage = 'auto' | 'ar' | 'en'
 
+export type JobRunnerName =
+  | 'claude-plan'
+  | 'claude-skill'
+  | 'codex-exec'
+  | 'codex-scout'
+  | 'codex-critic'
+  | 'codex-review'
+  | 'gemini-inline'
+
+/** Final job states plus the transient state shown while a subprocess runs. */
+export type JobStatus = 'running' | 'ok' | 'failed' | 'needs_approval' | 'needs_input' | 'cancelled'
+export type JobAutonomy = 'led' | 'assisted' | 'auto'
+export type JobGate = 'none' | 'review' | 'approve'
+
+export interface JobOutput {
+  path: string
+  type: string
+  title: string
+}
+
+export interface JobMetrics {
+  source_count: number
+  languages?: string[]
+  tokens_in: number
+  tokens_out: number
+  seconds: number
+  cost_usd?: number
+}
+
+export interface JobResult {
+  job_id: string
+  step_id: string
+  status: Exclude<JobStatus, 'running'>
+  outputs: JobOutput[]
+  sources: string
+  metrics: JobMetrics
+  questions: unknown[]
+  notes: string
+}
+
+export interface JobRecord {
+  id: string
+  planId: string | null
+  workflow: string | null
+  stepId: string | null
+  skill: string | null
+  runner: JobRunnerName | string
+  department: string | null
+  status: JobStatus
+  autonomy: JobAutonomy | null
+  gate: JobGate | null
+  input: unknown
+  result: unknown
+  sourceCount: number
+  cost: unknown
+  startedAt: string | null
+  finishedAt: string | null
+  approvedBy: string | null
+  approvedAt: string | null
+  error: string | null
+}
+
+export interface JobStartRequest {
+  id?: string
+  runner: JobRunnerName
+  skill?: string
+  input?: unknown
+  prompt?: string
+  brief?: string
+  planId?: string | null
+  workflow?: string | null
+  stepId?: string | null
+  department?: string | null
+  autonomy?: JobAutonomy
+  gate?: JobGate
+  language?: string
+  timeBudgetMs?: number
+  inputTokenBudget?: number
+  maxRetries?: number
+  retryDelayMs?: number
+}
+
+export interface JobStartResponse {
+  id: string
+  folder: string
+}
+
+export interface JobTextEvent {
+  type: 'text'
+  jobId: string
+  timestamp: string
+  text: string
+}
+
+export interface JobToolEvent {
+  type: 'tool'
+  jobId: string
+  timestamp: string
+  name: string
+  phase?: 'start' | 'complete'
+  input?: unknown
+  output?: unknown
+}
+
+export interface JobUsageEvent {
+  type: 'usage'
+  jobId: string
+  timestamp: string
+  inputTokens?: number
+  outputTokens?: number
+  cachedInputTokens?: number
+  costUsd?: number
+}
+
+export interface JobErrorEvent {
+  type: 'error'
+  jobId: string
+  timestamp: string
+  message: string
+  code?: string | number
+}
+
+export interface JobDoneEvent {
+  type: 'done'
+  jobId: string
+  timestamp: string
+  status: Exclude<JobStatus, 'running'>
+  result?: JobResult
+}
+
+export type JobEvent = JobTextEvent | JobToolEvent | JobUsageEvent | JobErrorEvent | JobDoneEvent
+
 export interface AiTestResult {
   provider: string
   model: string
@@ -20,6 +152,7 @@ export interface AppSettings {
   ntfyTopic: string
   ntfyServer: string
   octaHomePath: string
+  skillsLibraryPath: string
   vaultPath: string
   photoshopPath: string
   braveSearchApiKey: string
@@ -37,6 +170,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   ntfyTopic: '',
   ntfyServer: 'https://ntfy.sh',
   octaHomePath: 'C:\\Octa',
+  skillsLibraryPath: '',
   vaultPath: '',
   photoshopPath: '',
   braveSearchApiKey: '',

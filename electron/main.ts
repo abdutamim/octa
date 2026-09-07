@@ -7,7 +7,9 @@ import { IntakeInterview } from './core/octa/intake'
 import { Notifier } from './core/notify'
 import { requireAiAuth } from './cloud/vertex'
 import { SettingsRepository } from './db/settings'
-import type { AiTestResult, AppSettings, RendererState } from './types'
+import { JobsRepository } from './db/jobs'
+import { JobRunner, type JobSpec } from './core/jobs/runner'
+import type { AiTestResult, AppSettings, JobRecord, JobStartResponse, RendererState } from './types'
 
 export const DEFAULT_OCTA_HOME = 'C:\\Octa'
 
@@ -22,6 +24,8 @@ app.setPath('userData', octaHome)
 
 let mainWindow: BrowserWindow | undefined
 let repository: SettingsRepository | undefined
+let jobsRepository: JobsRepository | undefined
+let jobRunner: JobRunner | undefined
 let notifier: Notifier | undefined
 let brain: CompanyBrain | undefined
 let intake: IntakeInterview | undefined
@@ -154,6 +158,41 @@ function registerIpc(): void {
   )
 
   ipcMain.handle('intake:state', () => requireIntake().getState())
+  ipcMain.handle('jobs:start', (_event, spec: JobSpec): JobStartResponse => {
+    if (!jobRunner) throw new Error('Job runner is unavailable.')
+    const handle = jobRunner.startJob(spec)
+    return { id: handle.id, folder: handle.folder }
+  })
+
+  ipcMain.handle('jobs:cancel', async (_event, value: string | { id: string }): Promise<boolean> => {
+    if (!jobRunner) throw new Error('Job runner is unavailable.')
+    const id = typeof value === 'string' ? value : value.id
+    return jobRunner.cancel(id)
+  })
+
+  ipcMain.handle('jobs:list', (_event, options?: { status?: string; limit?: number }): JobRecord[] => {
+    if (!jobsRepository) throw new Error('Job storage is unavailable.')
+    return jobsRepository.listJobs(options)
+  })
+
+  ipcMain.handle('jobs:get', (_event, id: string): JobRecord | null => {
+    if (!jobsRepository) throw new Error('Job storage is unavailable.')
+    return jobsRepository.getJob(id) ?? null
+  })
+
+  ipcMain.handle('jobs:approve', (_event, value: string | { id: string; approvedBy?: string }): JobRecord | null => {
+    if (!jobsRepository) throw new Error('Job storage is unavailable.')
+    const id = typeof value === 'string' ? value : value.id
+    const approvedBy = typeof value === 'string' ? 'owner' : value.approvedBy ?? 'owner'
+    const job = jobsRepository.approveJob(id, approvedBy)
+    if (job) broadcast('jobs:events', {
+      type: 'done',
+      jobId: job.id,
+      timestamp: new Date().toISOString(),
+      status: job.status
+    })
+    return job ?? null
+  })
 
   ipcMain.on('window:minimize', (event) => BrowserWindow.fromWebContents(event.sender)?.minimize())
   ipcMain.on('window:maximize', (event) => {
@@ -166,6 +205,15 @@ function registerIpc(): void {
 
 async function start(): Promise<void> {
   repository = new SettingsRepository(join(octaHome, 'octa.db'))
+  jobsRepository = new JobsRepository(join(octaHome, 'octa.db'))
+  jobRunner = new JobRunner({
+    jobs: jobsRepository,
+    getSettings: () => {
+      if (!repository) throw new Error('Settings storage is unavailable.')
+      return repository.getSettings()
+    },
+    onEvent: (event) => broadcast('jobs:events', event)
+  })
   notifier = new Notifier(() => {
     if (!repository) throw new Error('Settings storage is unavailable.')
     return repository.getSettings()
@@ -197,8 +245,12 @@ app.on('before-quit', () => {
   brain = undefined
   intake = undefined
   repository?.checkpoint()
+  jobsRepository?.checkpoint()
   repository?.close()
+  jobsRepository?.close()
   repository = undefined
+  jobsRepository = undefined
+  jobRunner = undefined
 })
 
 app.on('window-all-closed', () => {
