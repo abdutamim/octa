@@ -1,8 +1,8 @@
-import { Cloud, Languages, Settings2, Sparkles } from 'lucide-react'
+import { Cloud, Languages, ListTodo, Settings2, Sparkles } from 'lucide-react'
 import type { Locale, TranslationKey } from '../i18n'
 import { t } from '../i18n'
 
-export type Page = 'settings'
+export type Page = 'settings' | 'jobs'
 
 export function Sidebar({
   page,
@@ -38,6 +38,14 @@ export function Sidebar({
         >
           <Settings2 size={18} />
           <span>{label('settings')}</span>
+        </button>
+        <button
+          className={`nav-item ${page === 'jobs' ? 'active' : ''}`}
+          onClick={() => onChange('jobs')}
+          type="button"
+        >
+          <ListTodo size={18} />
+          <span>{label('jobs')}</span>
         </button>
       </nav>
 

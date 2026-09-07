@@ -1,0 +1,5 @@
+{"type":"thread.started","thread_id":"01a07d8d-e5ca-72a1-9d84-ca9f13583321"}
+{"type":"item.completed","item":{"id":"item_0","type":"error","message":"Ignoring malformed agent role definition: duplicate agent role name `Backend Architect`"}}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_4","type":"agent_message","text":"fixture ok"}}
+{"type":"turn.completed","usage":{"input_tokens":18955,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":6,"reasoning_output_tokens":0}}
