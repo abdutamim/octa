@@ -15,6 +15,7 @@
     "electron/**/*.ts",
     "tests/**/*.ts",
     "scripts/**/*.mjs",
+    "scripts/**/*.ts",
     "electron.vite.config.ts",
     "vite.renderer.config.ts"
   ]

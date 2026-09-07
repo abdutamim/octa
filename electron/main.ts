@@ -9,6 +9,13 @@ import { requireAiAuth } from './cloud/vertex'
 import { SettingsRepository } from './db/settings'
 import { JobsRepository } from './db/jobs'
 import { JobRunner, type JobSpec } from './core/jobs/runner'
+import {
+  RESEARCH_LOGIN_SITES,
+  ResearchManager,
+  type ResearchLoginSite,
+  type ResearchStartRequest,
+  type ResearchStartResponse
+} from './core/octa/research'
 import type { AiTestResult, AppSettings, JobRecord, JobStartResponse, RendererState } from './types'
 
 export const DEFAULT_OCTA_HOME = 'C:\\Octa'
@@ -26,6 +33,7 @@ let mainWindow: BrowserWindow | undefined
 let repository: SettingsRepository | undefined
 let jobsRepository: JobsRepository | undefined
 let jobRunner: JobRunner | undefined
+let researchManager: ResearchManager | undefined
 let notifier: Notifier | undefined
 let brain: CompanyBrain | undefined
 let intake: IntakeInterview | undefined
@@ -91,6 +99,47 @@ function proposalId(value: unknown): number {
   const id = typeof candidate === 'number' ? candidate : Number(candidate)
   if (!Number.isSafeInteger(id) || id <= 0) throw new Error('A valid proposal id is required.')
   return id
+}
+
+function requireResearchManager(): ResearchManager {
+  if (!researchManager) throw new Error('Research engine is unavailable.')
+  return researchManager
+}
+
+function researchSite(value: unknown): ResearchLoginSite {
+  const candidate = typeof value === 'object' && value !== null && 'site' in value
+    ? (value as { site?: unknown }).site
+    : value
+  if (typeof candidate !== 'string' || !(RESEARCH_LOGIN_SITES as readonly string[]).includes(candidate)) {
+    throw new Error(`Research login site must be one of: ${RESEARCH_LOGIN_SITES.join(', ')}.`)
+  }
+  return candidate as ResearchLoginSite
+}
+
+function researchChallengeSite(value: unknown): string {
+  const candidate = typeof value === 'object' && value !== null && 'site' in value
+    ? (value as { site?: unknown }).site
+    : value
+  if (typeof candidate !== 'string' || !/^[a-zA-Z0-9._-]{1,255}$/.test(candidate.trim())) {
+    throw new Error('Research challenge site is invalid.')
+  }
+  return candidate.trim()
+}
+
+function researchStartRequest(value: unknown): ResearchStartRequest {
+  if (!value || typeof value !== 'object') throw new Error('A research request is required.')
+  const request = value as Partial<ResearchStartRequest>
+  if (typeof request.task !== 'string' || !request.task.trim()) throw new Error('A research task is required.')
+  return {
+    task: request.task,
+    conversationLanguage: typeof request.conversationLanguage === 'string' ? request.conversationLanguage : undefined,
+    extraLanguages: Array.isArray(request.extraLanguages) ? request.extraLanguages.filter((item): item is string => typeof item === 'string') : undefined,
+    budgetMinutes: typeof request.budgetMinutes === 'number' ? request.budgetMinutes : undefined,
+    budgetMs: typeof request.budgetMs === 'number' ? request.budgetMs : undefined,
+    preset: request.preset === 'persona' || request.preset === 'competitor' ? request.preset : undefined,
+    languagePlan: request.languagePlan,
+    jobId: typeof request.jobId === 'string' ? request.jobId : undefined
+  }
 }
 
 function registerIpc(): void {
@@ -194,6 +243,38 @@ function registerIpc(): void {
     return job ?? null
   })
 
+  ipcMain.handle('research:start', (_event, value: unknown): ResearchStartResponse => {
+    const request = researchStartRequest(value)
+    const handle = requireResearchManager().start(request.task, {
+      conversationLanguage: request.conversationLanguage,
+      extraLanguages: request.extraLanguages,
+      budgetMinutes: request.budgetMinutes,
+      budgetMs: request.budgetMs,
+      preset: request.preset,
+      languagePlan: request.languagePlan,
+      jobId: request.jobId
+    })
+    return { id: handle.id, folder: handle.folder }
+  })
+
+  ipcMain.handle('research:status', (_event, value?: unknown) => {
+    const id = typeof value === 'string' && value.trim() ? value.trim() : undefined
+    return requireResearchManager().status(id)
+  })
+
+  const resolveChallenge = (_event: Electron.IpcMainInvokeEvent, value: unknown) =>
+    requireResearchManager().challengeResolved(researchChallengeSite(value))
+  const startLogin = (_event: Electron.IpcMainInvokeEvent, value: unknown) =>
+    requireResearchManager().loginStart(researchSite(value))
+  const finishLogin = (_event: Electron.IpcMainInvokeEvent, value: unknown) =>
+    requireResearchManager().loginDone(researchSite(value))
+  ipcMain.handle('research:challenge:resolved', resolveChallenge)
+  ipcMain.handle('challenge:resolved', resolveChallenge)
+  ipcMain.handle('research:login:start', startLogin)
+  ipcMain.handle('login:start', startLogin)
+  ipcMain.handle('research:login:done', finishLogin)
+  ipcMain.handle('login:done', finishLogin)
+
   ipcMain.on('window:minimize', (event) => BrowserWindow.fromWebContents(event.sender)?.minimize())
   ipcMain.on('window:maximize', (event) => {
     const window = BrowserWindow.fromWebContents(event.sender)
@@ -213,6 +294,17 @@ async function start(): Promise<void> {
       return repository.getSettings()
     },
     onEvent: (event) => broadcast('jobs:events', event)
+  })
+  researchManager = new ResearchManager({
+    runner: jobRunner,
+    jobs: jobsRepository,
+    getSettings: () => {
+      if (!repository) throw new Error('Settings storage is unavailable.')
+      return repository.getSettings()
+    },
+    settings: repository,
+    onEvent: (event) => broadcast('research:events', event),
+    onChallenge: (event) => broadcast('browser:challenge', event)
   })
   notifier = new Notifier(() => {
     if (!repository) throw new Error('Settings storage is unavailable.')
@@ -241,6 +333,8 @@ app.on('activate', () => {
 })
 
 app.on('before-quit', () => {
+  void researchManager?.close()
+  researchManager = undefined
   brain?.close()
   brain = undefined
   intake = undefined

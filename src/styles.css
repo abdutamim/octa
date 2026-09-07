@@ -137,6 +137,13 @@ input, select { user-select: text; }
 .setting-control input:focus, .setting-control select:focus { border-color: rgba(200, 91, 128, 0.52); }
 .setting-control input::placeholder { color: #6b5a64; }
 .section-action-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 0 0; }
+.research-browser-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 0 12px; }
+.research-browser-path { min-width: 0; overflow: hidden; color: var(--faint); font-family: "Cascadia Mono", Consolas, monospace; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.research-site-list { display: flex; flex-direction: column; }
+.research-site-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 13px; min-height: 65px; padding: 10px 0; border-top: 1px solid rgba(240, 223, 188, 0.055); }
+.research-site-row .setting-copy small { display: block; margin-top: 4px; color: #c18f72; font-size: 8px; }
+.research-challenge { display: flex; align-items: center; gap: 9px; margin-top: 13px; padding: 10px 11px; border: 1px solid rgba(224, 160, 108, 0.25); border-radius: 10px; color: #dfaf83; background: rgba(127, 65, 31, 0.12); font-size: 9px; }
+.research-challenge span { flex: 1; }
 .accent-button, .quiet-button, .save-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 34px; padding: 0 13px; border: 1px solid rgba(200, 91, 128, 0.34); border-radius: 10px; font-size: 10px; font-weight: 700; }
 .accent-button, .save-button { color: #fff3e1; background: linear-gradient(135deg, #8e2349, #5b1b42); box-shadow: 0 8px 20px rgba(85, 16, 50, 0.22); }
 .accent-button:hover, .save-button:hover { filter: brightness(1.12); }
@@ -187,6 +194,21 @@ input, select { user-select: text; }
 .job-log-output { flex: 1; min-height: 270px; margin: 0; padding: 18px 20px; overflow: auto; color: #d7c7b3; background: rgba(11, 5, 11, 0.28); font-family: "Cascadia Mono", Consolas, monospace; font-size: 10px; line-height: 1.7; white-space: pre-wrap; user-select: text; }
 .job-folder { margin: 0; padding: 10px 20px 13px; overflow: hidden; color: var(--faint); font-family: "Cascadia Mono", Consolas, monospace; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .empty-state { padding: 16px 10px; color: var(--faint); font-size: 10px; }
+.sources-card { max-width: 1080px; margin: 18px auto 0; border-radius: 18px; overflow: hidden; }
+.sources-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 20px 15px; border-bottom: 1px solid var(--line); }
+.sources-heading h2 { margin: 6px 0 0; color: var(--ink); font-size: 16px; }
+.sources-count { margin-top: 5px; color: var(--faint); font-size: 9px; }
+.sources-table-wrap { max-height: 390px; overflow: auto; }
+.sources-table { width: 100%; border-collapse: collapse; color: var(--muted); font-size: 9px; text-align: start; }
+.sources-table th { position: sticky; top: 0; padding: 10px 12px; color: var(--faint); background: var(--glass-heavy); font-size: 8px; font-weight: 700; letter-spacing: 0.08em; text-align: start; text-transform: uppercase; }
+.sources-table td { padding: 10px 12px; border-top: 1px solid rgba(240, 223, 188, 0.055); vertical-align: top; white-space: nowrap; }
+.sources-table tr:hover td { background: rgba(127, 31, 69, 0.1); }
+.sources-table .source-number { color: #d3acb3; font-family: "Cascadia Mono", Consolas, monospace; }
+.sources-title { max-width: 360px; overflow: hidden; text-overflow: ellipsis; }
+.source-title a { display: block; max-width: 360px; overflow: hidden; color: var(--cream-soft); text-decoration: none; text-overflow: ellipsis; }
+.source-title a:hover { color: var(--ink); text-decoration: underline; }
+.source-title small { display: block; margin-top: 3px; overflow: hidden; color: var(--faint); font-family: "Cascadia Mono", Consolas, monospace; font-size: 8px; text-overflow: ellipsis; }
+.sources-more { margin: 0; padding: 9px 12px; color: var(--faint); font-family: "Cascadia Mono", Consolas, monospace; font-size: 8px; }
 
 :root[data-theme="light"] .job-launcher textarea { color: #5b3547; border-color: rgba(106, 42, 69, 0.17); background: rgba(255, 250, 241, 0.88); }
 :root[data-theme="light"] .job-log-output { color: #5b3547; background: rgba(255, 250, 241, 0.34); }
@@ -250,4 +272,8 @@ input, select { user-select: text; }
   .page-heading { flex-direction: column; }
   .settings-section { padding-inline: 18px; }
   .settings-footer { align-items: flex-start; flex-direction: column; padding-inline: 18px; }
+  .research-site-row { grid-template-columns: 36px minmax(0, 1fr); }
+  .research-site-row > button { grid-column: 2; justify-self: start; }
+  .research-challenge { align-items: flex-start; flex-wrap: wrap; }
+  .sources-table { min-width: 680px; }
 }
