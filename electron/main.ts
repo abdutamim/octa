@@ -9,6 +9,7 @@ import { requireAiAuth } from './cloud/vertex'
 import { SettingsRepository } from './db/settings'
 import { JobsRepository } from './db/jobs'
 import { JobRunner, type JobSpec } from './core/jobs/runner'
+import { SkillRegistry, type SkillListOptions } from './core/skills/registry'
 import type { AiTestResult, AppSettings, JobRecord, JobStartResponse, RendererState } from './types'
 
 export const DEFAULT_OCTA_HOME = 'C:\\Octa'
@@ -26,6 +27,7 @@ let mainWindow: BrowserWindow | undefined
 let repository: SettingsRepository | undefined
 let jobsRepository: JobsRepository | undefined
 let jobRunner: JobRunner | undefined
+let skillsRegistry: SkillRegistry | undefined
 let notifier: Notifier | undefined
 let brain: CompanyBrain | undefined
 let intake: IntakeInterview | undefined
@@ -72,6 +74,11 @@ function requireIntake(): IntakeInterview {
   return intake
 }
 
+function requireSkillsRegistry(): SkillRegistry {
+  if (!skillsRegistry) throw new Error('Skills registry is unavailable.')
+  return skillsRegistry
+}
+
 async function configureBrain(settings: AppSettings): Promise<void> {
   if (!repository) throw new Error('Settings storage is unavailable.')
   brain?.close()
@@ -108,6 +115,7 @@ function registerIpc(): void {
     if (!brain || update.vaultPath !== undefined || update.octaHomePath !== undefined) {
       await configureBrain(next)
     }
+    if (update.skillsLibraryPath !== undefined) skillsRegistry?.reload()
     broadcast('settings:changed', next)
     return next
   })
@@ -158,6 +166,13 @@ function registerIpc(): void {
   )
 
   ipcMain.handle('intake:state', () => requireIntake().getState())
+  ipcMain.handle('skills:list', (_event, options?: SkillListOptions) =>
+    requireSkillsRegistry().listSkills(options)
+  )
+  ipcMain.handle('skills:get', (_event, name: string) =>
+    requireSkillsRegistry().getSkill(name) ?? null
+  )
+
   ipcMain.handle('jobs:start', (_event, spec: JobSpec): JobStartResponse => {
     if (!jobRunner) throw new Error('Job runner is unavailable.')
     const handle = jobRunner.startJob(spec)
@@ -206,6 +221,14 @@ function registerIpc(): void {
 async function start(): Promise<void> {
   repository = new SettingsRepository(join(octaHome, 'octa.db'))
   jobsRepository = new JobsRepository(join(octaHome, 'octa.db'))
+  skillsRegistry = new SkillRegistry({
+    getSettings: () => {
+      if (!repository) throw new Error('Settings storage is unavailable.')
+      return repository.getSettings()
+    },
+    onChange: (skills) => broadcast('skills:changed', skills),
+    onError: (error) => console.error('[skills] manifest reload failed:', error.message)
+  })
   jobRunner = new JobRunner({
     jobs: jobsRepository,
     getSettings: () => {
@@ -248,9 +271,11 @@ app.on('before-quit', () => {
   jobsRepository?.checkpoint()
   repository?.close()
   jobsRepository?.close()
+  skillsRegistry?.close()
   repository = undefined
   jobsRepository = undefined
   jobRunner = undefined
+  skillsRegistry = undefined
 })
 
 app.on('window-all-closed', () => {
