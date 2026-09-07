@@ -151,6 +151,50 @@ input, select { user-select: text; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .jobs-page { padding-bottom: 48px; }
+.planner-launcher { display: grid; grid-template-columns: minmax(220px, 0.8fr) minmax(280px, 1.6fr) auto; align-items: end; gap: 18px; max-width: 1080px; margin: 0 auto 18px; padding: 22px; border-radius: 18px; }
+.planner-launcher h2 { margin: 6px 0 5px; color: var(--ink); font-size: 16px; font-weight: 700; }
+.planner-launcher p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.planner-launcher textarea { width: 100%; resize: vertical; min-height: 68px; padding: 11px 12px; border: 1px solid rgba(240, 223, 188, 0.1); border-radius: 10px; outline: 0; color: #cdbba5; background: #261522; font-size: 11px; line-height: 1.5; user-select: text; }
+.planner-launcher textarea:focus { border-color: rgba(200, 91, 128, 0.52); }
+.planner-launcher textarea::placeholder { color: #6b5a64; }
+.planner-error { max-width: 1080px; margin: -7px auto 18px; color: var(--danger); font-family: "Cascadia Mono", Consolas, monospace; font-size: 9px; line-height: 1.5; }
+.plan-card { max-width: 1080px; margin: 0 auto 18px; overflow: hidden; border-radius: 18px; }
+.plan-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 20px 22px 16px; border-bottom: 1px solid var(--line); }
+.plan-card-heading h2 { margin: 6px 0 4px; color: var(--ink); font-size: 18px; font-weight: 700; }
+.plan-status { margin: 0; color: var(--muted); font-size: 10px; }
+.plan-status.status-needs_input { color: #e0a06c; }
+.plan-status.status-needs_approval { color: #c18fd0; }
+.plan-status.status-approved { color: #87bd91; }
+.plan-card-section { padding: 18px 22px; border-bottom: 1px solid var(--line); }
+.plan-summary { margin: 9px 0 0; color: var(--ink); font-size: 12px; line-height: 1.65; white-space: pre-wrap; }
+.plan-section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.plan-section-title .job-card-eyebrow { display: inline-flex; align-items: center; gap: 6px; }
+.plan-section-title small { color: var(--faint); font-family: "Cascadia Mono", Consolas, monospace; font-size: 9px; }
+.plan-steps-scroll { overflow-x: auto; margin-top: 10px; }
+.plan-steps-table { width: 100%; border-collapse: collapse; min-width: 650px; color: var(--muted); font-size: 9px; }
+.plan-steps-table th { color: var(--faint); font-size: 8px; font-weight: 800; letter-spacing: 0.08em; text-align: start; text-transform: uppercase; }
+.plan-steps-table th, .plan-steps-table td { padding: 9px 8px; border-bottom: 1px solid rgba(240, 223, 188, 0.055); vertical-align: top; }
+.plan-steps-table td:first-child { color: var(--cream-soft); font-family: "Cascadia Mono", Consolas, monospace; }
+.plan-assumptions { display: flex; flex-direction: column; gap: 6px; margin: 9px 0 0; padding-inline-start: 17px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.plan-question-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.plan-question { padding: 11px 12px; border: 1px solid rgba(240, 223, 188, 0.08); border-radius: 11px; background: rgba(31, 15, 28, 0.25); }
+.plan-question.blocking { border-color: rgba(200, 91, 128, 0.27); }
+.plan-question label { display: flex; flex-direction: column; gap: 5px; }
+.plan-question label strong { color: var(--ink); font-size: 11px; line-height: 1.45; }
+.plan-question label small { color: var(--faint); font-size: 9px; line-height: 1.4; }
+.plan-question textarea { width: 100%; margin-top: 9px; padding: 9px 10px; resize: vertical; border: 1px solid rgba(240, 223, 188, 0.1); border-radius: 9px; outline: 0; color: var(--cream-soft); background: #261522; font-size: 10px; line-height: 1.5; user-select: text; }
+.plan-question textarea:focus { border-color: rgba(200, 91, 128, 0.52); }
+.plan-question-options { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.plan-question-options button { padding: 5px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: transparent; font-size: 9px; }
+.plan-question-options button:hover, .plan-question-options button.selected { color: var(--ink); border-color: rgba(200, 91, 128, 0.45); background: rgba(127, 31, 69, 0.2); }
+.plan-answer-button { margin-top: 12px; }
+.plan-debate { border-top: 1px solid var(--line); }
+.plan-debate summary { display: flex; align-items: center; gap: 6px; padding: 15px 22px; color: var(--cream-soft); font-size: 10px; font-weight: 700; cursor: pointer; list-style: none; }
+.plan-debate summary::-webkit-details-marker { display: none; }
+.plan-debate[open] summary svg { transform: rotate(180deg); }
+.plan-debate pre { max-height: 370px; margin: 0; padding: 0 22px 20px; overflow: auto; color: var(--muted); background: rgba(11, 5, 11, 0.18); font-family: "Cascadia Mono", Consolas, monospace; font-size: 9px; line-height: 1.6; white-space: pre-wrap; user-select: text; }
+
+.plan-card + .job-launcher { margin-top: 18px; }
 .job-launcher { display: grid; grid-template-columns: minmax(220px, 0.8fr) minmax(280px, 1.6fr) auto; align-items: end; gap: 18px; max-width: 1080px; margin: 0 auto 18px; padding: 22px; border-radius: 18px; }
 .job-launcher h2, .jobs-section-heading h2, .job-log-heading h2 { margin: 6px 0 5px; color: var(--ink); font-size: 16px; font-weight: 700; }
 .job-launcher p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
@@ -236,7 +280,7 @@ input, select { user-select: text; }
   .setting-control { grid-column: 2; }
   .brain-grid { grid-template-columns: 1fr; }
   .brain-intake-card { grid-column: auto; }
-  .job-launcher, .jobs-layout { grid-template-columns: 1fr; }
+  .planner-launcher, .job-launcher, .jobs-layout { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 620px) {
