@@ -56,6 +56,7 @@ export interface JobRecord {
   gate: JobGate | null
   input: unknown
   result: unknown
+  review: unknown
   sourceCount: number
   cost: unknown
   startedAt: string | null
@@ -70,6 +71,8 @@ export interface JobStartRequest {
   runner: JobRunnerName
   skill?: string
   input?: unknown
+  acceptance?: readonly string[]
+  acceptanceCriteria?: readonly string[]
   prompt?: string
   brief?: string
   planId?: string | null

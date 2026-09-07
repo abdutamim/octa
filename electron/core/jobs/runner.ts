@@ -9,6 +9,7 @@ import {
   readdirSync,
   statSync,
   symlinkSync,
+  unlinkSync,
   writeFileSync,
   type Dirent
 } from 'node:fs'
@@ -21,6 +22,16 @@ import { DEFAULT_SETTINGS, type AppSettings, type JobAutonomy, type JobEvent, ty
 import { JobsRepository } from '../../db/jobs'
 import { parseSkillFrontmatter, type SkillFrontmatter } from '../skills/frontmatter'
 import { runnerForSkill } from '../skills/policy'
+import {
+  REVIEW_SCHEMA,
+  normalizeReviewRunResult,
+  reviewStep as runReviewStep,
+  type ReviewJob,
+  type ReviewResult,
+  type ReviewRunResult,
+  type ReviewStep as ReviewStepDefinition,
+  type ReviewStepRunner
+} from '../octa/review'
 
 export const DEFAULT_OCTA_HOME = 'C:\\Octa'
 export const DEFAULT_JOB_TIME_BUDGET_MS = 30 * 60_000
@@ -71,6 +82,10 @@ export interface JobRunnerOptions {
   chatProvider?: ChatProvider
   claudeBinary?: string
   codexBinary?: string
+  /** Injectable Sol adapter used by tests and future workflow runners. */
+  reviewStep?: ReviewStepRunner
+  reviewRunner?: ReviewStepRunner
+  review?: ReviewStepRunner
 }
 
 export type SpawnFunction = (
@@ -192,17 +207,6 @@ const CRITIQUE_SCHEMA = {
     verdict: { type: 'string', enum: ['agree', 'revise'] }
   },
   required: ['issues', 'missing_questions', 'risks', 'verdict']
-} as const
-
-const REVIEW_SCHEMA = {
-  type: 'object',
-  additionalProperties: false,
-  properties: {
-    verdict: { type: 'string', enum: ['pass', 'revise'] },
-    issues: { type: 'array', items: { type: 'string' } },
-    fixed_output_path: { anyOf: [{ type: 'string' }, { type: 'null' }] }
-  },
-  required: ['verdict', 'issues']
 } as const
 
 type JobEventPayload =
@@ -722,13 +726,29 @@ function renderKnowledge(knowledgePath?: string): string {
     .join('\n')
 }
 
-function renderPrompt(spec: JobSpec, folder: string, skill?: SkillResolution, retryError?: string): string {
+function renderReviewFeedback(review?: ReviewResult): string {
+  if (!review) return ''
+  const issues = review.issues.length > 0
+    ? review.issues
+      .map((issue) => `- Criterion: ${JSON.stringify(issue.criterion)}\n  Detail: ${issue.detail}\n  Severity: ${issue.severity}`)
+      .join('\n')
+    : '- Sol requested a revision without a structured issue. Re-check every acceptance criterion.'
+  return `\n\n## Sol review feedback\n\nThe previous executor attempt received verdict "${review.verdict}". Address the following issues before producing the same deliverable again:\n${issues}\n\nKeep the work within the original acceptance criteria and write the corrected deliverable to ./out.`
+}
+
+function renderPrompt(
+  spec: JobSpec,
+  folder: string,
+  skill?: SkillResolution,
+  retryError?: string,
+  review?: ReviewResult
+): string {
   const language = spec.language?.trim() || "the language of the user's last turn"
   const skillText = skill && (spec.runner === 'codex-exec' || spec.runner === 'codex-scout')
     ? `\n\n# Inlined SKILL.md (${skill.entry.name})\n\n${skill.skillMarkdown}`
     : ''
   const retry = retryError ? `\n\n## Previous attempt error\n\n${retryError}\nFix the error and retry the same job.` : ''
-  return `<octa>\nYou are running inside Octa Assistant. Reply in ${language}.\nCompany brain follows; treat it as ground truth and never contradict it.${renderKnowledge(spec.knowledgePath)}\nSkill to execute: ${spec.skill ?? 'the assigned job'}. Write deliverables to ./out. Do not send, publish, or pay; write what you would send to ./out and set status needs_approval. When information is missing, do not invent it: return status needs_input with questions[]. Finish by writing result.json matching the schema in ./contract.json.\nJob folder: ${folder}\n</octa>\n\n${renderBrief(spec)}${skillText}${retry}\n`
+  return `<octa>\nYou are running inside Octa Assistant. Reply in ${language}.\nCompany brain follows; treat it as ground truth and never contradict it.${renderKnowledge(spec.knowledgePath)}\nSkill to execute: ${spec.skill ?? 'the assigned job'}. Write deliverables to ./out. Do not send, publish, or pay; write what you would send to ./out and set status needs_approval. When information is missing, do not invent it: return status needs_input with questions[]. Finish by writing result.json matching the schema in ./contract.json.\nJob folder: ${folder}\n</octa>\n\n${renderBrief(spec)}${skillText}${retry}${renderReviewFeedback(review)}\n`
 }
 
 function writeJobFiles(folder: string, spec: JobSpec): void {
@@ -816,6 +836,17 @@ function agentResultFile(folder: string): Record<string, unknown> | undefined {
     if (record) return record
   }
   return undefined
+}
+
+function clearAgentResultFiles(folder: string): void {
+  for (const path of [join(folder, 'result.json'), join(folder, 'out', 'result.json')]) {
+    if (!existsSync(path)) continue
+    try {
+      unlinkSync(path)
+    } catch {
+      // An executor may keep the file open briefly; its next result still wins.
+    }
+  }
 }
 
 function structuredFromText(text: string): Record<string, unknown> | undefined {
@@ -936,6 +967,10 @@ interface ActiveJob {
   overBudget: boolean
   startedAtMs: number
   totalUsage: UsageTotals
+  reviewUsage: UsageTotals
+  executorStructuredUsage: UsageTotals
+  reviewAttempts: number
+  review?: ReviewResult
   collectedText: string
   lastStructured?: Record<string, unknown>
   lastError?: string
@@ -951,6 +986,64 @@ interface ProcessOutcome {
 
 function emptyUsage(): UsageTotals {
   return { inputTokens: 0, outputTokens: 0, cachedInputTokens: 0, costUsd: 0 }
+}
+
+function isReviewedExecutor(runner: JobSpec['runner']): boolean {
+  return runner === 'codex-exec' || runner === 'claude-skill'
+}
+
+function acceptanceFor(spec: JobSpec): string[] {
+  const values = spec.acceptance ?? spec.acceptanceCriteria ?? []
+  return values
+    .filter((value): value is string => typeof value === 'string')
+    .map((value) => value.trim())
+    .filter(Boolean)
+}
+
+function usageNumber(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, value) : 0
+}
+
+function addUsage(target: UsageTotals, source: { inputTokens?: number; outputTokens?: number; cachedInputTokens?: number; costUsd?: number }): void {
+  target.inputTokens += usageNumber(source.inputTokens)
+  target.outputTokens += usageNumber(source.outputTokens)
+  target.cachedInputTokens += usageNumber(source.cachedInputTokens)
+  target.costUsd = Math.round((target.costUsd + usageNumber(source.costUsd)) * 1_000_000) / 1_000_000
+}
+
+function reviewUsage(review: ReviewRunResult): UsageTotals {
+  const usage = emptyUsage()
+  if (review.cost) addUsage(usage, review.cost)
+  return usage
+}
+
+function roundCost(value: number): number {
+  return Math.round(value * 1_000_000) / 1_000_000
+}
+
+function costRecord(active: ActiveJob): Record<string, unknown> {
+  const streamedExecutor = {
+    inputTokens: Math.max(0, active.totalUsage.inputTokens - active.reviewUsage.inputTokens),
+    outputTokens: Math.max(0, active.totalUsage.outputTokens - active.reviewUsage.outputTokens),
+    costUsd: Math.max(0, active.totalUsage.costUsd - active.reviewUsage.costUsd)
+  }
+  const executorInputTokens = Math.max(streamedExecutor.inputTokens, active.executorStructuredUsage.inputTokens)
+  const executorOutputTokens = Math.max(streamedExecutor.outputTokens, active.executorStructuredUsage.outputTokens)
+  const executorCostUsd = Math.max(streamedExecutor.costUsd, active.executorStructuredUsage.costUsd)
+  const record: Record<string, unknown> = {
+    inputTokens: executorInputTokens + active.reviewUsage.inputTokens,
+    outputTokens: executorOutputTokens + active.reviewUsage.outputTokens,
+    costUsd: roundCost(executorCostUsd + active.reviewUsage.costUsd)
+  }
+  if (active.reviewAttempts > 0) {
+    record.review = {
+      attempts: active.reviewAttempts,
+      inputTokens: active.reviewUsage.inputTokens,
+      outputTokens: active.reviewUsage.outputTokens,
+      costUsd: roundCost(active.reviewUsage.costUsd)
+    }
+  }
+  return record
 }
 
 function finalStatusFor(active: ActiveJob, outcome: ProcessOutcome | undefined): FinalJobStatus {
@@ -975,6 +1068,7 @@ export class JobRunner {
   private readonly chatProvider?: ChatProvider
   private readonly claudeBinary?: string
   private readonly codexBinary?: string
+  private readonly reviewStepRunner?: ReviewStepRunner
   private readonly activeJobs = new Map<string, ActiveJob>()
 
   constructor(options: JobRunnerOptions = {}) {
@@ -989,6 +1083,7 @@ export class JobRunner {
     this.chatProvider = options.chatProvider
     this.claudeBinary = options.claudeBinary
     this.codexBinary = options.codexBinary
+    this.reviewStepRunner = options.reviewStep ?? options.reviewRunner ?? options.review
   }
 
   resolveSkill(name: string, spec?: Pick<JobSpec, 'skillsLibraryPath'>): SkillResolution {
@@ -1036,6 +1131,9 @@ export class JobRunner {
       overBudget: false,
       startedAtMs: Date.now(),
       totalUsage: emptyUsage(),
+      reviewUsage: emptyUsage(),
+      executorStructuredUsage: emptyUsage(),
+      reviewAttempts: 0,
       collectedText: '',
       promise: Promise.resolve(undefined as never)
     }
@@ -1164,6 +1262,34 @@ export class JobRunner {
         outcome = await this.executeGemini(active)
       } else {
         outcome = await this.executeSubprocessWithRetries(active)
+        const acceptance = acceptanceFor(active.spec)
+        const shouldReview = isReviewedExecutor(active.spec.runner)
+          && (acceptance.length > 0 || Boolean(this.reviewStepRunner))
+          && !active.cancelled
+          && !active.timedOut
+          && !active.overBudget
+          && !outcome.error
+          && outcome.exitCode === 0
+        if (shouldReview) {
+          const firstResult = this.buildResult(active, finalStatusFor(active, outcome), outcome)
+          writeJsonFile(join(active.folder, 'result.json'), firstResult)
+          const firstReview = await this.reviewExecutorStep(active, firstResult)
+          if (firstReview.verdict === 'revise' && !active.cancelled && !active.timedOut && !active.overBudget) {
+            // The reviewer-driven correction is deliberately a single extra
+            // executor pass. Ordinary subprocess retries remain governed by
+            // the existing spec-001 retry policy.
+            clearAgentResultFiles(active.folder)
+            active.collectedText = ''
+            active.lastStructured = undefined
+            active.lastError = undefined
+            outcome = await this.executeSubprocessWithRetries(active, firstReview)
+            const secondResult = this.buildResult(active, finalStatusFor(active, outcome), outcome)
+            writeJsonFile(join(active.folder, 'result.json'), secondResult)
+            if (!active.cancelled && !active.timedOut && !active.overBudget) {
+              await this.reviewExecutorStep(active, secondResult)
+            }
+          }
+        }
       }
     } catch (error) {
       active.lastError = errorMessage(error)
@@ -1172,23 +1298,63 @@ export class JobRunner {
     }
 
     const status = finalStatusFor(active, outcome)
-    const result = this.buildResult(active, status, outcome)
+    const result = this.buildResult(active, status, outcome, active.reviewAttempts === 0)
     writeJsonFile(join(active.folder, 'result.json'), result)
     this.jobs?.updateJob(active.id, {
       status,
       result,
       sourceCount: result.metrics.source_count,
-      cost: {
-        inputTokens: result.metrics.tokens_in,
-        outputTokens: result.metrics.tokens_out,
-        costUsd: result.metrics.cost_usd ?? 0
-      },
+      review: active.review ?? undefined,
+      cost: costRecord(active),
       finishedAt: this.now().toISOString(),
       error: status === 'failed' || status === 'needs_input' ? active.lastError ?? null : null
     })
     this.emit(active, { type: 'done', status, result })
     this.activeJobs.delete(active.id)
     return result
+  }
+
+  private async reviewExecutorStep(active: ActiveJob, result: JobResult): Promise<ReviewRunResult> {
+    const acceptance = acceptanceFor(active.spec)
+    const job: ReviewJob = {
+      id: active.id,
+      jobId: active.id,
+      folder: active.folder,
+      workspace: active.folder,
+      resultPath: join(active.folder, 'result.json'),
+      result,
+      outputs: result.outputs
+    }
+    const step: ReviewStepDefinition = {
+      id: active.spec.stepId ?? '',
+      stepId: active.spec.stepId ?? '',
+      runner: active.spec.runner,
+      acceptance,
+      acceptanceCriteria: acceptance,
+      input: active.spec.input,
+      outputs: result.outputs
+    }
+    const raw = this.reviewStepRunner
+      ? await this.reviewStepRunner(job, step)
+      : await runReviewStep(job, step, {
+          spawn: this.spawn,
+          codexBinary: this.codexBinary,
+          platform: this.platform
+        })
+    const review = normalizeReviewRunResult(raw, acceptance)
+    const decision: ReviewResult = {
+      verdict: review.verdict,
+      issues: review.issues,
+      ...(review.fixed_output_path ? { fixed_output_path: review.fixed_output_path } : {})
+    }
+    active.reviewAttempts += 1
+    const usage = reviewUsage(review)
+    addUsage(active.reviewUsage, usage)
+    addUsage(active.totalUsage, usage)
+    active.review = decision
+    writeJsonFile(join(active.folder, 'review.json'), decision)
+    this.jobs?.updateJob(active.id, { review: decision, cost: costRecord(active) })
+    return review
   }
 
   private async executeGemini(active: ActiveJob): Promise<ProcessOutcome> {
@@ -1225,7 +1391,10 @@ export class JobRunner {
     return Math.max(1, budget - (Date.now() - active.startedAtMs))
   }
 
-  private async executeSubprocessWithRetries(active: ActiveJob): Promise<ProcessOutcome> {
+  private async executeSubprocessWithRetries(
+    active: ActiveJob,
+    review?: ReviewResult
+  ): Promise<ProcessOutcome> {
     const normalAttempts = 1 + Math.max(0, Math.min(2, Math.trunc(active.spec.maxRetries ?? 1)))
     let retryError: string | undefined
     let attempt = 0
@@ -1233,7 +1402,7 @@ export class JobRunner {
     while (attempt < Math.max(normalAttempts, 3)) {
       attempt += 1
       if (active.cancelled || active.timedOut || active.overBudget) break
-      lastOutcome = await this.executeSubprocess(active, retryError)
+      lastOutcome = await this.executeSubprocess(active, retryError, review)
       if (!lastOutcome.error && lastOutcome.exitCode === 0) return lastOutcome
       if (active.cancelled || active.timedOut || active.overBudget) break
       retryError = lastOutcome.error ?? `Process exited with code ${lastOutcome.exitCode}.`
@@ -1290,9 +1459,13 @@ export class JobRunner {
     return { executable, argv, parser }
   }
 
-  private async executeSubprocess(active: ActiveJob, retryError?: string): Promise<ProcessOutcome> {
+  private async executeSubprocess(
+    active: ActiveJob,
+    retryError?: string,
+    review?: ReviewResult
+  ): Promise<ProcessOutcome> {
     const command = this.commandFor(active)
-    const prompt = renderPrompt(active.spec, active.folder, active.skill, retryError)
+    const prompt = renderPrompt(active.spec, active.folder, active.skill, retryError, review)
     let child: ChildProcess
     try {
       child = this.spawn(command.executable, command.argv, {
@@ -1403,7 +1576,12 @@ export class JobRunner {
     })
   }
 
-  private buildResult(active: ActiveJob, status: FinalJobStatus, outcome?: ProcessOutcome): JobResult {
+  private buildResult(
+    active: ActiveJob,
+    status: FinalJobStatus,
+    outcome?: ProcessOutcome,
+    captureExecutorMetrics = true
+  ): JobResult {
     const disk = agentResultFile(active.folder)
     const structured = disk ?? active.lastStructured ?? structuredFromText(active.collectedText) ?? {}
     const sourceCount = numberValue(asRecord(structured.metrics)?.source_count) ?? countSources(active.folder)
@@ -1420,6 +1598,32 @@ export class JobRunner {
           return typeof item?.path === 'string' && typeof item.type === 'string' && typeof item.title === 'string'
         })
       : listOutputFiles(active.folder)
+    if (captureExecutorMetrics) {
+      active.executorStructuredUsage.inputTokens = Math.max(
+        active.executorStructuredUsage.inputTokens,
+        usageNumber(metricsRecord?.tokens_in)
+      )
+      active.executorStructuredUsage.outputTokens = Math.max(
+        active.executorStructuredUsage.outputTokens,
+        usageNumber(metricsRecord?.tokens_out)
+      )
+      active.executorStructuredUsage.costUsd = Math.max(
+        active.executorStructuredUsage.costUsd,
+        usageNumber(metricsRecord?.cost_usd)
+      )
+    }
+    const executorInputTokens = Math.max(
+      Math.max(0, active.totalUsage.inputTokens - active.reviewUsage.inputTokens),
+      active.executorStructuredUsage.inputTokens
+    )
+    const executorOutputTokens = Math.max(
+      Math.max(0, active.totalUsage.outputTokens - active.reviewUsage.outputTokens),
+      active.executorStructuredUsage.outputTokens
+    )
+    const executorCostUsd = Math.max(
+      Math.max(0, active.totalUsage.costUsd - active.reviewUsage.costUsd),
+      active.executorStructuredUsage.costUsd
+    )
     const result: JobResult = {
       job_id: active.id,
       step_id: active.spec.stepId ?? '',
@@ -1431,10 +1635,10 @@ export class JobRunner {
         languages: Array.isArray(metricsRecord?.languages)
           ? metricsRecord.languages.filter((value): value is string => typeof value === 'string')
           : [],
-        tokens_in: active.totalUsage.inputTokens || numberValue(metricsRecord?.tokens_in) || 0,
-        tokens_out: active.totalUsage.outputTokens || numberValue(metricsRecord?.tokens_out) || 0,
+        tokens_in: executorInputTokens + active.reviewUsage.inputTokens,
+        tokens_out: executorOutputTokens + active.reviewUsage.outputTokens,
         seconds,
-        cost_usd: active.totalUsage.costUsd || numberValue(metricsRecord?.cost_usd) || 0
+        cost_usd: roundCost(executorCostUsd + active.reviewUsage.costUsd)
       },
       questions: Array.isArray(structured.questions) ? structured.questions : [],
       notes
