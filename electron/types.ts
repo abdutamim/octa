@@ -47,3 +47,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
 export interface RendererState {
   settings: AppSettings
 }
+
+export interface VaultHit {
+  path: string
+  title: string
+  excerpt: string
+}
