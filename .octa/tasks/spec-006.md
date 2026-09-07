@@ -1,0 +1,11 @@
+# Task: spec 006 — Workflow runner
+
+Read `docs/04-WORKFLOWS.md` in full, `docs/01-RUNTIME-CONTRACT.md` §3.1 (`steps[]`), §6 (gates), §7 (resume), `docs/00-OCTA-ASSISTANT.md` §4 rule 8 (autonomy), and `docs/06-SPECS.md` section 006.
+
+Build:
+1. `electron/core/octa/workflows.ts` — workflow definition type (steps with `needs[]`, `runner`, `skill`, `input` templates with `{{brief.x}}` / `{{steps.s1.out}}` interpolation, `gate`, `autonomy`, `acceptance[]`), a DAG executor (parallel where `needs` allow, max 3 concurrent), per-step: run via spec 001 → review via spec 014 → gate. Gates: `review` (outputs shown; continue or comments → re-run once with comments) and `approve` (explicit yes on the exact payload; channels in-app, ntfy action button via copied `notify.ts`, voice hook for spec 007); a gate expires after 24 h → job `stale`. Resume from the last finished step after a crash (state in `job_runs`). "Save as workflow" from a custom plan. Autonomy counters: per workflow `clean_runs` / promote after 10 / demote on rejection (`workflow_stats` table).
+2. Seed the six launch workflows from `docs/04-WORKFLOWS.md` as JSON under `electron/core/octa/workflows/*.json` (W1 review-website, W2 build-website, W3 market-project, W4 think-project, W5 invoice, W6 research). Steps that need specs not yet merged (voice, build pipeline, invoices) are included with `runner` set and marked `"todo": true` so the executor skips them with a clear log line; W6 and W4 must run fully now (research from spec 004, thinking skills via `codex-exec`).
+3. Recurring jobs table + scheduler (`recurring_jobs`: cron-like `every` field, next run, last run) with the six recurring entries from the doc, all `assisted` and disabled by default except the daily brief placeholder.
+4. IPC `workflows:list|get|start|resume|gate:approve|gate:reject|gate:comment|save`, events `workflow:step`, `workflow:gate`. UI: `src/components/WorkflowsPage.tsx` (list, start with a brief textbox, live step graph, gate buttons with the payload shown verbatim).
+5. Tests with a fake runner: DAG order and parallelism, interpolation, gate blocking and expiry, resume after simulated crash, promotion/demotion counters, seeds validate against the schema.
+6. Real run: W6 on a small topic with a 10-minute budget; W4 "هل أعمل موقعي بـ Astro ولا Next" → memo produced. Paste outcomes into the report.

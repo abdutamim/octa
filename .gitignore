@@ -6,6 +6,8 @@ release/
 .env.*
 !.env.example
 *.log
+*.db
+*.db-*
 .octa/logs/
 .octa/worktrees/
 C:/
