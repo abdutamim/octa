@@ -1,0 +1,111 @@
+{
+  "_": "آركيدوت — 3 ستوريات إنستجرام (9:16). البرومبتات جاهزة للّصق: كل prompt مكتفٍ بذاته وفيه القفل البصري كامل، مش محتاج تضيف عليه حاجة.",
+  "format": {
+    "aspect": "9:16",
+    "size": "1080x1920",
+    "note": "ستوري مش بوست — الأبعاد مختلفة عن الكاروسيلات (1080x1350)"
+  },
+  "safeZones": {
+    "_": "إنستجرام بيغطي أطراف الستوري بواجهته. سيب المناطق دي فاضية من أي تفصيلة مهمة.",
+    "topUI": "أعلى 13% — صورة البروفايل وشريط التقدم",
+    "bottomUI": "أسفل 13% — شريط الرد والمشاركة",
+    "typography": "18%–52% من أعلى الإطار — لازم تكون سطح هادي (جدار جبس أو سقف) عشان النص يقرا"
+  },
+  "lock": {
+    "_": "منقول من vibe.json — أي فريم يخرج عن ده هيبان إنه من شوت تاني",
+    "stock": "Kodak Portra 400",
+    "grade": "warm neutral only — cream, plaster, taupe, walnut, stone. No cool tones, no teal, no grey-blue",
+    "lens": "35mm architectural, verticals kept perfectly straight, no distortion",
+    "camera": "static, eye level, near one-point perspective",
+    "signature": "one warm practical light source visible or implied in every frame",
+    "realism": "photographic, not CGI"
+  },
+  "negative": "no people, no text, no lettering, no signage, no watermarks, no logos, no CGI showroom gloss, no HDR, no fisheye, no teal-and-orange grade, no lens flare, no clutter crowding the walls, no cool grey or blue tones, no tilted verticals",
+  "stories": [
+    {
+      "id": "01-room",
+      "audience": "عميل يبي يصمم غرفة",
+      "service": "تصميم داخلي كامل واقعي (3D)",
+      "price": "من 100 ريال/م²",
+      "copy": {
+        "hook": "غرفتك تستاهل تصميم يغيّرها بالكامل ✨",
+        "body": "صمّم غرفتك بتصميم داخلي 3D واقعي\nابتداءً من 100 ريال/م²\n\nوشوف شكل غرفتك قبل تبدأ التنفيذ.",
+        "footer": "ومتاح التقسيط مع تابي"
+      },
+      "prompt": "Vertical 9:16 architectural photograph of an unoccupied contemporary Saudi bedroom, warm minimal. Lime plaster walls in soft cream, a full-height walnut headboard panel, a low bed dressed in natural linen with cream boucle upholstery, a honed travertine bedside table, and a slim brushed brass reading lamp casting a warm glow. Soft directional daylight enters from one large window out of frame to the left, laying long gentle shadows across a pale stone floor. Composition: the upper 45 percent of the tall frame is a single uninterrupted plaster wall, completely empty and flat; the room occupies the lower half. Shot on Kodak Portra 400, 35mm architectural lens, verticals perfectly straight, static eye-level near one-point perspective. Warm neutral palette only — cream, plaster, taupe, walnut, stone. Photographic, film grain, no CGI gloss. No people, no text, no signage.",
+      "why": "غرفة واحدة، حميمة — الجمهور بيتخيل غرفته هو",
+      "render": {
+        "hook": "غرفتك تستاهل *تصميم*\nيغيّرها بالكامل.",
+        "service": "تصميم داخلي 3D واقعي",
+        "price": "ابتداءً من 100 ريال/م²",
+        "kicker": "وشوف شكل غرفتك قبل تبدأ التنفيذ.",
+        "footer": "التقسيط متاح مع",
+        "textEndPct": 62,
+        "align": "right",
+        "image": "img/01-room.jpg",
+        "footerFallback": "الدفع بالتقسيط مع تابي",
+        "tagline": "ســهولة الدفــع ... راحــة البــال"
+      }
+    },
+    {
+      "id": "02-home",
+      "audience": "عميل عنده بيت أو فيلا جديدة",
+      "service": "تصميم داخلي كامل — توزيع + تصميم + 3D",
+      "price": "من 100 ريال/م²",
+      "copy": {
+        "hook": "بيتك جديد؟ لا تبدأ التنفيذ قبل ما تشوفه كامل.",
+        "body": "نصمم لك منزلك من الداخل\nتوزيع + تصميم + تصوّر 3D واقعي\n\nابتداءً من 100 ريال/م²",
+        "footer": "قسّط تكلفة التصميم مع تابي"
+      },
+      "prompt": "Vertical 9:16 architectural photograph of an unoccupied contemporary Saudi villa interior seen from the entry hall looking through into an open living space. Lime plaster walls in soft cream, a slatted walnut screen dividing the hall, honed travertine flooring, a cream boucle sofa visible in the far room, and the edge of a staircase with a slim brushed brass handrail. Depth reads through a tall doorway — a sense of a whole home, not one room. Soft directional daylight from a large window out of frame, long gentle shadows, one warm practical light glowing in the far room. Composition: the upper 45 percent of the tall frame is an uninterrupted plaster wall and ceiling plane, completely empty and flat; the space opens in the lower half. Shot on Kodak Portra 400, 35mm architectural lens, verticals perfectly straight, static eye-level one-point perspective. Warm neutral palette only — cream, plaster, taupe, walnut, stone. Photographic, film grain, no CGI gloss. No people, no text, no signage.",
+      "why": "عمق وممر ودرج = إحساس بيت كامل مش غرفة، ده الفرق عن ستوري 01",
+      "render": {
+        "hook": "*بيتك جديد؟*\nلا تبدأ التنفيذ قبل ما تشوفه كامل.",
+        "service": "توزيع + تصميم + تصوّر 3D واقعي",
+        "price": "ابتداءً من 100 ريال/م²",
+        "kicker": "نصمم لك منزلك من الداخل.",
+        "footer": "قسّط تكلفة التصميم مع",
+        "textEndPct": 62,
+        "align": "right",
+        "image": "img/02-home.jpg",
+        "footerFallback": "الدفع بالتقسيط مع تابي",
+        "tagline": "ســهولة الدفــع ... راحــة البــال"
+      }
+    },
+    {
+      "id": "03-facade",
+      "audience": "عميل يبي يجدد الواجهة",
+      "service": "تصميم واجهات خارجية",
+      "price": "من 50 ريال/م²",
+      "copy": {
+        "hook": "غيّر واجهة بيتك… وغيّر شكله بالكامل.",
+        "body": "تصميم واجهات خارجية\nابتداءً من 50 ريال/م²\n\nتصميم احترافي يناسب ذوقك وميزانيتك.",
+        "footer": "والدفع بالتقسيط متاح مع تابي"
+      },
+      "prompt": "Vertical 9:16 architectural photograph of the exterior facade of a contemporary Saudi villa, about an hour before sunset but in clear air. Clean stacked massing in warm limestone and cream plaster, deep shaded window reveals, a walnut-toned timber screen shading the entrance, a solid walnut door, and one warm light glowing in the recessed entry. Low desert planting and a pale stone forecourt at the base. The sky is clean pale cream, almost white near the horizon — no dust haze, no heavy golden or amber cast. Soft raking side light, long gentle shadows across the plaster, low contrast. Composition: the building mass sits LOW in the frame — the upper 45 percent is open, evenly toned empty sky with no rooflines or trees intruding into it. Shot on Kodak Portra 400, 35mm architectural lens, verticals perfectly straight, static eye-level near one-point perspective. Warm neutral palette that matches a cream-plaster interior shot from the same set — limestone, cream, taupe, walnut. Photographic, film grain, no CGI gloss. No people, no cars, no text, no signage, no house numbers.",
+      "why": "خارجي — القفل الأصلي داخلي بس، فبدّلت الإضاءة لشمس مائلة متأخرة وحافظت على باقي القواعد",
+      "promptV1_rejected": "Vertical 9:16 architectural photograph of the exterior facade of a contemporary Saudi villa in late afternoon. Clean stacked massing in warm limestone and cream plaster, deep shaded window reveals, a walnut-toned timber screen shading the entrance, and a recessed entry with one warm light already glowing. Low desert planting and a pale stone forecourt at the base. Low raking sun from the side, warm and soft, long shadows across the plaster, no harsh contrast. Composition: the upper 45 percent of the tall frame is open sky and the flat upper plaster mass, calm and uncluttered; the facade anchors the lower half. Shot on Kodak Portra 400, 35mm architectural lens, verticals perfectly straight, static eye-level near one-point perspective. Warm neutral palette only — limestone, cream plaster, taupe, walnut. Photographic, film grain, no CGI gloss. No people, no cars, no text, no signage, no house numbers.",
+      "revisionNote": "النسخة الأولى طلعت سما ضبابية ذهبية تقيلة وروفلاين طالع لـ30% — خرجت عن جريد ستوري 01 و02. التعديل: سما نضيفة، المبنى أوطى، وربط صريح بجريد الداخلي.",
+      "render": {
+        "hook": "غيّر *واجهة* بيتك...\nوغيّر شكله بالكامل.",
+        "service": "تصميم واجهات خارجية",
+        "price": "ابتداءً من 50 ريال/م²",
+        "kicker": "تصميم احترافي يناسب ذوقك وميزانيتك.",
+        "footer": "الدفع بالتقسيط مع",
+        "textEndPct": 62,
+        "align": "right",
+        "image": "img/03-facade.jpg",
+        "footerFallback": "الدفع بالتقسيط مع تابي",
+        "tagline": "ســهولة الدفــع ... راحــة البــال"
+      }
+    }
+  ],
+  "_render": "حط الصور في img/ بالأسماء: 01-room.jpg / 02-home.jpg / 03-facade.jpg وشغّل render.sh — الناتج في out/",
+  "contact": {
+    "whatsapp": "966504632665",
+    "whatsappDisplay": "+966 50 463 2665",
+    "instagram": "archidot.studio",
+    "location": "السعودية",
+    "_note": "أرقام حقيقية من archidot-studio/index.html — الرقم اللي ظهر في الصورة المرجعية (555 123 4567) كان placeholder وهمي"
+  }
+}

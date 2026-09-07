@@ -1,0 +1,58 @@
+{
+  "tamim": {
+    "shell": "card",
+    "chrome": "rail",
+    "ground": "glow",
+    "eyebrow": "chip",
+    "accent": "text",
+    "anchor": "top"
+  },
+  "outfred": {
+    "shell": "full",
+    "chrome": "index",
+    "ground": "wash",
+    "eyebrow": "rule",
+    "accent": "mark",
+    "anchor": "mid"
+  },
+  "archidot": {
+    "shell": "passe",
+    "chrome": "spine",
+    "ground": "flat",
+    "eyebrow": "caps",
+    "accent": "rule",
+    "anchor": "third"
+  },
+  "dar": {
+    "shell": "band",
+    "chrome": "corner",
+    "ground": "rules",
+    "eyebrow": "caps",
+    "accent": "bar",
+    "anchor": "top"
+  },
+  "tamim-v5": {
+    "shell": "full",
+    "chrome": "foot",
+    "ground": "flat",
+    "eyebrow": "caps",
+    "accent": "mark",
+    "anchor": "mid"
+  },
+  "tamim-v6": {
+    "shell": "full",
+    "chrome": "none",
+    "ground": "flat",
+    "eyebrow": "none",
+    "accent": "text",
+    "anchor": "top"
+  },
+  "dar24": {
+    "shell": "panel",
+    "chrome": "corner",
+    "ground": "paper",
+    "eyebrow": "numeral",
+    "accent": "bar",
+    "anchor": "third"
+  }
+}

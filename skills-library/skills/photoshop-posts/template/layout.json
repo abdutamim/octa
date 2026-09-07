@@ -1,0 +1,72 @@
+{
+  "_": "كل المقاسات والمواضع. عدّل الأرقام هنا وشغّل: bash render.sh — متلمسش story.html خالص.",
+  "_وحدات": "كل الأرقام بالبكسل داخل إطار 1080×1920، ما عدا اللي مكتوب جنبها غير كده.",
+  "logo": {
+    "_": "اللوجو أعلى الشمال",
+    "top": 144,
+    "left": 316,
+    "nameSize": 23,
+    "markHeight": 52,
+    "gap": 22
+  },
+  "rule": {
+    "_": "الخط الذهبي تحت اللوجو",
+    "top": 246,
+    "left": 82,
+    "width": 118
+  },
+  "text": {
+    "_": "الكتلة النصية — الهيدلاين والسعر",
+    "top": 284,
+    "left": 429,
+    "width": 556,
+    "hookSize": 66,
+    "hookLineHeight": 1,
+    "serviceSize": 30,
+    "serviceGap": 30,
+    "priceSize": 50,
+    "priceGap": 14,
+    "kickerSize": 30,
+    "kickerGap": 34
+  },
+  "features": {
+    "_": "شريط المزايا الأربعة",
+    "top": 1210,
+    "sideMargin": 82,
+    "iconSize": 36,
+    "textSize": 19,
+    "padY": 34,
+    "radius": 30,
+    "opacity": 90
+  },
+  "cta": {
+    "_": "بادچ تابي (شمال) + النص (يمينه)",
+    "top": 1411,
+    "sideMargin": 144,
+    "gap": 264,
+    "titleSize": 38,
+    "taglineSize": 28,
+    "badgeHeight": 50,
+    "badgePadX": 28,
+    "badgePadY": 14,
+    "badgeRadius": 22,
+    "badgeColor": "#5FF5B6"
+  },
+  "divider": {
+    "top": 1545
+  },
+  "contact": {
+    "_": "صف الواتساب/إنستجرام/الموقع",
+    "top": 1572,
+    "iconSize": 24,
+    "textSize": 23,
+    "itemGap": 30
+  },
+  "panels": {
+    "_": "التعتيم. اللوحة العلوية بتتفصّل على النص أوتوماتيك — غيّر padding بس.",
+    "auto": true,
+    "padding": 150,
+    "topBlur": 172,
+    "bottomHeight": 661
+  }
+}

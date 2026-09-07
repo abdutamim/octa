@@ -1,0 +1,3411 @@
+{
+  "generated": "2026-09-05T02:09:45.953Z",
+  "sources": [
+    {
+      "id": "claude-app",
+      "label": "Claude app uploaded skills",
+      "root": "C:/Users/Admin/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/afea3e1f-024e-4308-87b9-f4e8b80e84c5/708f3dc2-784b-483d-88ed-ecef87a8724d/skills"
+    },
+    {
+      "id": "claude-code",
+      "label": "~/.claude/skills (Claude Code user skills)",
+      "root": "C:/Users/Admin/.claude/skills"
+    },
+    {
+      "id": "marketing-os",
+      "label": "Documents/marketing-os (own Marketing OS plugin)",
+      "root": "C:/Users/Admin/Documents/marketing-os/skills"
+    },
+    {
+      "id": "portfolio",
+      "label": "Tamim Portfolio/.claude/skills (own carousel skills)",
+      "root": "C:/Users/Admin/Desktop/Tamim Portfolio/.claude/skills"
+    },
+    {
+      "id": "outfred",
+      "label": "Projects/Outfred/skill",
+      "root": "C:/Users/Admin/Desktop/Projects/Outfred/skill"
+    },
+    {
+      "id": "codex",
+      "label": "~/.codex/skills",
+      "root": "C:/Users/Admin/.codex/skills"
+    }
+  ],
+  "skills": [
+    {
+      "name": "prism-store-builder",
+      "folder": "prism-store-builder",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\prism-store-builder",
+      "department": "commerce",
+      "description": "Convert an approved client HTML design into a PRISM-based Shopify theme. Use this whenever the user wants to turn a design (an HTML file, a mockup, or an approved client comp) into a working Shopify store, onboard a new client onto the PRISM theme, build a client storefront, or apply a client's brand to PRISM. Trigger this for phrases like \"build this client's store\", \"turn this HTML into a theme\"",
+      "sizeKB": 14,
+      "files": 3,
+      "hash": "4b377b439f",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "HTML design → PRISM Shopify theme. Shopify client projects."
+    },
+    {
+      "name": "carousel-forge",
+      "folder": "carousel-forge",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\carousel-forge",
+      "department": "design",
+      "description": "Design scroll-stopping carousels, covers, posters and social graphics for any brand, any industry, any language. A measured visual system reverse-engineered from 94 working slides: grid and margins, type scale, colour, photo direction, depth layering, image generation, and an audited HTML→PNG renderer. Use for any request about designing a post, carousel, cover, poster, slide deck or template — an",
+      "sizeKB": 16646,
+      "files": 56,
+      "hash": "6f373ac8d0",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Own measured carousel system (94 slides, 7 laws, HTML→PNG renderer, image gen). Production engine for posts. 17 MB corpus."
+    },
+    {
+      "name": "carousel-studio",
+      "folder": "carousel-studio",
+      "source": "portfolio",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Tamim Portfolio\\.claude\\skills\\carousel-studio",
+      "department": "design",
+      "description": "اكتب وصمّم كاروسيلات إنستجرام/لينكدإن **لأي براند أو موضوع** — تشخيص، هوك، سلايدات، تصميم، رندر PNG. استخدمها في أي طلب زي «اعملي كاروسيل عن كذا»، «اكتبلي هوك»، «محتاج بوست لبراند فلان»، «صمّملي سلسلة سلايدات»، «الكاروسيل ده مش شغّال»، أو «حوّل المقال ده لكاروسيل». بتشخّص الأول (جمهور/مرحلة وعي/ وجع/اعتراض)، بتبني على شاسيه ثابت، وبترندر بنظام HTML+Playwright. Build Instagram/LinkedIn carousels fo",
+      "sizeKB": 19,
+      "files": 3,
+      "hash": "39c67bf1f8",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Arabic carousel workflow for any brand: diagnosis → hook → chassis → render. Front door to carousel-forge."
+    },
+    {
+      "name": "frontend-ui-polisher",
+      "folder": "frontend-ui-polisher",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\frontend-ui-polisher",
+      "department": "design",
+      "description": "Use when the user wants to design, redesign, shape, critique, audit, polish, clarify, distill, harden, optimize, adapt, animate, colorize, extract, or otherwise improve a frontend interface. Covers websites, landing pages, dashboards, product UI, app shells, components, forms, settings, onboarding, and empty states. Handles UX review, visual hierarchy, information architecture, cognitive load, acc",
+      "sizeKB": 790,
+      "files": 61,
+      "hash": "496181bcfd",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Command-based UI polish (audit/bolder/clarify/animate). Apache. Use on existing client UIs."
+    },
+    {
+      "name": "photoshop-driver",
+      "folder": "photoshop-driver",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\photoshop-driver",
+      "department": "design",
+      "description": "Drive Photoshop from the terminal — build, edit, clone and verify layered PSDs without touching the GUI. Generate ExtendScript (.jsx), launch Photoshop headlessly, and read the result back with psd-tools to prove it worked. Covers live editable text layers, Arabic/RTL typesetting, character-range colouring, swapping image layers, cloning a hand-tuned master into variants, and writing PSDs from scr",
+      "sizeKB": 68,
+      "files": 11,
+      "hash": "32546057fe",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Low-level Photoshop automation (ExtendScript, psd-tools, Arabic). Used by photoshop-posts."
+    },
+    {
+      "name": "photoshop-posts",
+      "folder": "photoshop-posts",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\photoshop-posts",
+      "department": "design",
+      "description": "Produce Instagram stories, posts and social graphics as client-editable Photoshop files — designed in HTML/CSS (real Arabic shaping, instant iteration), exported as layered PSDs with live editable text, cloned into variants without destroying hand-tuned masters, and verified by measurement instead of eyeballing. This is the production pipeline; the low-level Photoshop mechanics live in the photosh",
+      "sizeKB": 89,
+      "files": 16,
+      "hash": "2f7e4d618f",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "HTML design → layered PSD with live text → client-editable variants. Deliverable pipeline for design clients."
+    },
+    {
+      "name": "tamim-carousel",
+      "folder": "tamim-carousel",
+      "source": "portfolio",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Tamim Portfolio\\.claude\\skills\\tamim-carousel",
+      "department": "design",
+      "description": "اكتب وصمّم كاروسيلات إنستجرام لبراند تميم (@tamim.work) — مواقع ومتاجر بتبيع. استخدمها في أي طلب عن بوست/كاروسيل/هوك/كابشن/محتوى سوشيال لتميم، حتى لو الطلب قصير زي «اعملي بوست»، «اكتبلي هوك»، «صمّم كاروسيل»، «محتاج فكرة محتوى»، «اظبط الكابشن»، أو «البوست ده مش شغّال». بتشخّص الأول (جمهور/مرحلة وعي/وجع/ اعتراض) قبل ما تكتب حرف، وبتبني السلايدات على شاسيه ثابت، وبترندر بنظام cafe-clone. Use for Tami",
+      "sizeKB": 23,
+      "files": 3,
+      "hash": "f01812af16",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Same workflow locked to Tamim brand rules and pillars. Use for Tamim posts only."
+    },
+    {
+      "name": "ui-forge",
+      "folder": "ui-forge",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\ui-forge",
+      "department": "design",
+      "description": "Elite UI/UX system distilled from 50 practitioner video teardowns — build or review any web page, landing page, dashboard, or mobile UI with measured rules (type scales, color math, spacing values, easing curves) instead of taste guesses. Use for any request like \"review this page\", \"why does this look bad/cheap/AI-generated\", \"build a landing page\", \"improve this UI\", \"design a dashboard\", \"raise",
+      "sizeKB": 14417,
+      "files": 30,
+      "hash": "f65a5fb92d",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Own UI system from 50 video teardowns with measured rules. Use for client landing pages/dashboards and for Tamim OS itself. 15 MB corpus."
+    },
+    {
+      "name": "web-ui-designer",
+      "folder": "web-ui-designer",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\web-ui-designer",
+      "department": "design",
+      "description": "UI/UX design intelligence. 67 styles, 96 palettes, 57 font pairings, 25 charts, 13 stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind, shadcn/ui). Actions: plan, build, create, design, implement, review, fix, improve, optimize, enhance, refactor, check UI/UX code. Projects: website, landing page, dashboard, admin panel, e-commerce, SaaS, portfolio, blog, mobile app, .htm",
+      "sizeKB": 496,
+      "files": 28,
+      "hash": "c4a3ec274d",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Style/palette/font databases (CSV) + stack rules. Reference when starting a design system."
+    },
+    {
+      "name": "docx",
+      "folder": "docx",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\docx",
+      "department": "documents",
+      "description": "Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx) or Word templates (.dotx). Triggers include: any mention of 'Word doc', 'word document', '.docx', '.dotx', or requests to produce professional documents with formatting like tables of contents, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx or .dotx files, i",
+      "sizeKB": 1104,
+      "files": 61,
+      "hash": "c6ca83fba5",
+      "verdict": "core",
+      "autonomy": "auto",
+      "use": "Word contracts/reports. Alternative to the in-app PDF path when clients want editable files."
+    },
+    {
+      "name": "pdf",
+      "folder": "pdf",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\pdf",
+      "department": "documents",
+      "description": "Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, encrypting/decrypting PDFs, extracting images, and OCR on scanned PDFs to make them searchable. If the user mentions a .pdf file or",
+      "sizeKB": 57,
+      "files": 12,
+      "hash": "a55815da79",
+      "verdict": "core",
+      "autonomy": "auto",
+      "use": "Read/merge/fill PDFs; extract data from client-sent PDFs into tasks/invoices."
+    },
+    {
+      "name": "pptx",
+      "folder": "pptx",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\pptx",
+      "department": "documents",
+      "description": "Use this skill any time a .pptx or .potx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations as PowerPoint (.pptx) files; reading, parsing, or extracting text from any .pptx or .potx file (even if the extracted content will be used elsewhere, like in an email, summary, or creating a different type of slide deck); editing, modi",
+      "sizeKB": 1115,
+      "files": 56,
+      "hash": "d3e248d320",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Pitch decks and client presentations from sales-enablement output."
+    },
+    {
+      "name": "xlsx",
+      "folder": "xlsx",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\xlsx",
+      "department": "documents",
+      "description": "Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .xltx, .csv, or .tsv file (e.g., adding columns, computing formulas, formatting, charting, cleaning messy data); create a new spreadsheet from scratch or from other data sources; or convert between tabular file formats. Trigger e",
+      "sizeKB": 1079,
+      "files": 53,
+      "hash": "9ca31a1f02",
+      "verdict": "core",
+      "autonomy": "auto",
+      "use": "Invoices/quotes/trackers as spreadsheets; financial models."
+    },
+    {
+      "name": "agents-sdk",
+      "folder": "agents-sdk",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\agents-sdk",
+      "department": "engineering",
+      "description": "Build AI agents on Cloudflare Workers using the Agents SDK. Load when creating stateful agents, durable workflows, real-time WebSocket apps, scheduled tasks, MCP servers, chat applications, voice agents, or browser automation. Covers Agent class, state management, callable RPC, Workflows, durable execution, queues, retries, observability, and React hooks. Biases towards retrieval from Cloudflare d",
+      "sizeKB": 61,
+      "files": 20,
+      "hash": "938334caa9",
+      "verdict": "reference",
+      "autonomy": "led",
+      "use": "Cloudflare Agents SDK. Only if Tamim OS ever gets a cloud agent runtime."
+    },
+    {
+      "name": "cloudflare",
+      "folder": "cloudflare",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\cloudflare",
+      "department": "engineering",
+      "description": "Comprehensive Cloudflare platform skill covering Workers, Pages, storage (KV, D1, R2), AI (Workers AI, Vectorize, Agents SDK), feature flags (Flagship), networking (Tunnel, Spectrum), security (WAF, DDoS), and infrastructure-as-code (Terraform, Pulumi). Use for any Cloudflare development task. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
+      "sizeKB": 1378,
+      "files": 320,
+      "hash": "68671fb30f",
+      "verdict": "reference",
+      "autonomy": "led",
+      "use": "320-file Cloudflare docs mirror. Needed only when deploying client sites/workers on Cloudflare."
+    },
+    {
+      "name": "cloudflare-email-service",
+      "folder": "cloudflare-email-service",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\cloudflare-email-service",
+      "department": "engineering",
+      "description": "Send and receive transactional emails with Cloudflare Email Service (Email Sending + Email Routing). Use when building email sending (Workers binding or REST API), email routing, Agents SDK email handling, or integrating email into any app — Workers, Node.js, Python, Go, etc. Also use for email deliverability, SPF/DKIM/DMARC, wrangler email setup, MCP email tools, or when a coding agent needs to s",
+      "sizeKB": 43,
+      "files": 6,
+      "hash": "2d7a3ddb15",
+      "verdict": "reference",
+      "autonomy": "led",
+      "use": "Transactional email via Cloudflare. Possible send path for cold-email later."
+    },
+    {
+      "name": "cloudflare-one",
+      "folder": "cloudflare-one",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\cloudflare-one",
+      "department": "engineering",
+      "description": "Guides Cloudflare One Zero Trust and SASE work across Access, Gateway, WARP, Tunnel, Cloudflare WAN, DLP, CASB, device posture, and identity. Use when designing, configuring, troubleshooting, or reviewing Cloudflare One deployments. Retrieval-first: use current Cloudflare docs/API schemas instead of embedded product docs.",
+      "sizeKB": 22,
+      "files": 1,
+      "hash": "b68947b5ba",
+      "verdict": "drop",
+      "autonomy": "led",
+      "use": "Zero Trust networking. No use."
+    },
+    {
+      "name": "cloudflare-one-migrations",
+      "folder": "cloudflare-one-migrations",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\cloudflare-one-migrations",
+      "department": "engineering",
+      "description": "Plans migrations from Zscaler ZIA/ZPA, Palo Alto, legacy VPN, SWG, or SASE stacks to Cloudflare One. Use for migration assessments, policy mapping, rollout plans, and parity/gap analysis.",
+      "sizeKB": 12,
+      "files": 1,
+      "hash": "074811e580",
+      "verdict": "drop",
+      "autonomy": "led",
+      "use": "No use."
+    },
+    {
+      "name": "durable-objects",
+      "folder": "durable-objects",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\durable-objects",
+      "department": "engineering",
+      "description": "Create and review Cloudflare Durable Objects. Use when building stateful coordination (chat rooms, multiplayer games, booking systems), implementing RPC methods, SQLite storage, alarms, WebSockets, or reviewing DO code for best practices. Covers Workers integration, wrangler config, and testing with Vitest. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
+      "sizeKB": 28,
+      "files": 4,
+      "hash": "3d5decd90a",
+      "verdict": "reference",
+      "autonomy": "led",
+      "use": "Cloudflare DO reference."
+    },
+    {
+      "name": "mcp-server-builder",
+      "folder": "mcp-server-builder",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\mcp-server-builder",
+      "department": "engineering",
+      "description": "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK).",
+      "sizeKB": 9,
+      "files": 1,
+      "hash": "53db1546a3",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "When a client integration needs an MCP server (Notion, CRM). Build path #2 helper."
+    },
+    {
+      "name": "sandbox-migrate-to-next",
+      "folder": "sandbox-migrate-to-next",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\sandbox-migrate-to-next",
+      "department": "engineering",
+      "description": "Use when porting a Cloudflare Sandbox app from stable @cloudflare/sandbox to @cloudflare/sandbox@next (Sandbox SDK 1.0 preview), or when the user asks to migrate or upgrade to Sandbox 1.0 / @next. Not for day-to-day stable work (sandbox-stable) or new @next apps (sandbox-next).",
+      "sizeKB": 8,
+      "files": 1,
+      "hash": "d204e4b058",
+      "verdict": "drop",
+      "autonomy": "led",
+      "use": "No use."
+    },
+    {
+      "name": "sandbox-next",
+      "folder": "sandbox-next",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\sandbox-next",
+      "department": "engineering",
+      "description": "Use when building or changing Cloudflare Sandbox apps on @cloudflare/sandbox@next (Sandbox SDK 1.0 preview)—code execution, AI runners, interpreters, CI-like jobs, terminals, files, mounts, tunnels, preview URLs, lifecycle, or errors. Not for the default stable package (use sandbox-stable) or for porting stable to @next (use sandbox-migrate-to-next).",
+      "sizeKB": 11,
+      "files": 3,
+      "hash": "8c03b107d6",
+      "verdict": "drop",
+      "autonomy": "led",
+      "use": "No use."
+    },
+    {
+      "name": "sandbox-stable",
+      "folder": "sandbox-stable",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\sandbox-stable",
+      "department": "engineering",
+      "description": "Use when building or changing Cloudflare Sandbox apps on the current stable @cloudflare/sandbox package (default npm tag)—commands, sessions, files, ports, tunnels, terminals, bridge, production, or deprecated-API cleanup while staying on stable. Not for @cloudflare/sandbox@next (use sandbox-next) or for porting to 1.0 (use sandbox-migrate-to-next).",
+      "sizeKB": 9,
+      "files": 1,
+      "hash": "7057030ec9",
+      "verdict": "drop",
+      "autonomy": "led",
+      "use": "Cloudflare Sandbox SDK. No use in this app."
+    },
+    {
+      "name": "skill-creator",
+      "folder": "skill-creator",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\skill-creator",
+      "department": "engineering",
+      "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.",
+      "sizeKB": 222,
+      "files": 18,
+      "hash": "0246268a2b",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "The master agent uses this to author new skills + evals when no skill fits. Build path #1."
+    },
+    {
+      "name": "speckit-analyze",
+      "folder": "speckit-analyze",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-analyze",
+      "department": "engineering",
+      "description": "Perform a non-destructive cross-artifact consistency and quality analysis across spec.md, plan.md, and tasks.md after task generation.",
+      "sizeKB": 11,
+      "files": 1,
+      "hash": "b82465487d",
+      "verdict": "keep",
+      "autonomy": "auto",
+      "use": "Consistency check across spec/plan/tasks."
+    },
+    {
+      "name": "speckit-checklist",
+      "folder": "speckit-checklist",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-checklist",
+      "department": "engineering",
+      "description": "Generate a custom checklist for the current feature based on user requirements.",
+      "sizeKB": 34,
+      "files": 2,
+      "hash": "f174614c0b",
+      "verdict": "keep",
+      "autonomy": "auto",
+      "use": "Requirement checklists."
+    },
+    {
+      "name": "speckit-constitution",
+      "folder": "speckit-constitution",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-constitution",
+      "department": "engineering",
+      "description": "Create or update the project constitution from interactive or provided principle inputs, ensuring all dependent templates stay in sync.",
+      "sizeKB": 8,
+      "files": 1,
+      "hash": "f951cac56c",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Project principles doc."
+    },
+    {
+      "name": "speckit-git-commit",
+      "folder": "speckit-git-commit",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-git-commit",
+      "department": "engineering",
+      "description": "Auto-commit changes after a Spec Kit command completes",
+      "sizeKB": 2,
+      "files": 1,
+      "hash": "8330a7223e",
+      "verdict": "reference",
+      "autonomy": "auto",
+      "use": "Git helper; octa-code covers this."
+    },
+    {
+      "name": "speckit-git-feature",
+      "folder": "speckit-git-feature",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-git-feature",
+      "department": "engineering",
+      "description": "Create a feature branch with sequential or timestamp numbering",
+      "sizeKB": 3,
+      "files": 1,
+      "hash": "953f9c8351",
+      "verdict": "reference",
+      "autonomy": "auto",
+      "use": "Git helper."
+    },
+    {
+      "name": "speckit-git-initialize",
+      "folder": "speckit-git-initialize",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-git-initialize",
+      "department": "engineering",
+      "description": "Initialize a Git repository with an initial commit",
+      "sizeKB": 2,
+      "files": 1,
+      "hash": "5ead50c813",
+      "verdict": "reference",
+      "autonomy": "auto",
+      "use": "Git helper."
+    },
+    {
+      "name": "speckit-git-remote",
+      "folder": "speckit-git-remote",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-git-remote",
+      "department": "engineering",
+      "description": "Detect Git remote URL for GitHub integration",
+      "sizeKB": 2,
+      "files": 1,
+      "hash": "ecded0f77b",
+      "verdict": "reference",
+      "autonomy": "auto",
+      "use": "Git helper."
+    },
+    {
+      "name": "speckit-git-validate",
+      "folder": "speckit-git-validate",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-git-validate",
+      "department": "engineering",
+      "description": "Validate current branch follows feature branch naming conventions",
+      "sizeKB": 2,
+      "files": 1,
+      "hash": "452113f17a",
+      "verdict": "reference",
+      "autonomy": "auto",
+      "use": "Git helper."
+    },
+    {
+      "name": "speckit-implement",
+      "folder": "speckit-implement",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-implement",
+      "department": "engineering",
+      "description": "Execute the implementation plan by processing and executing all tasks defined in tasks.md",
+      "sizeKB": 11,
+      "files": 1,
+      "hash": "230826ebf9",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "See speckit-specify."
+    },
+    {
+      "name": "speckit-plan",
+      "folder": "speckit-plan",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-plan",
+      "department": "engineering",
+      "description": "Execute the implementation planning workflow using the plan template to generate design artifacts.",
+      "sizeKB": 6,
+      "files": 1,
+      "hash": "9b04d17c22",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "See speckit-specify."
+    },
+    {
+      "name": "speckit-specify",
+      "folder": "speckit-specify",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-specify",
+      "department": "engineering",
+      "description": "Create or update the feature specification from a natural language feature description.",
+      "sizeKB": 16,
+      "files": 1,
+      "hash": "37f7ba9e99",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Spec-kit flow: spec → plan → tasks → implement. Lighter alternative to octa-code for small tools."
+    },
+    {
+      "name": "speckit-tasks",
+      "folder": "speckit-tasks",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-tasks",
+      "department": "engineering",
+      "description": "Generate an actionable, dependency-ordered tasks.md for the feature based on available design artifacts.",
+      "sizeKB": 10,
+      "files": 1,
+      "hash": "b9bfe8ee59",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "See speckit-specify."
+    },
+    {
+      "name": "speckit-taskstoissues",
+      "folder": "speckit-taskstoissues",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\speckit-taskstoissues",
+      "department": "engineering",
+      "description": "Convert existing tasks into actionable, dependency-ordered GitHub issues for the feature based on available design artifacts.",
+      "sizeKB": 4,
+      "files": 1,
+      "hash": "271e37cf01",
+      "verdict": "keep",
+      "autonomy": "auto",
+      "use": "Tasks → GitHub issues."
+    },
+    {
+      "name": "turnstile-spin",
+      "folder": "turnstile-spin",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\turnstile-spin",
+      "department": "engineering",
+      "description": "Set up Cloudflare Turnstile end-to-end in a project. Scan the codebase, create the widget via the Cloudflare API, embed it where user requests need bot verification (form submissions, SPA actions, API endpoints, download links, comment or vote submissions, etc.), wire canonical server-side siteverify in the customer's existing backend, validate, and persist the skill. Load this when a user asks to",
+      "sizeKB": 88,
+      "files": 13,
+      "hash": "43ec91a6ac",
+      "verdict": "reference",
+      "autonomy": "led",
+      "use": "CAPTCHA setup for client forms."
+    },
+    {
+      "name": "web-perf",
+      "folder": "web-perf",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\web-perf",
+      "department": "engineering",
+      "description": "Analyzes web performance using Chrome DevTools MCP. Measures Core Web Vitals (LCP, INP, CLS) and supplementary metrics (FCP, TBT, Speed Index), identifies render-blocking resources, network dependency chains, layout shifts, caching issues, and accessibility gaps. Use when asked to audit, profile, debug, or optimize page load performance, Lighthouse scores, or site speed. Biases towards retrieval f",
+      "sizeKB": 8,
+      "files": 1,
+      "hash": "7abd021c5d",
+      "verdict": "keep",
+      "autonomy": "auto",
+      "use": "Core Web Vitals audit via Chrome DevTools. Pairs with seo-audit for client sites."
+    },
+    {
+      "name": "workers-best-practices",
+      "folder": "workers-best-practices",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\workers-best-practices",
+      "department": "engineering",
+      "description": "Reviews and authors Cloudflare Workers code against production best practices. Load when writing new Workers, reviewing Worker code, configuring wrangler.jsonc, or checking for common Workers anti-patterns (streaming, floating promises, global state, secrets, bindings, observability). Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
+      "sizeKB": 31,
+      "files": 3,
+      "hash": "7995d25b4e",
+      "verdict": "reference",
+      "autonomy": "led",
+      "use": "Cloudflare Workers review rules."
+    },
+    {
+      "name": "wrangler",
+      "folder": "wrangler",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\wrangler",
+      "department": "engineering",
+      "description": "Cloudflare Workers CLI for deploying, developing, and managing Workers, KV, R2, D1, Vectorize, Hyperdrive, Workers AI, Containers, Queues, Workflows, Pipelines, and Secrets Store. Load before running wrangler commands to ensure correct syntax and best practices. Biases towards retrieval from Cloudflare docs over pre-trained knowledge.",
+      "sizeKB": 18,
+      "files": 1,
+      "hash": "d22739a202",
+      "verdict": "reference",
+      "autonomy": "led",
+      "use": "Cloudflare CLI reference."
+    },
+    {
+      "name": "ab-testing",
+      "folder": "ab-testing",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\ab-testing",
+      "department": "marketing",
+      "description": "When the user wants to plan, design, or implement an A/B test or experiment, or build a growth experimentation program. Also use when the user mentions \"A/B test,\" \"split test,\" \"experiment,\" \"test this change,\" \"variant copy,\" \"multivariate test,\" \"hypothesis,\" \"should I test this,\" \"which version is better,\" \"test two versions,\" \"statistical significance,\" \"how long should I run this test,\" \"gro",
+      "sizeKB": 32,
+      "files": 4,
+      "hash": "14886d26e3",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Experiment design and sample size. Client CRO work."
+    },
+    {
+      "name": "ad-creative",
+      "folder": "ad-creative",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\ad-creative",
+      "department": "marketing",
+      "description": "When the user wants to generate, iterate, or scale ad creative — headlines, descriptions, primary text, or full ad variations — for any paid advertising platform. Also use when the user mentions 'ad copy variations,' 'ad creative,' 'generate headlines,' 'RSA headlines,' 'bulk ad copy,' 'ad iterations,' 'creative testing,' 'ad performance optimization,' 'write me some ads,' 'Facebook ad copy,' 'Goo",
+      "sizeKB": 50,
+      "files": 4,
+      "hash": "7892c3e8ef",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Bulk ad copy variations + iterate from performance data. Pair with Zeely-style static-ad prompt templates."
+    },
+    {
+      "name": "ads",
+      "folder": "ads",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\ads",
+      "department": "marketing",
+      "description": "When the user wants help with paid advertising campaigns on Google Ads, Meta (Facebook/Instagram), LinkedIn, Twitter/X, or other ad platforms. Also use when the user mentions 'PPC,' 'paid media,' 'ROAS,' 'CPA,' 'ad campaign,' 'retargeting,' 'audience targeting,' 'Google Ads,' 'Facebook ads,' 'LinkedIn ads,' 'ad budget,' 'cost per click,' 'ad spend,' or 'should I run ads.' Use this for campaign str",
+      "sizeKB": 49,
+      "files": 6,
+      "hash": "a74b5dc03a",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Campaign structure, targeting, bidding for Meta/Google. Client ads work."
+    },
+    {
+      "name": "ai-seo",
+      "folder": "ai-seo",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\ai-seo",
+      "department": "marketing",
+      "description": "When the user wants to optimize content for AI search engines, get cited by LLMs, or appear in AI-generated answers. Also use when the user mentions 'AI SEO,' 'AEO,' 'GEO,' 'LLMO,' 'answer engine optimization,' 'generative engine optimization,' 'LLM optimization,' 'AI Overviews,' 'optimize for ChatGPT,' 'optimize for Perplexity,' 'AI citations,' 'AI visibility,' 'zero-click search,' 'how do I show",
+      "sizeKB": 61,
+      "files": 6,
+      "hash": "44718a78c6",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "AI-search visibility (llms.txt, OKF). Newest, most complete version."
+    },
+    {
+      "name": "analytics",
+      "folder": "analytics",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\analytics",
+      "department": "marketing",
+      "description": "When the user wants to set up, improve, or audit analytics tracking and measurement. Also use when the user mentions \"set up tracking,\" \"GA4,\" \"Google Analytics,\" \"conversion tracking,\" \"event tracking,\" \"UTM parameters,\" \"tag manager,\" \"GTM,\" \"analytics implementation,\" \"tracking plan,\" \"how do I measure this,\" \"track conversions,\" \"attribution,\" \"Mixpanel,\" \"Segment,\" \"are my events firing,\" or ",
+      "sizeKB": 36,
+      "files": 5,
+      "hash": "2890d32d4b",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "GA4/GTM tracking plans for client sites."
+    },
+    {
+      "name": "aso",
+      "folder": "aso",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\aso",
+      "department": "marketing",
+      "description": "When the user wants to audit or optimize an App Store or Google Play listing. Also use when the user mentions 'ASO audit,' 'app store optimization,' 'optimize my app listing,' 'improve app visibility,' 'app store ranking,' 'audit my listing,' 'why aren't people downloading my app,' 'improve my app conversion,' 'keyword optimization for app,' or 'compare my app to competitors.' Use when the user sh",
+      "sizeKB": 58,
+      "files": 7,
+      "hash": "dbe12dabbe",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "App-store listing audits. Only for app clients."
+    },
+    {
+      "name": "bedo-brand-engine",
+      "folder": "bedo-brand-engine",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\bedo-brand-engine",
+      "department": "marketing",
+      "description": "Operating system for Abdulrahman (Bedo) Mousa's Egyptian real-estate personal brand, targeting PROPERTY BUYERS for Allocate Company. Use for ANY request touching his personal brand, content plan, pillars, idea bank, carousels, Reels/TikTok scripts, hooks, captions, copy, posting, profile edits, or performance review on his LinkedIn / Instagram @bedomousaa / TikTok @bedomoussa. Chains performance-m",
+      "sizeKB": 11,
+      "files": 1,
+      "hash": "30cea81b19",
+      "verdict": "client",
+      "autonomy": "assisted",
+      "use": "Client-specific: Bedo Mousa real-estate brand. Template for how a per-client \"brand engine\" skill looks. Do not run for other clients."
+    },
+    {
+      "name": "brand-building",
+      "folder": "brand-building",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\brand-building",
+      "department": "marketing",
+      "description": "End-to-end system for building a personal (or general) brand on social media and creating content plans that sell — based on a complete practical methodology (mindset, niche selection, profile optimization, content pillars, idea generation, viral scripts, hooks, filming, and 2025 algorithm rules). Use this whenever someone wants to build or grow a personal brand, define their niche or positioning,",
+      "sizeKB": 98,
+      "files": 8,
+      "hash": "c176c08a42",
+      "verdict": "core",
+      "autonomy": "led",
+      "use": "Own 9-stage personal-brand methodology (niche, profile, pillars, hooks, filming, algorithm). Used by personal-branding and bedo-brand-engine."
+    },
+    {
+      "name": "churn-prevention",
+      "folder": "churn-prevention",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\churn-prevention",
+      "department": "customer",
+      "description": "When the user wants to reduce churn, build cancellation flows, set up save offers, recover failed payments, or implement retention strategies. Also use when the user mentions 'churn,' 'cancel flow,' 'offboarding,' 'save offer,' 'dunning,' 'failed payment recovery,' 'win-back,' 'retention,' 'exit survey,' 'pause subscription,' 'involuntary churn,' 'people keep canceling,' 'churn rate is too high,' ",
+      "sizeKB": 47,
+      "files": 4,
+      "hash": "5d4356047a",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Cancel flows and dunning. SaaS/subscription clients only."
+    },
+    {
+      "name": "co-marketing",
+      "folder": "co-marketing",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\co-marketing",
+      "department": "marketing",
+      "description": "When the user wants to find co-marketing partners, plan joint campaigns, or brainstorm partnership opportunities. Use when the user says 'co-marketing,' 'partner marketing,' 'joint campaign,' 'who should we partner with,' 'integration marketing,' 'cross-promotion,' 'collaborate with another company,' 'partnership ideas,' or 'co-brand.' For customer referral programs, see referrals. For launch-spec",
+      "sizeKB": 17,
+      "files": 2,
+      "hash": "f17fe06917",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Partner campaign ideas. Low priority."
+    },
+    {
+      "name": "community-marketing",
+      "folder": "community-marketing",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\community-marketing",
+      "department": "marketing",
+      "description": "Build and leverage online communities to drive product growth and brand loyalty. Use when the user wants to create a community strategy, grow a Discord or Slack community, manage a forum or subreddit, build brand advocates, increase word-of-mouth, drive community-led growth, engage users post-signup, or turn customers into evangelists. Trigger phrases: \\\"build a community,\\\" \\\"community strategy,\\",
+      "sizeKB": 16,
+      "files": 2,
+      "hash": "339e220226",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Community playbooks. Low priority for a services business."
+    },
+    {
+      "name": "competitor-profiling",
+      "folder": "competitor-profiling",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\competitor-profiling",
+      "department": "intelligence",
+      "description": "When the user wants to research, profile, or analyze competitors from their URLs. Also use when the user mentions 'competitor profile,' 'competitor research,' 'competitor analysis,' 'profile this competitor,' 'analyze competitor,' 'competitive intelligence,' 'competitor deep dive,' 'who are my competitors,' 'competitor landscape,' 'competitor dossier,' 'competitive audit,' or 'research these compe",
+      "sizeKB": 33,
+      "files": 4,
+      "hash": "0b2879678b",
+      "verdict": "core",
+      "autonomy": "auto",
+      "use": "Monthly competitor dossiers from URLs. Needs Firecrawl/DataForSEO or fall back to WebFetch. Stored in vault."
+    },
+    {
+      "name": "competitors",
+      "folder": "competitors",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\competitors",
+      "department": "marketing",
+      "description": "When the user wants to create competitor comparison or alternative pages for SEO and sales enablement. Also use when the user mentions 'alternative page,' 'vs page,' 'competitor comparison,' 'comparison page,' '[Product] vs [Product],' '[Product] alternative,' 'competitive landing pages,' 'how do we compare to X,' 'battle card,' or 'competitor teardown.' Use this for any content that positions you",
+      "sizeKB": 27,
+      "files": 4,
+      "hash": "f1483d4adf",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "\"X alternative\" / \"vs\" pages from profiles. Client SEO deliverable."
+    },
+    {
+      "name": "content-strategy",
+      "folder": "content-strategy",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\content-strategy",
+      "department": "marketing",
+      "description": "When the user wants to plan a content strategy, decide what content to create, or figure out what topics to cover. Also use when the user mentions \"content strategy,\" \"what should I write about,\" \"content ideas,\" \"blog strategy,\" \"topic clusters,\" \"content planning,\" \"editorial calendar,\" \"content marketing,\" \"content roadmap,\" \"what content should I create,\" \"blog topics,\" \"content pillars,\" or \"",
+      "sizeKB": 27,
+      "files": 3,
+      "hash": "53e284fa56",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Pillars + topic clusters for a client site/blog."
+    },
+    {
+      "name": "copy-editing",
+      "folder": "copy-editing",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\copy-editing",
+      "department": "marketing",
+      "description": "When the user wants to edit, review, or improve existing marketing copy, or refresh outdated content. Also use when the user mentions 'edit this copy,' 'review my copy,' 'copy feedback,' 'proofread,' 'polish this,' 'make this better,' 'copy sweep,' 'tighten this up,' 'this reads awkwardly,' 'clean up this text,' 'too wordy,' 'sharpen the messaging,' 'refresh this content,' 'update this page,' 'thi",
+      "sizeKB": 34,
+      "files": 5,
+      "hash": "6fcae7c3e4",
+      "verdict": "core",
+      "autonomy": "auto",
+      "use": "Seven-sweeps pass on any draft. Run automatically on every outbound text before approval."
+    },
+    {
+      "name": "copywriting",
+      "folder": "copywriting",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\copywriting",
+      "department": "marketing",
+      "description": "When the user wants to write, rewrite, or improve marketing copy for any page — including homepage, landing pages, pricing pages, feature pages, about pages, or product pages. Also use when the user says \"write copy for,\" \"improve this copy,\" \"rewrite this page,\" \"marketing copy,\" \"headline help,\" \"CTA copy,\" \"value proposition,\" \"tagline,\" \"subheadline,\" \"hero section copy,\" \"above the fold,\" \"th",
+      "sizeKB": 29,
+      "files": 4,
+      "hash": "900a2709b2",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Landing/hero/pricing copy in brand voice. Used by proposals, client sites, Tamim site."
+    },
+    {
+      "name": "cro",
+      "folder": "cro",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\cro",
+      "department": "marketing",
+      "description": "When the user wants to optimize, improve, or increase conversions on any marketing page or form — including homepage, landing pages, pricing pages, feature pages, lead capture forms, or contact forms. Also use when the user says 'CRO,' 'conversion rate optimization,' 'this page isn't converting,' 'improve conversions,' 'why isn't this page working,' 'my landing page sucks,' 'form abandonment,' 'no",
+      "sizeKB": 31,
+      "files": 4,
+      "hash": "7087c13058",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Page conversion audit from a URL. Runs as the first step on any client site."
+    },
+    {
+      "name": "customer-research",
+      "folder": "customer-research",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\customer-research",
+      "department": "intelligence",
+      "description": "When the user wants to conduct, analyze, or synthesize customer research. Use when the user mentions \"customer research,\" \"ICP research,\" \"talk to customers,\" \"analyze transcripts,\" \"customer interviews,\" \"survey analysis,\" \"support ticket analysis,\" \"voice of customer,\" \"VOC,\" \"build personas,\" \"customer personas,\" \"jobs to be done,\" \"JTBD,\" \"what do customers say,\" \"what are customers struggling",
+      "sizeKB": 38,
+      "files": 3,
+      "hash": "344940e25e",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Persona/VOC synthesis from transcripts, reviews, Reddit. Feeds performance-marketer step 3."
+    },
+    {
+      "name": "directory-submissions",
+      "folder": "directory-submissions",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\directory-submissions",
+      "department": "marketing",
+      "description": "When the user wants to submit their product to startup, SaaS, AI, agent, MCP, no-code, or review directories for backlinks, domain rating, and discovery. Also use when the user mentions \"directory submissions,\" \"submit to directories,\" \"backlinks from directories,\" \"list my product,\" \"submit to Product Hunt,\" \"BetaList,\" \"TAAFT,\" \"Futurepedia,\" \"G2 listing,\" \"Capterra listing,\" \"AlternativeTo,\" \"S",
+      "sizeKB": 85,
+      "files": 5,
+      "hash": "fa61ce842e",
+      "verdict": "keep",
+      "autonomy": "auto",
+      "use": "Backlink directory campaign with tracker CSV. Launch-time job."
+    },
+    {
+      "name": "emails",
+      "folder": "emails",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\emails",
+      "department": "marketing",
+      "description": "When the user wants to create or optimize an email sequence, drip campaign, automated email flow, or lifecycle email program. Also use when the user mentions \"email sequence,\" \"drip campaign,\" \"nurture sequence,\" \"onboarding emails,\" \"welcome sequence,\" \"re-engagement emails,\" \"email automation,\" \"lifecycle emails,\" \"trigger-based emails,\" \"email funnel,\" \"email workflow,\" \"what emails should I se",
+      "sizeKB": 35,
+      "files": 5,
+      "hash": "c38e94e3e0",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Lifecycle/drip sequences for clients (welcome, nurture, win-back)."
+    },
+    {
+      "name": "free-tools",
+      "folder": "free-tools",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\free-tools",
+      "department": "marketing",
+      "description": "When the user wants to plan, evaluate, or build a free tool for marketing purposes — lead generation, SEO value, or brand awareness. Also use when the user mentions \"engineering as marketing,\" \"free tool,\" \"marketing tool,\" \"calculator,\" \"generator,\" \"interactive tool,\" \"lead gen tool,\" \"build a tool for leads,\" \"free resource,\" \"ROI calculator,\" \"grader tool,\" \"audit tool,\" \"should I build a free",
+      "sizeKB": 16,
+      "files": 3,
+      "hash": "c5b790de99",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Engineering-as-marketing ideas (calculators, graders). Pairs with the build path (octa-code)."
+    },
+    {
+      "name": "growth-os",
+      "folder": "growth-os",
+      "source": "claude-code",
+      "sourcePath": "C:\\Users\\Admin\\.claude\\skills\\growth-os",
+      "department": "marketing",
+      "description": "End-to-end marketing operating system — strategy, production, AND publishing. Takes a full project brief, diagnoses the real bottleneck, then produces positioning, an offer, brand identity, a content system, hooks and scripts, copy, carousel specs, static ads, media buying plans, pricing, a concrete 30-day plan, a monetization path, and scale systems — then RENDERS the assets (Gemini images, Omni ",
+      "sizeKB": 242,
+      "files": 40,
+      "hash": "048abaa255",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Own Growth OS v3: strategy → production → publishing (Gemini images, Remotion reels, Meta publish). Has tamim profiles (30 posts, 10 videos, 60-day plan). This is the Tamim brand content engine."
+    },
+    {
+      "name": "image",
+      "folder": "image",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\image",
+      "department": "design",
+      "description": "When the user wants to create, generate, edit, or optimize images for marketing — blog heroes, social graphics, product mockups, profile banners, listing visuals, or brand assets. Also use when the user mentions 'AI image generation,' 'generate an image,' 'create a graphic,' 'product mockup,' 'hero image,' 'social media graphic,' 'banner image,' 'cover photo,' 'profile banner,' 'listing screenshot",
+      "sizeKB": 30,
+      "files": 3,
+      "hash": "2df136eb69",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Marketing image generation/optimization guide (model choice, prompts, WebP). Pairs with growth-os rendering."
+    },
+    {
+      "name": "launch",
+      "folder": "launch",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\launch",
+      "department": "marketing",
+      "description": "When the user wants to plan a product launch, feature announcement, or release strategy. Also use when the user mentions 'launch,' 'Product Hunt,' 'feature release,' 'announcement,' 'go-to-market,' 'beta launch,' 'early access,' 'waitlist,' 'product update,' 'how do I launch this,' 'launch checklist,' 'GTM plan,' or 'we're about to ship.' Use this whenever someone is preparing to release something",
+      "sizeKB": 19,
+      "files": 2,
+      "hash": "0307515f2d",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Launch plan (ORB channels, 5 phases) for client products and for Tamim OS itself."
+    },
+    {
+      "name": "marketing-ideas",
+      "folder": "marketing-ideas",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\marketing-ideas",
+      "department": "marketing",
+      "description": "When the user needs marketing ideas, inspiration, or strategies for their SaaS or software product. Also use when the user asks for 'marketing ideas,' 'growth ideas,' 'how to market,' 'marketing strategies,' 'marketing tactics,' 'ways to promote,' 'ideas to grow,' 'what else can I try,' 'I don't know how to market this,' 'brainstorm marketing,' or 'what marketing should I do.' Use this as a starti",
+      "sizeKB": 26,
+      "files": 3,
+      "hash": "d5c77ff9e8",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "139-idea library; used by marketing-plan cross-reference."
+    },
+    {
+      "name": "marketing-os-workflow",
+      "folder": "marketing-os-workflow",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\marketing-os-workflow",
+      "department": "marketing",
+      "description": "Use this as the master entry point when the user wants a complete marketing operating system for any project, brand, product, service, SaaS, ecommerce store, creator, agency, or local business. It sequences all Marketing OS skills from idea intake through research, branding, offer, pricing, funnel, content, organic acquisition, launch, Meta/TikTok paid readiness, creative production, lifecycle, re",
+      "sizeKB": 7,
+      "files": 1,
+      "hash": "08f9d71db4",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Master sequence for a full client marketing OS. This is the \"Marketing department head\": routes to every other marketing skill."
+    },
+    {
+      "name": "marketing-plan",
+      "folder": "marketing-plan",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\marketing-plan",
+      "department": "marketing",
+      "description": "When the user needs a comprehensive marketing plan for a client, a company they advise, or their own product. Also use when the user mentions \"marketing plan,\" \"growth plan,\" \"GTM plan,\" \"go-to-market plan,\" \"AARRR plan,\" \"90-day marketing plan,\" \"12-month marketing roadmap,\" \"fractional CMO plan,\" or \"fCMO plan.\" Generates an exhaustive 13-section plan structured by AARRR (Acquisition, Activation",
+      "sizeKB": 240,
+      "files": 15,
+      "hash": "5246fd1214",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "13-section AARRR plan per client. Output = the client deliverable, stored as a document."
+    },
+    {
+      "name": "marketing-psychology",
+      "folder": "marketing-psychology",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\marketing-psychology",
+      "department": "marketing",
+      "description": "When the user wants to apply psychological principles, mental models, or behavioral science to marketing. Also use when the user mentions 'psychology,' 'mental models,' 'cognitive bias,' 'persuasion,' 'behavioral science,' 'why people buy,' 'decision-making,' 'consumer behavior,' 'anchoring,' 'social proof,' 'scarcity,' 'loss aversion,' 'framing,' or 'nudge.' Use this whenever someone wants to und",
+      "sizeKB": 27,
+      "files": 2,
+      "hash": "dce4cc7269",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Mental models reference for copy and offers."
+    },
+    {
+      "name": "offers",
+      "folder": "offers",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\offers",
+      "department": "deals",
+      "description": "When the user wants to design, construct, or improve an offer — the thing they actually sell — including value framing, bonus stacking, guarantee design, scarcity/urgency, naming, and payment structure. Also use when the user mentions 'offer,' 'offer design,' 'build an offer,' 'grand slam offer,' 'irresistible offer,' 'value stack,' 'bonus stack,' 'guarantee,' 'risk reversal,' 'money-back guarante",
+      "sizeKB": 68,
+      "files": 8,
+      "hash": "01c79ed1a1",
+      "verdict": "core",
+      "autonomy": "led",
+      "use": "Offer design (value stack, guarantee, scarcity) before any proposal. Runs once per service, result stored in company brain."
+    },
+    {
+      "name": "paywalls",
+      "folder": "paywalls",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\paywalls",
+      "department": "marketing",
+      "description": "When the user wants to create or optimize in-app paywalls, upgrade screens, upsell modals, or feature gates. Also use when the user mentions \"paywall,\" \"upgrade screen,\" \"upgrade modal,\" \"upsell,\" \"feature gate,\" \"convert free to paid,\" \"freemium conversion,\" \"trial expiration screen,\" \"limit reached screen,\" \"plan upgrade prompt,\" \"in-app pricing,\" \"free users won't upgrade,\" \"trial to paid conve",
+      "sizeKB": 17,
+      "files": 3,
+      "hash": "48c5a5b962",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "In-app upgrade screens. Only for SaaS clients."
+    },
+    {
+      "name": "performance-marketer",
+      "folder": "performance-marketer",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\performance-marketer",
+      "department": "marketing",
+      "description": "نظام تشغيل كامل للـ Performance Marketing و Growth مبني على Business + Marketing + Digital Marketing + Data + Creative + Retention. استخدم السكيل دي في أي طلب ليه علاقة بالتسويق أو الإعلانات أو النمو، حتى لو الطلب بسيط أو تكتيكي في الظاهر — زي: اعملي إعلان، الـ CTR واطي، ابنيلي Buyer Persona أو ICP، اظبطلي العرض/الأوفر/البونصات/Upsell، اكتبلي كوبي أو لاندنج بيج، راجعلي/فكّكلي الكوبي دي (Copy Break",
+      "sizeKB": 2460,
+      "files": 53,
+      "hash": "394479dcc4",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Own Arabic diagnosis protocol A→Z (intake, persona, gap, offer, copy, funnel, ads, analytics). Default brain for any ads/growth request. 53 files incl. assists/ prompts and 2 book summaries."
+    },
+    {
+      "name": "personal-branding",
+      "folder": "personal-branding",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\personal-branding",
+      "department": "marketing",
+      "description": "Build and grow a personal brand for creators, freelancers, coaches, and service providers — mainly in the Egyptian/Arab market. Use this whenever someone wants help with: choosing a niche, writing or fixing a social bio, optimizing a profile, picking brand colors / visual identity, deciding what content to make, building content pillars or a content plan, monetizing content, generating ideas, writ",
+      "sizeKB": 70,
+      "files": 12,
+      "hash": "56b3f2ad11",
+      "verdict": "core",
+      "autonomy": "led",
+      "use": "Arabic personal-brand system (mindset, niche, pillars, viral script, monetization). Overlaps brand-building; keep both, brand-building is the newer structure."
+    },
+    {
+      "name": "popups",
+      "folder": "popups",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\popups",
+      "department": "marketing",
+      "description": "When the user wants to create or optimize popups, modals, overlays, slide-ins, or banners for conversion purposes. Also use when the user mentions \"exit intent,\" \"popup conversions,\" \"modal optimization,\" \"lead capture popup,\" \"email popup,\" \"announcement banner,\" \"overlay,\" \"collect emails with a popup,\" \"exit popup,\" \"scroll trigger,\" \"sticky bar,\" or \"notification bar.\" Use this for any overlay",
+      "sizeKB": 18,
+      "files": 2,
+      "hash": "f67f75472e",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Popup/overlay CRO for client sites."
+    },
+    {
+      "name": "pricing",
+      "folder": "pricing",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\pricing",
+      "department": "deals",
+      "description": "When the user wants help with pricing decisions, packaging, or monetization strategy. Also use when the user mentions 'pricing,' 'pricing tiers,' 'freemium,' 'free trial,' 'packaging,' 'price increase,' 'value metric,' 'Van Westendorp,' 'willingness to pay,' 'monetization,' 'how much should I charge,' 'my pricing is wrong,' 'pricing page,' 'annual vs monthly,' 'per seat pricing,' or 'should I offe",
+      "sizeKB": 25,
+      "files": 4,
+      "hash": "d55624c5ca",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Tiering and price-increase logic for Tamim services; pairs with offers."
+    },
+    {
+      "name": "product-marketing",
+      "folder": "product-marketing",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\product-marketing",
+      "department": "marketing",
+      "description": "When the user wants to create or update their product marketing context document. Also use when the user mentions 'product context,' 'marketing context,' 'set up context,' 'positioning,' 'who is my target audience,' 'describe my product,' 'ICP,' 'ideal customer profile,' or wants to avoid repeating foundational information across marketing tasks. Use this at the start of any new project before usi",
+      "sizeKB": 13,
+      "files": 2,
+      "hash": "5167ff362f",
+      "verdict": "core",
+      "autonomy": "led",
+      "use": "Creates the product/positioning context doc = the company-brain intake for a client. Run first for every new client."
+    },
+    {
+      "name": "programmatic-seo",
+      "folder": "programmatic-seo",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\programmatic-seo",
+      "department": "marketing",
+      "description": "When the user wants to create SEO-driven pages at scale using templates and data. Also use when the user mentions \"programmatic SEO,\" \"template pages,\" \"pages at scale,\" \"directory pages,\" \"location pages,\" \"[keyword] + [city] pages,\" \"comparison pages,\" \"integration pages,\" \"building many pages for SEO,\" \"pSEO,\" \"generate 100 pages,\" \"data-driven pages,\" or \"templated landing pages.\" Use this whe",
+      "sizeKB": 22,
+      "files": 3,
+      "hash": "65a9536c41",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Template pages at scale (city/keyword). Client SEO projects."
+    },
+    {
+      "name": "public-relations",
+      "folder": "public-relations",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\public-relations",
+      "department": "marketing",
+      "description": "When the user wants help with public relations, earned media, press coverage, journalist outreach, or media strategy (not pull requests). Also use when the user mentions 'PR,' 'public relations,' 'press,' 'press release,' 'press coverage,' 'media outreach,' 'pitch a journalist,' 'get featured,' 'media list,' 'media kit,' 'press kit,' 'newsjacking,' 'news hijack,' 'HARO,' 'Qwoted,' 'Featured,' 'Hel",
+      "sizeKB": 42,
+      "files": 5,
+      "hash": "79d6260d14",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Press page, journalist pitches, newsjacking. Occasional."
+    },
+    {
+      "name": "schema",
+      "folder": "schema",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\schema",
+      "department": "marketing",
+      "description": "When the user wants to add, fix, or optimize schema markup and structured data on their site. Also use when the user mentions \"schema markup,\" \"structured data,\" \"JSON-LD,\" \"rich snippets,\" \"schema.org,\" \"FAQ schema,\" \"product schema,\" \"review schema,\" \"breadcrumb schema,\" \"Google rich results,\" \"knowledge panel,\" \"star ratings in search,\" or \"add structured data.\" Use this whenever someone wants ",
+      "sizeKB": 19,
+      "files": 3,
+      "hash": "91e3ed05f7",
+      "verdict": "keep",
+      "autonomy": "auto",
+      "use": "JSON-LD generator for client pages."
+    },
+    {
+      "name": "seo-audit",
+      "folder": "seo-audit",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\seo-audit",
+      "department": "marketing",
+      "description": "When the user wants to audit, review, or diagnose SEO issues on their site. Also use when the user mentions \"SEO audit,\" \"technical SEO,\" \"why am I not ranking,\" \"SEO issues,\" \"on-page SEO,\" \"meta tags review,\" \"SEO health check,\" \"my traffic dropped,\" \"lost rankings,\" \"not showing up in Google,\" \"site isn't ranking,\" \"Google update hit me,\" \"page speed,\" \"core web vitals,\" \"crawl errors,\" or \"ind",
+      "sizeKB": 46,
+      "files": 4,
+      "hash": "0f483ff4ba",
+      "verdict": "core",
+      "autonomy": "auto",
+      "use": "Technical + on-page audit from a URL. Can run monthly per client site."
+    },
+    {
+      "name": "site-architecture",
+      "folder": "site-architecture",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\site-architecture",
+      "department": "marketing",
+      "description": "When the user wants to plan, map, or restructure their website's page hierarchy, navigation, URL structure, or internal linking. Also use when the user mentions \"sitemap,\" \"site map,\" \"visual sitemap,\" \"site structure,\" \"page hierarchy,\" \"information architecture,\" \"IA,\" \"navigation design,\" \"URL structure,\" \"breadcrumbs,\" \"internal linking strategy,\" \"website planning,\" \"what pages do I need,\" \"h",
+      "sizeKB": 44,
+      "files": 5,
+      "hash": "d9b84c1886",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Sitemap + navigation + URL plan for new client sites. First step of a web project."
+    },
+    {
+      "name": "sms",
+      "folder": "sms",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\sms",
+      "department": "marketing",
+      "description": "When the user wants to plan, build, or optimize SMS or MMS marketing — including welcome flows, abandoned cart texts, post-purchase, win-back, promotional sends, or transactional/auth SMS. Also use when the user mentions \"SMS marketing,\" \"text message campaigns,\" \"SMS sequence,\" \"SMS automation,\" \"abandoned cart text,\" \"post-purchase SMS,\" \"Klaviyo SMS,\" \"Postscript,\" \"Attentive,\" \"Twilio,\" \"A2P 1",
+      "sizeKB": 49,
+      "files": 5,
+      "hash": "1d3821e8da",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "SMS flows + compliance. Rare in Egypt market; keep for ecommerce clients."
+    },
+    {
+      "name": "social",
+      "folder": "social",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\social",
+      "department": "marketing",
+      "description": "When the user wants help creating, scheduling, or optimizing social media content for LinkedIn, Twitter/X, Instagram, TikTok, Facebook, or other platforms, or wants to do social listening and engagement triage. Also use when the user mentions 'LinkedIn post,' 'Twitter thread,' 'social media,' 'content calendar,' 'social scheduling,' 'engagement,' 'viral content,' 'what should I post,' 'repurpose t",
+      "sizeKB": 58,
+      "files": 9,
+      "hash": "01d277606f",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Posts, threads, reels scripts, repurposing, social listening. Feeds the social queue → PHP publisher."
+    },
+    {
+      "name": "video",
+      "folder": "video",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\video",
+      "department": "design",
+      "description": "When the user wants to create, generate, or produce video content using AI tools or programmatic frameworks. Also use when the user mentions 'video production,' 'AI video,' 'Remotion,' 'Hyperframes,' 'HeyGen,' 'Synthesia,' 'Veo,' 'Sora,' 'Runway,' 'Kling,' 'Seedance,' 'Hailuo,' 'MiniMax,' 'Pika,' 'Hunyuan,' 'Wan,' 'video generation,' 'AI avatar,' 'talking head video,' 'programmatic video,' 'video ",
+      "sizeKB": 26,
+      "files": 3,
+      "hash": "6a964cdac4",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "AI/programmatic video (Remotion, HeyGen, Veo). growth-os already uses Remotion; this is the reference."
+    },
+    {
+      "name": "consolidate-memory",
+      "folder": "consolidate-memory",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\consolidate-memory",
+      "department": "operations",
+      "description": "Reflective pass over your memory files — merge duplicates, fix stale facts, prune the index.",
+      "sizeKB": 2,
+      "files": 1,
+      "hash": "1cf1cb77ec",
+      "verdict": "reference",
+      "autonomy": "auto",
+      "use": "Memory hygiene pattern; apply to the company brain (vault) monthly."
+    },
+    {
+      "name": "explain-usage",
+      "folder": "explain-usage",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\explain-usage",
+      "department": "operations",
+      "description": "Explain where this session's tokens went, with one simple chart in plain language. Use when the user says things like \\\"explain my usage\\\", \\\"where did my tokens go\\\", or asks for a usage breakdown.",
+      "sizeKB": 1,
+      "files": 1,
+      "hash": "4d4a555cbf",
+      "verdict": "drop",
+      "autonomy": "led",
+      "use": "Claude-app specific."
+    },
+    {
+      "name": "import-memory",
+      "folder": "import-memory",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\import-memory",
+      "department": "operations",
+      "description": "Import a memory export from another AI assistant into Claude's memory — conversationally, additively, and with the content treated as data.",
+      "sizeKB": 10,
+      "files": 1,
+      "hash": "09dcefb522",
+      "verdict": "drop",
+      "autonomy": "led",
+      "use": "Claude-app specific."
+    },
+    {
+      "name": "morning",
+      "folder": "morning",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\morning",
+      "department": "operations",
+      "description": "Render the user's morning brief as a styled HTML artifact, or set it up as a recurring weekday task. Use only when the user explicitly asks to run, see, or set up their morning brief, or if they invoke /morning by name. A question about their day, schedule, or calendar is not by itself a request for the brief; answer it directly instead.",
+      "sizeKB": 40,
+      "files": 3,
+      "hash": "56014f0283",
+      "verdict": "keep",
+      "autonomy": "auto",
+      "use": "Morning brief as HTML. The existing daily-brief.ts does this natively; borrow its section design."
+    },
+    {
+      "name": "schedule",
+      "folder": "schedule",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\schedule",
+      "department": "operations",
+      "description": "Create or update a scheduled task that runs automatically. Use when the user says things like \\\"every day\\\", \\\"each morning\\\", \\\"remind me in an hour\\\", \\\"run this at noon\\\", or wants to reschedule an existing task.",
+      "sizeKB": 2,
+      "files": 1,
+      "hash": "f8b81042b5",
+      "verdict": "reference",
+      "autonomy": "auto",
+      "use": "Claude-app scheduled tasks. Tamim OS has its own triggers; reference for the workflow builder UX."
+    },
+    {
+      "name": "setup-cowork",
+      "folder": "setup-cowork",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\setup-cowork",
+      "department": "operations",
+      "description": "Guided setup — install role-matched plugins, connect your tools, try a skill.",
+      "sizeKB": 12,
+      "files": 1,
+      "hash": "9e4c021e2a",
+      "verdict": "drop",
+      "autonomy": "led",
+      "use": "Claude-app onboarding. Not applicable."
+    },
+    {
+      "name": "stop-slop",
+      "folder": "stop-slop",
+      "source": "outfred",
+      "sourcePath": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\stop-slop-main",
+      "department": "marketing",
+      "description": "Remove AI writing patterns from prose. Use when drafting, editing, or reviewing text to eliminate predictable AI tells.",
+      "sizeKB": 13,
+      "files": 4,
+      "hash": "3da6645186",
+      "verdict": "core",
+      "autonomy": "auto",
+      "use": "Strip AI tells from prose. Chain after copy-editing on every generated text (Arabic needs its own phrase list)."
+    },
+    {
+      "name": "cold-email",
+      "folder": "cold-email",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\cold-email",
+      "department": "sales",
+      "description": "Write B2B cold emails and follow-up sequences that get replies. Use when the user wants to write cold outreach emails, prospecting emails, cold email campaigns, sales development emails, or SDR emails. Also use when the user mentions \"cold outreach,\" \"prospecting email,\" \"outbound email,\" \"email to leads,\" \"reach out to prospects,\" \"sales email,\" \"follow-up email sequence,\" \"nobody's replying to m",
+      "sizeKB": 36,
+      "files": 7,
+      "hash": "aa7d37c051",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Drafts first-touch + follow-up sequence per prospect; queued in Inbox for approval before send."
+    },
+    {
+      "name": "lead-magnets",
+      "folder": "lead-magnets",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\lead-magnets",
+      "department": "sales",
+      "description": "When the user wants to create, plan, or optimize a lead magnet for email capture or lead generation. Also use when the user mentions \"lead magnet,\" \"gated content,\" \"content upgrade,\" \"downloadable,\" \"ebook,\" \"cheat sheet,\" \"checklist,\" \"template download,\" \"opt-in,\" \"freebie,\" \"PDF download,\" \"resource library,\" \"content offer,\" \"email capture content,\" \"Notion template,\" \"spreadsheet template,\" ",
+      "sizeKB": 28,
+      "files": 4,
+      "hash": "33e60913fd",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Plan gated PDFs/templates; PDF module renders them."
+    },
+    {
+      "name": "onboarding",
+      "folder": "onboarding",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\onboarding",
+      "department": "operations",
+      "description": "When the user wants to optimize post-signup onboarding, user activation, first-run experience, or time-to-value. Also use when the user mentions \"onboarding flow,\" \"activation rate,\" \"user activation,\" \"first-run experience,\" \"empty states,\" \"onboarding checklist,\" \"aha moment,\" \"new user experience,\" \"users aren't activating,\" \"nobody completes setup,\" \"low activation rate,\" \"users sign up but do",
+      "sizeKB": 20,
+      "files": 3,
+      "hash": "87202af776",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Client onboarding checklist generator after a deal closes → tasks created automatically."
+    },
+    {
+      "name": "prospecting",
+      "folder": "prospecting",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\prospecting",
+      "department": "sales",
+      "description": "When the user wants to find, qualify, and build a list of prospects to reach out to — across B2B SaaS, general B2B, or local small businesses. Also use when the user mentions \"prospecting,\" \"build a prospect list,\" \"find prospects,\" \"find leads,\" \"lead gen list,\" \"find SaaS companies that,\" \"find B2B companies,\" \"find local businesses,\" \"ICP-fit accounts,\" \"who should we go after,\" \"outbound list,",
+      "sizeKB": 60,
+      "files": 7,
+      "hash": "acdd68fd32",
+      "verdict": "core",
+      "autonomy": "auto",
+      "use": "Weekly lead-list job: ICP from company brain → candidate list → scored CSV into Clients page as \"prospects\". Feeds cold-email."
+    },
+    {
+      "name": "referrals",
+      "folder": "referrals",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\referrals",
+      "department": "sales",
+      "description": "When the user wants to create, optimize, or analyze a referral program, affiliate program, or word-of-mouth strategy. Also use when the user mentions 'referral,' 'affiliate,' 'ambassador,' 'word of mouth,' 'viral loop,' 'refer a friend,' 'partner program,' 'referral incentive,' 'how to get referrals,' 'customers referring customers,' or 'affiliate payout.' Use this whenever someone wants existing ",
+      "sizeKB": 21,
+      "files": 4,
+      "hash": "9257ff429a",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Referral program design for Tamim and for clients."
+    },
+    {
+      "name": "revops",
+      "folder": "revops",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\revops",
+      "department": "deals",
+      "description": "When the user wants help with revenue operations, lead lifecycle management, or marketing-to-sales handoff processes. Also use when the user mentions 'RevOps,' 'revenue operations,' 'lead scoring,' 'lead routing,' 'MQL,' 'SQL,' 'pipeline stages,' 'deal desk,' 'CRM automation,' 'marketing-to-sales handoff,' 'data hygiene,' 'leads aren't getting to sales,' 'pipeline management,' 'lead qualification,",
+      "sizeKB": 52,
+      "files": 6,
+      "hash": "b6fc5bec10",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "Lead lifecycle stages + scoring model for the Clients page pipeline. Use once to design the stages."
+    },
+    {
+      "name": "sales-enablement",
+      "folder": "sales-enablement",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\sales-enablement",
+      "department": "deals",
+      "description": "When the user wants to create sales collateral, pitch decks, one-pagers, objection handling docs, or demo scripts. Also use when the user mentions 'sales deck,' 'pitch deck,' 'one-pager,' 'leave-behind,' 'objection handling,' 'deal-specific ROI analysis,' 'demo script,' 'talk track,' 'sales playbook,' 'proposal template,' 'buyer persona card,' 'help my sales team,' 'sales materials,' or 'what shou",
+      "sizeKB": 58,
+      "files": 6,
+      "hash": "94db12375d",
+      "verdict": "keep",
+      "autonomy": "assisted",
+      "use": "One-pagers, objection docs, demo scripts per service. Output goes to DocumentEditor."
+    },
+    {
+      "name": "sales-operator",
+      "folder": "sales-operator",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\sales-operator",
+      "department": "sales",
+      "description": "Use this skill for general, industry-agnostic sales operation work: diagnosing a sales situation, qualifying or disqualifying leads, planning discovery, handling objections, preparing negotiation, closing next steps, follow-up planning, CRM notes, pipeline hygiene, sales reporting, and ethical sales guidance. Do not use it for industry-specific advice unless the user provides the industry context ",
+      "sizeKB": 13,
+      "files": 6,
+      "hash": "6db0ee05bb",
+      "verdict": "core",
+      "autonomy": "assisted",
+      "use": "Operative sales coach: classify stage/channel/signal, ethics check, smallest useful output (next question, CRM note, follow-up). Runs after every client call note."
+    },
+    {
+      "name": "sales-operator-controlled",
+      "folder": "sales-operator-controlled",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\sales-operator",
+      "department": "sales",
+      "description": "Internal controlled Sales Operator reasoning skill for ethical buyer diagnosis, stall diagnosis, and governance-gated sales strategy. Also includes a reference template for building real estate project briefing audio scripts (developer history, location, amenities, pricing, delivery, payment plan, finishing).",
+      "sizeKB": 300,
+      "files": 16,
+      "hash": "b69da07e5e",
+      "verdict": "reference",
+      "autonomy": "led",
+      "use": "Governance-gated controlled draft (ethics screen, buyer-state map, stall diagnosis) + 14 book summaries (SPIN, Challenger, Gap Selling, Getting to Yes, Influence, JOLT) + real-estate briefing template. Research library behind sales-operator; not a job."
+    },
+    {
+      "name": "signup",
+      "folder": "signup",
+      "source": "marketing-os",
+      "sourcePath": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\signup",
+      "department": "sales",
+      "description": "When the user wants to optimize signup, registration, account creation, or trial activation flows. Also use when the user mentions \"signup conversions,\" \"registration friction,\" \"signup form optimization,\" \"free trial signup,\" \"reduce signup dropoff,\" \"account creation flow,\" \"people aren't signing up,\" \"signup abandonment,\" \"trial conversion rate,\" \"nobody completes registration,\" \"too many steps",
+      "sizeKB": 16,
+      "files": 2,
+      "hash": "d47464973a",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Client-site signup flow audits (for web clients)."
+    },
+    {
+      "name": "concept-fan",
+      "folder": "concept-fan",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\concept-fan",
+      "department": "thinking",
+      "description": "Edward de Bono's Concept Fan — climb from the current solution to the concept it serves by asking \\\"what is this a way of doing?\\\", then fan out alternative concepts and concrete implementations for each. Use when the current solution might be answering the wrong question, when all options look like variations of one idea, or to widen a decision before committing. Triggers include \\\"concept fan\\\",",
+      "sizeKB": 13,
+      "files": 1,
+      "hash": "11c28eee25",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Widen a decision."
+    },
+    {
+      "name": "fact-checker",
+      "folder": "fact-checker",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\fact-checker",
+      "department": "intelligence",
+      "description": "Systematic fact verification and misinformation identification using evidence-based analysis. Use when: verifying claims, checking facts, identifying misinformation, evaluating source credibility, or when user asks to \\\"fact check\\\", \\\"verify\\\", \\\"is this true\\\", or mentions claims that need validation.",
+      "sizeKB": 6,
+      "files": 1,
+      "hash": "619536f40c",
+      "verdict": "keep",
+      "autonomy": "auto",
+      "use": "Verify claims in proposals/content before publishing. Chain into the approval gate."
+    },
+    {
+      "name": "inversion",
+      "folder": "inversion",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\inversion",
+      "department": "thinking",
+      "description": "Assumption Inversion — list the assumptions behind the current approach and flip each one, then ask where the flipped version could actually be true. Use when requirements encode beliefs nobody has questioned, when a design feels inevitable, or when incumbents all share one blind spot. Triggers include \\\"invert\\\", \\\"flip it\\\", \\\"flip the assumption\\\", \\\"reverse the premise\\\", \\\"what if the opposit",
+      "sizeKB": 15,
+      "files": 1,
+      "hash": "3e105af57b",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Flip assumptions."
+    },
+    {
+      "name": "lateral",
+      "folder": "lateral",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\lateral",
+      "department": "thinking",
+      "description": "Lateral thinking toolkit router — when you're stuck, going in circles, need fresh ideas, or standard brainstorming keeps producing predictable results, this diagnoses the symptom and applies the right technique from the toolkit (random-stimulus, provocation, inversion, concept-fan, analogy, scamper, six-hats, worst-idea). Triggers include \\\"lateral thinking\\\", \\\"I'm stuck on a creative problem\\\", ",
+      "sizeKB": 5,
+      "files": 1,
+      "hash": "09b78c7d12",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Router to the other de Bono tools. Use in strategy sessions."
+    },
+    {
+      "name": "provocation",
+      "folder": "provocation",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\provocation",
+      "department": "thinking",
+      "description": "Edward de Bono's Provocation (Po) technique — state something deliberately wrong or absurd about the problem, then extract useful \\\"movement\\\" from it instead of judging it. Use when a constraint feels unbreakable, when every design converges on the same shape, or to escape \\\"the way it's always done\\\". Triggers include \\\"provocation\\\", \\\"po\\\", \\\"absurd statement\\\", \\\"deliberately break the rule\\\"",
+      "sizeKB": 22,
+      "files": 1,
+      "hash": "65582edfcb",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Po technique."
+    },
+    {
+      "name": "random-stimulus",
+      "folder": "random-stimulus",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\random-stimulus",
+      "department": "thinking",
+      "description": "Edward de Bono's Random Stimulus technique — force-fit a random unrelated object, place, or phenomenon onto a creative target to break familiar association patterns. Use for product ideation, feature naming, brand direction, copywriting, architecture and design choices when ideas from outside the problem space would help. Triggers include \\\"random stimulus\\\", \\\"random word\\\", \\\"force-fit\\\", \\\"de B",
+      "sizeKB": 29,
+      "files": 1,
+      "hash": "429d7ec2e3",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Force-fit ideation; good for hooks and campaign angles."
+    },
+    {
+      "name": "scamper",
+      "folder": "scamper",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\scamper",
+      "department": "thinking",
+      "description": "SCAMPER (Bob Eberle) — run one existing idea, product, or process through seven systematic transformations - Substitute, Combine, Adapt, Modify/Magnify, Put to other use, Eliminate, Reverse/Rearrange. Use when there is already one working idea and the need is disciplined variations of it, e.g. \\\"give me variations\\\", \\\"riff on this\\\", \\\"scamper\\\", \\\"what can we substitute or combine\\\", \\\"remix thi",
+      "sizeKB": 22,
+      "files": 1,
+      "hash": "6427344403",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Variations of an existing idea (offers, posts)."
+    },
+    {
+      "name": "six-hats",
+      "folder": "six-hats",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\six-hats",
+      "department": "thinking",
+      "description": "Parallel thinking with six enforced perspectives, based on Edward de Bono's Six Thinking Hats® method - examine one decision through sequential passes for facts, feelings, risks, benefits, alternatives, and synthesis, never blending them. Use when a decision is being made too fast or from one angle, when everyone agrees suspiciously quickly, when the discussion mixes emotions with data, or for \\\"s",
+      "sizeKB": 19,
+      "files": 1,
+      "hash": "6c42158332",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Structured decision review."
+    },
+    {
+      "name": "worst-idea",
+      "folder": "worst-idea",
+      "source": "claude-app",
+      "sourcePath": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\worst-idea",
+      "department": "thinking",
+      "description": "Worst Possible Idea (reverse brainstorming) — deliberately design the most terrible solutions to the problem, name the mechanism that makes each one bad, then invert those mechanisms into strong features. Use when ideas all feel timid and safe, when the team is optimizing instead of imagining, or for \\\"worst idea\\\", \\\"reverse brainstorming\\\", \\\"what would make this worse\\\", \\\"design the disaster\\\"",
+      "sizeKB": 18,
+      "files": 1,
+      "hash": "14eec3bc00",
+      "verdict": "keep",
+      "autonomy": "led",
+      "use": "Reverse brainstorming."
+    }
+  ],
+  "agents": [
+    {
+      "name": "bid-scout",
+      "runtime": "claude-code",
+      "file": "agents/claude/bid-scout.md",
+      "description": "Use when freelance listings or inbound requests need qualification, ranking, and a go/no-go recommendation.",
+      "department": "sales"
+    },
+    {
+      "name": "client-researcher",
+      "runtime": "claude-code",
+      "file": "agents/claude/client-researcher.md",
+      "description": "Use before outreach or proposal writing when a client, company, product, and likely business needs must be researched.",
+      "department": "sales"
+    },
+    {
+      "name": "code-reviewer",
+      "runtime": "claude-code",
+      "file": "agents/claude/code-reviewer.md",
+      "description": "Use after a meaningful code change to find correctness, security, data-loss, and runtime integration problems before release.",
+      "department": "engineering"
+    },
+    {
+      "name": "content-strategist",
+      "runtime": "claude-code",
+      "file": "agents/claude/content-strategist.md",
+      "description": "Use when turning a business goal, product insight, or source material into a practical social content plan.",
+      "department": "marketing"
+    },
+    {
+      "name": "proposal-writer",
+      "runtime": "claude-code",
+      "file": "agents/claude/proposal-writer.md",
+      "description": "Use when a freelance brief needs a truthful, client-specific proposal or an existing proposal needs tightening.",
+      "department": "sales"
+    },
+    {
+      "name": "vault-librarian",
+      "runtime": "claude-code",
+      "file": "agents/claude/vault-librarian.md",
+      "description": "Use when Obsidian notes need safe classification, naming, linking, deduplication, or vault-structure cleanup.",
+      "department": "personal-os"
+    },
+    {
+      "name": "Anthropologist",
+      "runtime": "codex",
+      "file": "agents/codex/academic-anthropologist.toml",
+      "description": "Expert in cultural systems, rituals, kinship, belief systems, and ethnographic method — builds culturally coherent societies that feel lived-in rather than invented",
+      "department": "academic"
+    },
+    {
+      "name": "Geographer",
+      "runtime": "codex",
+      "file": "agents/codex/academic-geographer.toml",
+      "description": "Expert in physical and human geography, climate systems, cartography, and spatial analysis — builds geographically coherent worlds where terrain, climate, resources, and settlement patterns make scientific sense",
+      "department": "academic"
+    },
+    {
+      "name": "Historian",
+      "runtime": "codex",
+      "file": "agents/codex/academic-historian.toml",
+      "description": "Expert in historical analysis, periodization, material culture, and historiography — validates historical coherence and enriches settings with authentic period detail grounded in primary and secondary sources",
+      "department": "academic"
+    },
+    {
+      "name": "Narratologist",
+      "runtime": "codex",
+      "file": "agents/codex/academic-narratologist.toml",
+      "description": "Expert in narrative theory, story structure, character arcs, and literary analysis — grounds advice in established frameworks from Propp to Campbell to modern narratology",
+      "department": "academic"
+    },
+    {
+      "name": "Psychologist",
+      "runtime": "codex",
+      "file": "agents/codex/academic-psychologist.toml",
+      "description": "Expert in human behavior, personality theory, motivation, and cognitive patterns — builds psychologically credible characters and interactions grounded in clinical and research frameworks",
+      "department": "academic"
+    },
+    {
+      "name": "Accounts Payable Agent",
+      "runtime": "codex",
+      "file": "agents/codex/accounts-payable-agent.toml",
+      "description": "Autonomous payment processing specialist that executes vendor payments, contractor invoices, and recurring bills across any payment rail — crypto, fiat, stablecoins. Integrates with AI agent workflows via tool calls.",
+      "department": "accounts"
+    },
+    {
+      "name": "Agentic Identity & Trust Architect",
+      "runtime": "codex",
+      "file": "agents/codex/agentic-identity-trust.toml",
+      "description": "Designs identity, authentication, and trust verification systems for autonomous AI agents operating in multi-agent environments. Ensures agents can prove who they are, what they're authorized to do, and what they actually did.",
+      "department": "agentic"
+    },
+    {
+      "name": "Agents Orchestrator",
+      "runtime": "codex",
+      "file": "agents/codex/agents-orchestrator.toml",
+      "description": "Autonomous pipeline manager that orchestrates the entire development workflow. You are the leader of this process.",
+      "department": "agents"
+    },
+    {
+      "name": "Automation Governance Architect",
+      "runtime": "codex",
+      "file": "agents/codex/automation-governance-architect.toml",
+      "description": "Governance-first architect for business automations (n8n-first) who audits value, risk, and maintainability before implementation.",
+      "department": "automation"
+    },
+    {
+      "name": "Backend Architect",
+      "runtime": "codex",
+      "file": "agents/codex/backend-architect-with-memory.toml",
+      "description": "Senior backend architect specializing in scalable system design, database architecture, API development, and cloud infrastructure. Builds robust, secure, performant server-side applications and microservices",
+      "department": "backend"
+    },
+    {
+      "name": "Blender Add-on Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/blender-addon-engineer.toml",
+      "description": "Blender tooling specialist - Builds Python add-ons, asset validators, exporters, and pipeline automations that turn repetitive DCC work into reliable one-click workflows",
+      "department": "blender"
+    },
+    {
+      "name": "Blockchain Security Auditor",
+      "runtime": "codex",
+      "file": "agents/codex/blockchain-security-auditor.toml",
+      "description": "Expert smart contract security auditor specializing in vulnerability detection, formal verification, exploit analysis, and comprehensive audit report writing for DeFi protocols and blockchain applications.",
+      "department": "blockchain"
+    },
+    {
+      "name": "Compliance Auditor",
+      "runtime": "codex",
+      "file": "agents/codex/compliance-auditor.toml",
+      "description": "Expert technical compliance auditor specializing in SOC 2, ISO 27001, HIPAA, and PCI-DSS audits — from readiness assessment through evidence collection to certification.",
+      "department": "compliance"
+    },
+    {
+      "name": "Corporate Training Designer",
+      "runtime": "codex",
+      "file": "agents/codex/corporate-training-designer.toml",
+      "description": "Expert in enterprise training system design and curriculum development — proficient in training needs analysis, instructional design methodology, blended learning program design, internal trainer development, leadership programs, and training effectiveness evaluation and continuous optimization.",
+      "department": "corporate"
+    },
+    {
+      "name": "Customer Service",
+      "runtime": "codex",
+      "file": "agents/codex/customer-service.toml",
+      "description": "Friendly, professional customer service specialist for any industry — handling inquiries, complaints, account support, FAQs, and seamless escalation with warmth, efficiency, and a genuine commitment to customer satisfaction",
+      "department": "customer"
+    },
+    {
+      "name": "Data Consolidation Agent",
+      "runtime": "codex",
+      "file": "agents/codex/data-consolidation-agent.toml",
+      "description": "AI agent that consolidates extracted sales data into live reporting dashboards with territory, rep, and pipeline summaries",
+      "department": "data"
+    },
+    {
+      "name": "Brand Guardian",
+      "runtime": "codex",
+      "file": "agents/codex/design-brand-guardian.toml",
+      "description": "Expert brand strategist and guardian specializing in brand identity development, consistency maintenance, and strategic brand positioning",
+      "department": "design"
+    },
+    {
+      "name": "Image Prompt Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/design-image-prompt-engineer.toml",
+      "description": "Expert photography prompt engineer specializing in crafting detailed, evocative prompts for AI image generation. Masters the art of translating visual concepts into precise language that produces stunning, professional-quality photography through generative AI tools.",
+      "department": "design"
+    },
+    {
+      "name": "Inclusive Visuals Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/design-inclusive-visuals-specialist.toml",
+      "description": "Representation expert who defeats systemic AI biases to generate culturally accurate, affirming, and non-stereotypical images and video.",
+      "department": "design"
+    },
+    {
+      "name": "UI Designer",
+      "runtime": "codex",
+      "file": "agents/codex/design-ui-designer.toml",
+      "description": "Expert UI designer specializing in visual design systems, component libraries, and pixel-perfect interface creation. Creates beautiful, consistent, accessible user interfaces that enhance UX and reflect brand identity",
+      "department": "design"
+    },
+    {
+      "name": "UX Architect",
+      "runtime": "codex",
+      "file": "agents/codex/design-ux-architect.toml",
+      "description": "Technical architecture and UX specialist who provides developers with solid foundations, CSS systems, and clear implementation guidance",
+      "department": "design"
+    },
+    {
+      "name": "UX Researcher",
+      "runtime": "codex",
+      "file": "agents/codex/design-ux-researcher.toml",
+      "description": "Expert user experience researcher specializing in user behavior analysis, usability testing, and data-driven design insights. Provides actionable research findings that improve product usability and user satisfaction",
+      "department": "design"
+    },
+    {
+      "name": "Visual Storyteller",
+      "runtime": "codex",
+      "file": "agents/codex/design-visual-storyteller.toml",
+      "description": "Expert visual communication specialist focused on creating compelling visual narratives, multimedia content, and brand storytelling through design. Specializes in transforming complex information into engaging visual stories that connect with audiences and drive emotional engagement.",
+      "department": "design"
+    },
+    {
+      "name": "Whimsy Injector",
+      "runtime": "codex",
+      "file": "agents/codex/design-whimsy-injector.toml",
+      "description": "Expert creative specialist focused on adding personality, delight, and playful elements to brand experiences. Creates memorable, joyful interactions that differentiate brands through unexpected moments of whimsy",
+      "department": "design"
+    },
+    {
+      "name": "AI Data Remediation Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-ai-data-remediation-engineer.toml",
+      "description": "Specialist in self-healing data pipelines — uses air-gapped local SLMs and semantic clustering to automatically detect, classify, and fix data anomalies at scale. Focuses exclusively on the remediation layer: intercepting bad data, generating deterministic fix logic via Ollama, and guaranteeing zero",
+      "department": "engineering"
+    },
+    {
+      "name": "AI Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-ai-engineer.toml",
+      "description": "Expert AI/ML engineer specializing in machine learning model development, deployment, and integration into production systems. Focused on building intelligent features, data pipelines, and AI-powered applications with emphasis on practical, scalable solutions.",
+      "department": "engineering"
+    },
+    {
+      "name": "Autonomous Optimization Architect",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-autonomous-optimization-architect.toml",
+      "description": "Intelligent system governor that continuously shadow-tests APIs for performance while enforcing strict financial and security guardrails against runaway costs.",
+      "department": "engineering"
+    },
+    {
+      "name": "Backend Architect",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-backend-architect.toml",
+      "description": "Senior backend architect specializing in scalable system design, database architecture, API development, and cloud infrastructure. Builds robust, secure, performant server-side applications and microservices",
+      "department": "engineering"
+    },
+    {
+      "name": "CMS Developer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-cms-developer.toml",
+      "description": "Drupal and WordPress specialist for theme development, custom plugins/modules, content architecture, and code-first CMS implementation",
+      "department": "engineering"
+    },
+    {
+      "name": "Code Reviewer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-code-reviewer.toml",
+      "description": "Expert code reviewer who provides constructive, actionable feedback focused on correctness, maintainability, security, and performance — not style preferences.",
+      "department": "engineering"
+    },
+    {
+      "name": "Codebase Onboarding Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-codebase-onboarding-engineer.toml",
+      "description": "Expert developer onboarding specialist who helps new engineers understand unfamiliar codebases fast by reading source code, tracing code paths, and stating only facts grounded in the code.",
+      "department": "engineering"
+    },
+    {
+      "name": "Data Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-data-engineer.toml",
+      "description": "Expert data engineer specializing in building reliable data pipelines, lakehouse architectures, and scalable data infrastructure. Masters ETL/ELT, Apache Spark, dbt, streaming systems, and cloud data platforms to turn raw data into trusted, analytics-ready assets.",
+      "department": "engineering"
+    },
+    {
+      "name": "Database Optimizer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-database-optimizer.toml",
+      "description": "Expert database specialist focusing on schema design, query optimization, indexing strategies, and performance tuning for PostgreSQL, MySQL, and modern databases like Supabase and PlanetScale.",
+      "department": "engineering"
+    },
+    {
+      "name": "DevOps Automator",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-devops-automator.toml",
+      "description": "Expert DevOps engineer specializing in infrastructure automation, CI/CD pipeline development, and cloud operations",
+      "department": "engineering"
+    },
+    {
+      "name": "Email Intelligence Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-email-intelligence-engineer.toml",
+      "description": "Expert in extracting structured, reasoning-ready data from raw email threads for AI agents and automation systems",
+      "department": "engineering"
+    },
+    {
+      "name": "Embedded Firmware Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-embedded-firmware-engineer.toml",
+      "description": "Specialist in bare-metal and RTOS firmware - ESP32/ESP-IDF, PlatformIO, Arduino, ARM Cortex-M, STM32 HAL/LL, Nordic nRF5/nRF Connect SDK, FreeRTOS, Zephyr",
+      "department": "engineering"
+    },
+    {
+      "name": "Feishu Integration Developer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-feishu-integration-developer.toml",
+      "description": "Full-stack integration expert specializing in the Feishu (Lark) Open Platform — proficient in Feishu bots, mini programs, approval workflows, Bitable (multidimensional spreadsheets), interactive message cards, Webhooks, SSO authentication, and workflow automation, building enterprise-grade collabora",
+      "department": "engineering"
+    },
+    {
+      "name": "Filament Optimization Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-filament-optimization-specialist.toml",
+      "description": "Expert in restructuring and optimizing Filament PHP admin interfaces for maximum usability and efficiency. Focuses on impactful structural changes — not just cosmetic tweaks.",
+      "department": "engineering"
+    },
+    {
+      "name": "Frontend Developer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-frontend-developer.toml",
+      "description": "Expert frontend developer specializing in modern web technologies, React/Vue/Angular frameworks, UI implementation, and performance optimization",
+      "department": "engineering"
+    },
+    {
+      "name": "Git Workflow Master",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-git-workflow-master.toml",
+      "description": "Expert in Git workflows, branching strategies, and version control best practices including conventional commits, rebasing, worktrees, and CI-friendly branch management.",
+      "department": "engineering"
+    },
+    {
+      "name": "Incident Response Commander",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-incident-response-commander.toml",
+      "description": "Expert incident commander specializing in production incident management, structured response coordination, post-mortem facilitation, SLO/SLI tracking, and on-call process design for reliable engineering organizations.",
+      "department": "engineering"
+    },
+    {
+      "name": "Minimal Change Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-minimal-change-engineer.toml",
+      "description": "Engineering specialist focused on minimum-viable diffs — fixes only what was asked, refuses scope creep, prefers three similar lines over a premature abstraction. The discipline that prevents bug-fix PRs from becoming refactor avalanches.",
+      "department": "engineering"
+    },
+    {
+      "name": "Mobile App Builder",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-mobile-app-builder.toml",
+      "description": "Specialized mobile application developer with expertise in native iOS/Android development and cross-platform frameworks",
+      "department": "engineering"
+    },
+    {
+      "name": "Rapid Prototyper",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-rapid-prototyper.toml",
+      "description": "Specialized in ultra-fast proof-of-concept development and MVP creation using efficient tools and frameworks",
+      "department": "engineering"
+    },
+    {
+      "name": "Security Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-security-engineer.toml",
+      "description": "Expert application security engineer specializing in threat modeling, vulnerability assessment, secure code review, security architecture design, and incident response for modern web, API, and cloud-native applications.",
+      "department": "engineering"
+    },
+    {
+      "name": "Senior Developer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-senior-developer.toml",
+      "description": "Premium implementation specialist - Masters Laravel/Livewire/FluxUI, advanced CSS, Three.js integration",
+      "department": "engineering"
+    },
+    {
+      "name": "Software Architect",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-software-architect.toml",
+      "description": "Expert software architect specializing in system design, domain-driven design, architectural patterns, and technical decision-making for scalable, maintainable systems.",
+      "department": "engineering"
+    },
+    {
+      "name": "Solidity Smart Contract Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-solidity-smart-contract-engineer.toml",
+      "description": "Expert Solidity developer specializing in EVM smart contract architecture, gas optimization, upgradeable proxy patterns, DeFi protocol development, and security-first contract design across Ethereum and L2 chains.",
+      "department": "engineering"
+    },
+    {
+      "name": "SRE (Site Reliability Engineer)",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-sre.toml",
+      "description": "Expert site reliability engineer specializing in SLOs, error budgets, observability, chaos engineering, and toil reduction for production systems at scale.",
+      "department": "engineering"
+    },
+    {
+      "name": "Technical Writer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-technical-writer.toml",
+      "description": "Expert technical writer specializing in developer documentation, API references, README files, and tutorials. Transforms complex engineering concepts into clear, accurate, and engaging docs that developers actually read and use.",
+      "department": "engineering"
+    },
+    {
+      "name": "Threat Detection Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-threat-detection-engineer.toml",
+      "description": "Expert detection engineer specializing in SIEM rule development, MITRE ATT&CK coverage mapping, threat hunting, alert tuning, and detection-as-code pipelines for security operations teams.",
+      "department": "engineering"
+    },
+    {
+      "name": "Voice AI Integration Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-voice-ai-integration-engineer.toml",
+      "description": "Expert in building end-to-end speech transcription pipelines using Whisper-style models and cloud ASR services — from raw audio ingestion through preprocessing, transcript cleanup, subtitle generation, speaker diarization, and structured downstream integration into apps, APIs, and CMS platforms.",
+      "department": "engineering"
+    },
+    {
+      "name": "WeChat Mini Program Developer",
+      "runtime": "codex",
+      "file": "agents/codex/engineering-wechat-mini-program-developer.toml",
+      "description": "Expert WeChat Mini Program developer specializing in 小程序 development with WXML/WXSS/WXS, WeChat API integration, payment systems, subscription messaging, and the full WeChat ecosystem.",
+      "department": "engineering"
+    },
+    {
+      "name": "Bookkeeper & Controller",
+      "runtime": "codex",
+      "file": "agents/codex/finance-bookkeeper-controller.toml",
+      "description": "Expert bookkeeper and controller specializing in day-to-day accounting operations, financial reconciliations, month-end close processes, and internal controls. Ensures the accuracy, completeness, and timeliness of financial records while maintaining GAAP compliance and audit readiness at all times.",
+      "department": "finance"
+    },
+    {
+      "name": "Financial Analyst",
+      "runtime": "codex",
+      "file": "agents/codex/finance-financial-analyst.toml",
+      "description": "Expert financial analyst specializing in financial modeling, forecasting, scenario analysis, and data-driven decision support. Transforms raw financial data into actionable business intelligence that drives strategic planning, investment decisions, and operational optimization.",
+      "department": "finance"
+    },
+    {
+      "name": "FP&A Analyst",
+      "runtime": "codex",
+      "file": "agents/codex/finance-fpa-analyst.toml",
+      "description": "Expert Financial Planning & Analysis (FP&A) analyst specializing in budgeting, variance analysis, financial planning, rolling forecasts, and strategic decision support. Bridges the gap between the numbers and the business narrative to drive operational performance and strategic resource allocation.",
+      "department": "finance"
+    },
+    {
+      "name": "Investment Researcher",
+      "runtime": "codex",
+      "file": "agents/codex/finance-investment-researcher.toml",
+      "description": "Expert investment researcher specializing in market research, due diligence, portfolio analysis, and asset valuation. Conducts rigorous fundamental and quantitative analysis to identify investment opportunities, assess risks, and support data-driven portfolio decisions across public equities, privat",
+      "department": "finance"
+    },
+    {
+      "name": "Tax Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/finance-tax-strategist.toml",
+      "description": "Expert tax strategist specializing in tax optimization, multi-jurisdictional compliance, transfer pricing, and strategic tax planning. Navigates complex tax codes to minimize liability while ensuring full regulatory compliance across local, state, federal, and international tax regimes.",
+      "department": "finance"
+    },
+    {
+      "name": "Game Audio Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/game-audio-engineer.toml",
+      "description": "Interactive audio specialist - Masters FMOD/Wwise integration, adaptive music systems, spatial audio, and audio performance budgeting across all game engines",
+      "department": "game"
+    },
+    {
+      "name": "Game Designer",
+      "runtime": "codex",
+      "file": "agents/codex/game-designer.toml",
+      "description": "Systems and mechanics architect - Masters GDD authorship, player psychology, economy balancing, and gameplay loop design across all engines and genres",
+      "department": "game"
+    },
+    {
+      "name": "Godot Gameplay Scripter",
+      "runtime": "codex",
+      "file": "agents/codex/godot-gameplay-scripter.toml",
+      "description": "Composition and signal integrity specialist - Masters GDScript 2.0, C# integration, node-based architecture, and type-safe signal design for Godot 4 projects",
+      "department": "godot"
+    },
+    {
+      "name": "Godot Multiplayer Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/godot-multiplayer-engineer.toml",
+      "description": "Godot 4 networking specialist - Masters the MultiplayerAPI, scene replication, ENet/WebRTC transport, RPCs, and authority models for real-time multiplayer games",
+      "department": "godot"
+    },
+    {
+      "name": "Godot Shader Developer",
+      "runtime": "codex",
+      "file": "agents/codex/godot-shader-developer.toml",
+      "description": "Godot 4 visual effects specialist - Masters the Godot Shading Language (GLSL-like), VisualShader editor, CanvasItem and Spatial shaders, post-processing, and performance optimization for 2D/3D effects",
+      "department": "godot"
+    },
+    {
+      "name": "Government Digital Presales Consultant",
+      "runtime": "codex",
+      "file": "agents/codex/government-digital-presales-consultant.toml",
+      "description": "Presales expert for China's government digital transformation market (ToG), proficient in policy interpretation, solution design, bid document preparation, POC validation, compliance requirements (classified protection/cryptographic assessment/Xinchuang domestic IT), and stakeholder management — hel",
+      "department": "government"
+    },
+    {
+      "name": "Healthcare Customer Service",
+      "runtime": "codex",
+      "file": "agents/codex/healthcare-customer-service.toml",
+      "description": "Empathetic healthcare customer service specialist for patient support, billing inquiries, appointment management, insurance questions, complaint resolution, and seamless escalation to clinical or administrative staff",
+      "department": "healthcare"
+    },
+    {
+      "name": "Healthcare Marketing Compliance Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/healthcare-marketing-compliance.toml",
+      "description": "Expert in healthcare marketing compliance in China, proficient in the Advertising Law, Medical Advertisement Management Measures, Drug Administration Law, and related regulations — covering pharmaceuticals, medical devices, medical aesthetics, health supplements, and internet healthcare across conte",
+      "department": "healthcare"
+    },
+    {
+      "name": "Hospitality Guest Services",
+      "runtime": "codex",
+      "file": "agents/codex/hospitality-guest-services.toml",
+      "description": "Comprehensive hospitality guest services specialist for hotels, resorts, restaurants, and event venues — covering reservations, check-in/check-out, concierge services, guest complaint resolution, loyalty program management, and post-stay follow-up to deliver exceptional guest experiences that drive ",
+      "department": "hospitality"
+    },
+    {
+      "name": "HR Onboarding",
+      "runtime": "codex",
+      "file": "agents/codex/hr-onboarding.toml",
+      "description": "Comprehensive HR onboarding specialist for employee orientation, documentation management, compliance tracking, benefits enrollment, culture integration, and new hire support — delivering a seamless first-day-to-first-year experience that drives retention and productivity",
+      "department": "hr"
+    },
+    {
+      "name": "Identity Graph Operator",
+      "runtime": "codex",
+      "file": "agents/codex/identity-graph-operator.toml",
+      "description": "",
+      "department": "identity"
+    },
+    {
+      "name": "Language Translator",
+      "runtime": "codex",
+      "file": "agents/codex/language-translator.toml",
+      "description": "Real-time Spanish ↔ English translation specialist with cultural context, regional dialect awareness, travel phrase guidance, and tone-appropriate communication for everyday, business, and emergency situations",
+      "department": "language"
+    },
+    {
+      "name": "Legal Billing & Time Tracking",
+      "runtime": "codex",
+      "file": "agents/codex/legal-billing-time-tracking.toml",
+      "description": "Comprehensive legal billing and time tracking specialist for accurate time capture, invoice generation, billing narrative writing, collections management, trust account compliance, and billing analysis — maximizing revenue recovery while maintaining client relationships and ethical compliance across",
+      "department": "legal"
+    },
+    {
+      "name": "Legal Client Intake",
+      "runtime": "codex",
+      "file": "agents/codex/legal-client-intake.toml",
+      "description": "Comprehensive legal client intake specialist for qualifying prospects, collecting case information, scheduling consultations, managing conflict checks, and delivering attorney-ready intake summaries across any practice area and firm size",
+      "department": "legal"
+    },
+    {
+      "name": "Legal Document Review",
+      "runtime": "codex",
+      "file": "agents/codex/legal-document-review.toml",
+      "description": "Comprehensive legal document review specialist for contracts, litigation documents, and real estate agreements — summarizing documents, flagging risk clauses, comparing contract versions, and checking compliance across any law firm size or practice area",
+      "department": "legal"
+    },
+    {
+      "name": "Level Designer",
+      "runtime": "codex",
+      "file": "agents/codex/level-designer.toml",
+      "description": "Spatial storytelling and flow specialist - Masters layout theory, pacing architecture, encounter design, and environmental narrative across all game engines",
+      "department": "level"
+    },
+    {
+      "name": "Loan Officer Assistant",
+      "runtime": "codex",
+      "file": "agents/codex/loan-officer-assistant.toml",
+      "description": "Comprehensive loan officer assistant for mortgage and lending professionals — covering borrower intake, pre-qualification, document collection, pipeline management, compliance tracking, rate quoting, and closing coordination across residential, commercial, and consumer lending",
+      "department": "loan"
+    },
+    {
+      "name": "LSP/Index Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/lsp-index-engineer.toml",
+      "description": "Language Server Protocol specialist building unified code intelligence systems through LSP client orchestration and semantic indexing",
+      "department": "lsp"
+    },
+    {
+      "name": "macOS Spatial/Metal Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/macos-spatial-metal-engineer.toml",
+      "description": "Native Swift and Metal specialist building high-performance 3D rendering systems and spatial computing experiences for macOS and Vision Pro",
+      "department": "macos"
+    },
+    {
+      "name": "Agentic Search Optimizer",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-agentic-search-optimizer.toml",
+      "description": "Expert in WebMCP readiness and agentic task completion — audits whether AI agents can actually accomplish tasks on your site (book, buy, register, subscribe), implements WebMCP declarative and imperative patterns, and measures task completion rates across AI browsing agents",
+      "department": "marketing"
+    },
+    {
+      "name": "AI Citation Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-ai-citation-strategist.toml",
+      "description": "Expert in AI recommendation engine optimization (AEO/GEO) — audits brand visibility across ChatGPT, Codex, Gemini, and Perplexity, identifies why competitors get cited instead, and delivers content fixes that improve AI citations",
+      "department": "marketing"
+    },
+    {
+      "name": "App Store Optimizer",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-app-store-optimizer.toml",
+      "description": "Expert app store marketing specialist focused on App Store Optimization (ASO), conversion rate optimization, and app discoverability",
+      "department": "marketing"
+    },
+    {
+      "name": "Baidu SEO Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-baidu-seo-specialist.toml",
+      "description": "Expert Baidu search optimization specialist focused on Chinese search engine ranking, Baidu ecosystem integration, ICP compliance, Chinese keyword research, and mobile-first indexing for the China market.",
+      "department": "marketing"
+    },
+    {
+      "name": "Bilibili Content Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-bilibili-content-strategist.toml",
+      "description": "Expert Bilibili marketing specialist focused on UP主 growth, danmaku culture mastery, B站 algorithm optimization, community building, and branded content strategy for China's leading video community platform.",
+      "department": "marketing"
+    },
+    {
+      "name": "Book Co-Author",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-book-co-author.toml",
+      "description": "Strategic thought-leadership book collaborator for founders, experts, and operators turning voice notes, fragments, and positioning into structured first-person chapters.",
+      "department": "marketing"
+    },
+    {
+      "name": "Carousel Growth Engine",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-carousel-growth-engine.toml",
+      "description": "Autonomous TikTok and Instagram carousel generation specialist. Analyzes any website URL with Playwright, generates viral 6-slide carousels via Gemini image generation, publishes directly to feed via Upload-Post API with auto trending music, fetches analytics, and iteratively improves through a data",
+      "department": "marketing"
+    },
+    {
+      "name": "China E-Commerce Operator",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-china-ecommerce-operator.toml",
+      "description": "Expert China e-commerce operations specialist covering Taobao, Tmall, Pinduoduo, and JD ecosystems with deep expertise in product listing optimization, live commerce, store operations, 618/Double 11 campaigns, and cross-platform strategy.",
+      "department": "marketing"
+    },
+    {
+      "name": "China Market Localization Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-china-market-localization-strategist.toml",
+      "description": "Full-stack China market localization expert who transforms real-time trend signals into executable go-to-market strategies across Douyin, Xiaohongshu, WeChat, Bilibili, and beyond",
+      "department": "marketing"
+    },
+    {
+      "name": "Content Creator",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-content-creator.toml",
+      "description": "Expert content strategist and creator for multi-platform campaigns. Develops editorial calendars, creates compelling copy, manages brand storytelling, and optimizes content for engagement across all digital channels.",
+      "department": "marketing"
+    },
+    {
+      "name": "Cross-Border E-Commerce Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-cross-border-ecommerce.toml",
+      "description": "Full-funnel cross-border e-commerce strategist covering Amazon, Shopee, Lazada, AliExpress, Temu, and TikTok Shop operations, international logistics and overseas warehousing, compliance and taxation, multilingual listing optimization, brand globalization, and DTC independent site development.",
+      "department": "marketing"
+    },
+    {
+      "name": "Douyin Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-douyin-strategist.toml",
+      "description": "Short-video marketing expert specializing in the Douyin platform, with deep expertise in recommendation algorithm mechanics, viral video planning, livestream commerce workflows, and full-funnel brand growth through content matrix strategies.",
+      "department": "marketing"
+    },
+    {
+      "name": "Growth Hacker",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-growth-hacker.toml",
+      "description": "Expert growth strategist specializing in rapid user acquisition through data-driven experimentation. Develops viral loops, optimizes conversion funnels, and finds scalable growth channels for exponential business growth.",
+      "department": "marketing"
+    },
+    {
+      "name": "Instagram Curator",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-instagram-curator.toml",
+      "description": "Expert Instagram marketing specialist focused on visual storytelling, community building, and multi-format content optimization. Masters aesthetic development and drives meaningful engagement.",
+      "department": "marketing"
+    },
+    {
+      "name": "Kuaishou Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-kuaishou-strategist.toml",
+      "description": "Expert Kuaishou marketing strategist specializing in short-video content for China's lower-tier city markets, live commerce operations, community trust building, and grassroots audience growth on 快手.",
+      "department": "marketing"
+    },
+    {
+      "name": "LinkedIn Content Creator",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-linkedin-content-creator.toml",
+      "description": "Expert LinkedIn content strategist focused on thought leadership, personal brand building, and high-engagement professional content. Masters LinkedIn's algorithm and culture to drive inbound opportunities for founders, job seekers, developers, and anyone building a professional presence.",
+      "department": "marketing"
+    },
+    {
+      "name": "Livestream Commerce Coach",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-livestream-commerce-coach.toml",
+      "description": "Veteran livestream e-commerce coach specializing in host training and live room operations across Douyin, Kuaishou, Taobao Live, and Channels, covering script design, product sequencing, paid-vs-organic traffic balancing, conversion closing techniques, and real-time data-driven optimization.",
+      "department": "marketing"
+    },
+    {
+      "name": "Podcast Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-podcast-strategist.toml",
+      "description": "Content strategy and operations expert for the Chinese podcast market, with deep expertise in Xiaoyuzhou, Ximalaya, and other major audio platforms, covering show positioning, audio production, audience growth, multi-platform distribution, and monetization to help podcast creators build sticky audio",
+      "department": "marketing"
+    },
+    {
+      "name": "Private Domain Operator",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-private-domain-operator.toml",
+      "description": "Expert in building enterprise WeChat (WeCom) private domain ecosystems, with deep expertise in SCRM systems, segmented community operations, Mini Program commerce integration, user lifecycle management, and full-funnel conversion optimization.",
+      "department": "marketing"
+    },
+    {
+      "name": "Reddit Community Builder",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-reddit-community-builder.toml",
+      "description": "Expert Reddit marketing specialist focused on authentic community engagement, value-driven content creation, and long-term relationship building. Masters Reddit culture navigation.",
+      "department": "marketing"
+    },
+    {
+      "name": "SEO Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-seo-specialist.toml",
+      "description": "Expert search engine optimization strategist specializing in technical SEO, content optimization, link authority building, and organic search growth. Drives sustainable traffic through data-driven search strategies.",
+      "department": "marketing"
+    },
+    {
+      "name": "Short-Video Editing Coach",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-short-video-editing-coach.toml",
+      "description": "Hands-on short-video editing coach covering the full post-production pipeline, with mastery of CapCut Pro, Premiere Pro, DaVinci Resolve, and Final Cut Pro across composition and camera language, color grading, audio engineering, motion graphics and VFX, subtitle design, multi-platform export optimi",
+      "department": "marketing"
+    },
+    {
+      "name": "Social Media Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-social-media-strategist.toml",
+      "description": "Expert social media strategist for LinkedIn, Twitter, and professional platforms. Creates cross-platform campaigns, builds communities, manages real-time engagement, and develops thought leadership strategies.",
+      "department": "marketing"
+    },
+    {
+      "name": "TikTok Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-tiktok-strategist.toml",
+      "description": "Expert TikTok marketing specialist focused on viral content creation, algorithm optimization, and community building. Masters TikTok's unique culture and features for brand growth.",
+      "department": "marketing"
+    },
+    {
+      "name": "Twitter Engager",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-twitter-engager.toml",
+      "description": "Expert Twitter marketing specialist focused on real-time engagement, thought leadership building, and community-driven growth. Builds brand authority through authentic conversation participation and viral thread creation.",
+      "department": "marketing"
+    },
+    {
+      "name": "Video Optimization Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-video-optimization-specialist.toml",
+      "description": "Video marketing strategist specializing in YouTube algorithm optimization, audience retention, chaptering, thumbnail concepts, and cross-platform video syndication.",
+      "department": "marketing"
+    },
+    {
+      "name": "WeChat Official Account Manager",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-wechat-official-account.toml",
+      "description": "Expert WeChat Official Account (OA) strategist specializing in content marketing, subscriber engagement, and conversion optimization. Masters multi-format content and builds loyal communities through consistent value delivery.",
+      "department": "marketing"
+    },
+    {
+      "name": "Weibo Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-weibo-strategist.toml",
+      "description": "Full-spectrum operations expert for Sina Weibo, with deep expertise in trending topic mechanics, Super Topic community management, public sentiment monitoring, fan economy strategies, and Weibo advertising, helping brands achieve viral reach and sustained growth on China's leading public discourse p",
+      "department": "marketing"
+    },
+    {
+      "name": "Xiaohongshu Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-xiaohongshu-specialist.toml",
+      "description": "Expert Xiaohongshu marketing specialist focused on lifestyle content, trend-driven strategies, and authentic community engagement. Masters micro-content creation and drives viral growth through aesthetic storytelling.",
+      "department": "marketing"
+    },
+    {
+      "name": "Zhihu Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/marketing-zhihu-strategist.toml",
+      "description": "Expert Zhihu marketing specialist focused on thought leadership, community credibility, and knowledge-driven engagement. Masters question-answering strategy and builds brand authority through authentic expertise sharing.",
+      "department": "marketing"
+    },
+    {
+      "name": "Narrative Designer",
+      "runtime": "codex",
+      "file": "agents/codex/narrative-designer.toml",
+      "description": "Story systems and dialogue architect - Masters GDD-aligned narrative design, branching dialogue, lore architecture, and environmental storytelling across all game engines",
+      "department": "narrative"
+    },
+    {
+      "name": "Paid Media Auditor",
+      "runtime": "codex",
+      "file": "agents/codex/paid-media-auditor.toml",
+      "description": "Comprehensive paid media auditor who systematically evaluates Google Ads, Microsoft Ads, and Meta accounts across 200+ checkpoints spanning account structure, tracking, bidding, creative, audiences, and competitive positioning. Produces actionable audit reports with prioritized recommendations and p",
+      "department": "paid"
+    },
+    {
+      "name": "Ad Creative Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/paid-media-creative-strategist.toml",
+      "description": "Paid media creative specialist focused on ad copywriting, RSA optimization, asset group design, and creative testing frameworks across Google, Meta, Microsoft, and programmatic platforms. Bridges the gap between performance data and persuasive messaging.",
+      "department": "paid"
+    },
+    {
+      "name": "Paid Social Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/paid-media-paid-social-strategist.toml",
+      "description": "Cross-platform paid social advertising specialist covering Meta (Facebook/Instagram), LinkedIn, TikTok, Pinterest, X, and Snapchat. Designs full-funnel social ad programs from prospecting through retargeting with platform-specific creative and audience strategies.",
+      "department": "paid"
+    },
+    {
+      "name": "PPC Campaign Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/paid-media-ppc-strategist.toml",
+      "description": "Senior paid media strategist specializing in large-scale search, shopping, and performance max campaign architecture across Google, Microsoft, and Amazon ad platforms. Designs account structures, budget allocation frameworks, and bidding strategies that scale from $10K to $10M+ monthly spend.",
+      "department": "paid"
+    },
+    {
+      "name": "Programmatic & Display Buyer",
+      "runtime": "codex",
+      "file": "agents/codex/paid-media-programmatic-buyer.toml",
+      "description": "Display advertising and programmatic media buying specialist covering managed placements, Google Display Network, DV360, trade desk platforms, partner media (newsletters, sponsored content), and ABM display strategies via platforms like Demandbase and 6Sense.",
+      "department": "paid"
+    },
+    {
+      "name": "Search Query Analyst",
+      "runtime": "codex",
+      "file": "agents/codex/paid-media-search-query-analyst.toml",
+      "description": "Specialist in search term analysis, negative keyword architecture, and query-to-intent mapping. Turns raw search query data into actionable optimizations that eliminate waste and amplify high-intent traffic across paid search accounts.",
+      "department": "paid"
+    },
+    {
+      "name": "Tracking & Measurement Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/paid-media-tracking-specialist.toml",
+      "description": "Expert in conversion tracking architecture, tag management, and attribution modeling across Google Tag Manager, GA4, Google Ads, Meta CAPI, LinkedIn Insight Tag, and server-side implementations. Ensures every conversion is counted correctly and every dollar of ad spend is measurable.",
+      "department": "paid"
+    },
+    {
+      "name": "Behavioral Nudge Engine",
+      "runtime": "codex",
+      "file": "agents/codex/product-behavioral-nudge-engine.toml",
+      "description": "Behavioral psychology specialist that adapts software interaction cadences and styles to maximize user motivation and success.",
+      "department": "product"
+    },
+    {
+      "name": "Feedback Synthesizer",
+      "runtime": "codex",
+      "file": "agents/codex/product-feedback-synthesizer.toml",
+      "description": "Expert in collecting, analyzing, and synthesizing user feedback from multiple channels to extract actionable product insights. Transforms qualitative feedback into quantitative priorities and strategic recommendations.",
+      "department": "product"
+    },
+    {
+      "name": "Product Manager",
+      "runtime": "codex",
+      "file": "agents/codex/product-manager.toml",
+      "description": "Holistic product leader who owns the full product lifecycle — from discovery and strategy through roadmap, stakeholder alignment, go-to-market, and outcome measurement. Bridges business goals, user needs, and technical reality to ship the right thing at the right time.",
+      "department": "product"
+    },
+    {
+      "name": "Sprint Prioritizer",
+      "runtime": "codex",
+      "file": "agents/codex/product-sprint-prioritizer.toml",
+      "description": "Expert product manager specializing in agile sprint planning, feature prioritization, and resource allocation. Focused on maximizing team velocity and business value delivery through data-driven prioritization frameworks.",
+      "department": "product"
+    },
+    {
+      "name": "Trend Researcher",
+      "runtime": "codex",
+      "file": "agents/codex/product-trend-researcher.toml",
+      "description": "Expert market intelligence analyst specializing in identifying emerging trends, competitive analysis, and opportunity assessment. Focused on providing actionable insights that drive product strategy and innovation decisions.",
+      "department": "product"
+    },
+    {
+      "name": "Experiment Tracker",
+      "runtime": "codex",
+      "file": "agents/codex/project-management-experiment-tracker.toml",
+      "description": "Expert project manager specializing in experiment design, execution tracking, and data-driven decision making. Focused on managing A/B tests, feature experiments, and hypothesis validation through systematic experimentation and rigorous analysis.",
+      "department": "project"
+    },
+    {
+      "name": "Jira Workflow Steward",
+      "runtime": "codex",
+      "file": "agents/codex/project-management-jira-workflow-steward.toml",
+      "description": "Expert delivery operations specialist who enforces Jira-linked Git workflows, traceable commits, structured pull requests, and release-safe branch strategy across software teams.",
+      "department": "project"
+    },
+    {
+      "name": "Project Shepherd",
+      "runtime": "codex",
+      "file": "agents/codex/project-management-project-shepherd.toml",
+      "description": "Expert project manager specializing in cross-functional project coordination, timeline management, and stakeholder alignment. Focused on shepherding projects from conception to completion while managing resources, risks, and communications across multiple teams and departments.",
+      "department": "project"
+    },
+    {
+      "name": "Studio Operations",
+      "runtime": "codex",
+      "file": "agents/codex/project-management-studio-operations.toml",
+      "description": "Expert operations manager specializing in day-to-day studio efficiency, process optimization, and resource coordination. Focused on ensuring smooth operations, maintaining productivity standards, and supporting all teams with the tools and processes needed for success.",
+      "department": "project"
+    },
+    {
+      "name": "Studio Producer",
+      "runtime": "codex",
+      "file": "agents/codex/project-management-studio-producer.toml",
+      "description": "Senior strategic leader specializing in high-level creative and technical project orchestration, resource allocation, and multi-project portfolio management. Focused on aligning creative vision with business objectives while managing complex cross-functional initiatives and ensuring optimal studio o",
+      "department": "project"
+    },
+    {
+      "name": "Senior Project Manager",
+      "runtime": "codex",
+      "file": "agents/codex/project-manager-senior.toml",
+      "description": "Converts specs to tasks and remembers previous projects. Focused on realistic scope, no background processes, exact spec requirements",
+      "department": "project"
+    },
+    {
+      "name": "Real Estate Buyer & Seller",
+      "runtime": "codex",
+      "file": "agents/codex/real-estate-buyer-seller.toml",
+      "description": "Comprehensive real estate agent assistant for buyer representation, seller representation, listing management, offer negotiation, transaction coordination, and closing support — delivering a world-class client experience from first showing to final closing across residential and investment real esta",
+      "department": "real"
+    },
+    {
+      "name": "Recruitment Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/recruitment-specialist.toml",
+      "description": "Expert recruitment operations and talent acquisition specialist — skilled in China's major hiring platforms, talent assessment frameworks, and labor law compliance. Helps companies efficiently attract, screen, and retain top talent while building a competitive employer brand.",
+      "department": "recruitment"
+    },
+    {
+      "name": "Report Distribution Agent",
+      "runtime": "codex",
+      "file": "agents/codex/report-distribution-agent.toml",
+      "description": "AI agent that automates distribution of consolidated sales reports to representatives based on territorial parameters",
+      "department": "report"
+    },
+    {
+      "name": "Retail Customer Returns",
+      "runtime": "codex",
+      "file": "agents/codex/retail-customer-returns.toml",
+      "description": "Comprehensive retail customer returns specialist for processing returns, exchanges, and refunds across in-store, online, and omnichannel retail — handling policy enforcement, fraud prevention, customer retention, vendor returns, and returns analytics to maximize recovery while preserving customer lo",
+      "department": "retail"
+    },
+    {
+      "name": "Roblox Avatar Creator",
+      "runtime": "codex",
+      "file": "agents/codex/roblox-avatar-creator.toml",
+      "description": "Roblox UGC and avatar pipeline specialist - Masters Roblox's avatar system, UGC item creation, accessory rigging, texture standards, and the Creator Marketplace submission pipeline",
+      "department": "roblox"
+    },
+    {
+      "name": "Roblox Experience Designer",
+      "runtime": "codex",
+      "file": "agents/codex/roblox-experience-designer.toml",
+      "description": "Roblox platform UX and monetization specialist - Masters engagement loop design, DataStore-driven progression, Roblox monetization systems (Passes, Developer Products, UGC), and player retention for Roblox experiences",
+      "department": "roblox"
+    },
+    {
+      "name": "Roblox Systems Scripter",
+      "runtime": "codex",
+      "file": "agents/codex/roblox-systems-scripter.toml",
+      "description": "Roblox platform engineering specialist - Masters Luau, the client-server security model, RemoteEvents/RemoteFunctions, DataStore, and module architecture for scalable Roblox experiences",
+      "department": "roblox"
+    },
+    {
+      "name": "Account Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/sales-account-strategist.toml",
+      "description": "Expert post-sale account strategist specializing in land-and-expand execution, stakeholder mapping, QBR facilitation, and net revenue retention. Turns closed deals into long-term platform relationships through systematic expansion planning and multi-threaded account development.",
+      "department": "sales"
+    },
+    {
+      "name": "Sales Coach",
+      "runtime": "codex",
+      "file": "agents/codex/sales-coach.toml",
+      "description": "Expert sales coaching specialist focused on rep development, pipeline review facilitation, call coaching, deal strategy, and forecast accuracy. Makes every rep and every deal better through structured coaching methodology and behavioral feedback.",
+      "department": "sales"
+    },
+    {
+      "name": "Sales Data Extraction Agent",
+      "runtime": "codex",
+      "file": "agents/codex/sales-data-extraction-agent.toml",
+      "description": "AI agent specialized in monitoring Excel files and extracting key sales metrics (MTD, YTD, Year End) for internal live reporting",
+      "department": "sales"
+    },
+    {
+      "name": "Deal Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/sales-deal-strategist.toml",
+      "description": "Senior deal strategist specializing in MEDDPICC qualification, competitive positioning, and win planning for complex B2B sales cycles. Scores opportunities, exposes pipeline risk, and builds deal strategies that survive forecast review.",
+      "department": "sales"
+    },
+    {
+      "name": "Discovery Coach",
+      "runtime": "codex",
+      "file": "agents/codex/sales-discovery-coach.toml",
+      "description": "Coaches sales teams on elite discovery methodology — question design, current-state mapping, gap quantification, and call structure that surfaces real buying motivation.",
+      "department": "sales"
+    },
+    {
+      "name": "Sales Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/sales-engineer.toml",
+      "description": "Senior pre-sales engineer specializing in technical discovery, demo engineering, POC scoping, competitive battlecards, and bridging product capabilities to business outcomes. Wins the technical decision so the deal can close.",
+      "department": "sales"
+    },
+    {
+      "name": "Outbound Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/sales-outbound-strategist.toml",
+      "description": "Signal-based outbound specialist who designs multi-channel prospecting sequences, defines ICPs, and builds pipeline through research-driven personalization — not volume.",
+      "department": "sales"
+    },
+    {
+      "name": "Sales Outreach",
+      "runtime": "codex",
+      "file": "agents/codex/sales-outreach.toml",
+      "description": "Consultative B2B sales outreach specialist for cold prospecting, lead follow-up, objection handling, proposal writing, and pipeline management — combining data-driven targeting with genuine relationship-building to open doors and close deals",
+      "department": "sales"
+    },
+    {
+      "name": "Pipeline Analyst",
+      "runtime": "codex",
+      "file": "agents/codex/sales-pipeline-analyst.toml",
+      "description": "Revenue operations analyst specializing in pipeline health diagnostics, deal velocity analysis, forecast accuracy, and data-driven sales coaching. Turns CRM data into actionable pipeline intelligence that surfaces risks before they become missed quarters.",
+      "department": "sales"
+    },
+    {
+      "name": "Proposal Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/sales-proposal-strategist.toml",
+      "description": "Strategic proposal architect who transforms RFPs and sales opportunities into compelling win narratives. Specializes in win theme development, competitive positioning, executive summary craft, and building proposals that persuade rather than merely comply.",
+      "department": "sales"
+    },
+    {
+      "name": "Chief of Staff",
+      "runtime": "codex",
+      "file": "agents/codex/specialized-chief-of-staff.toml",
+      "description": "Master coordinator for founders and executives — filters noise, owns processes, enforces consistency, routes decisions, and positions outputs for impact so the boss can think clearly.",
+      "department": "specialized"
+    },
+    {
+      "name": "Civil Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/specialized-civil-engineer.toml",
+      "description": "Expert civil and structural engineer with global standards coverage — Eurocode, DIN, ACI, AISC, ASCE, AS/NZS, CSA, GB, IS, AIJ, and more. Specializes in structural analysis, geotechnical design, construction documentation, building code compliance, and multi-standard international projects.",
+      "department": "specialized"
+    },
+    {
+      "name": "Cultural Intelligence Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/specialized-cultural-intelligence-strategist.toml",
+      "description": "CQ specialist that detects invisible exclusion, researches global context, and ensures software resonates authentically across intersectional identities.",
+      "department": "specialized"
+    },
+    {
+      "name": "Developer Advocate",
+      "runtime": "codex",
+      "file": "agents/codex/specialized-developer-advocate.toml",
+      "description": "Expert developer advocate specializing in building developer communities, creating compelling technical content, optimizing developer experience (DX), and driving platform adoption through authentic engineering engagement. Bridges product and engineering teams with external developers.",
+      "department": "specialized"
+    },
+    {
+      "name": "Document Generator",
+      "runtime": "codex",
+      "file": "agents/codex/specialized-document-generator.toml",
+      "description": "Expert document creation specialist who generates professional PDF, PPTX, DOCX, and XLSX files using code-based approaches with proper formatting, charts, and data visualization.",
+      "department": "specialized"
+    },
+    {
+      "name": "French Consulting Market Navigator",
+      "runtime": "codex",
+      "file": "agents/codex/specialized-french-consulting-market.toml",
+      "description": "Navigate the French ESN/SI freelance ecosystem — margin models, platform mechanics (Malt, collective.work), portage salarial, rate positioning, and payment cycle realities",
+      "department": "specialized"
+    },
+    {
+      "name": "Korean Business Navigator",
+      "runtime": "codex",
+      "file": "agents/codex/specialized-korean-business-navigator.toml",
+      "description": "Korean business culture for foreign professionals — 품의 decision process, nunchi reading, KakaoTalk business etiquette, hierarchy navigation, and relationship-first deal mechanics",
+      "department": "specialized"
+    },
+    {
+      "name": "MCP Builder",
+      "runtime": "codex",
+      "file": "agents/codex/specialized-mcp-builder.toml",
+      "description": "Expert Model Context Protocol developer who designs, builds, and tests MCP servers that extend AI agent capabilities with custom tools, resources, and prompts.",
+      "department": "specialized"
+    },
+    {
+      "name": "Model QA Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/specialized-model-qa.toml",
+      "description": "Independent model QA expert who audits ML and statistical models end-to-end - from documentation review and data reconstruction to replication, calibration testing, interpretability analysis, performance monitoring, and audit-grade reporting.",
+      "department": "specialized"
+    },
+    {
+      "name": "Salesforce Architect",
+      "runtime": "codex",
+      "file": "agents/codex/specialized-salesforce-architect.toml",
+      "description": "Solution architecture for Salesforce platform — multi-cloud design, integration patterns, governor limits, deployment strategy, and data model governance for enterprise-scale orgs",
+      "department": "specialized"
+    },
+    {
+      "name": "Workflow Architect",
+      "runtime": "codex",
+      "file": "agents/codex/specialized-workflow-architect.toml",
+      "description": "Workflow design specialist who maps complete workflow trees for every system, user journey, and agent interaction — covering happy paths, all branch conditions, failure modes, recovery paths, handoff contracts, and observable states to produce build-ready specs that agents can implement against and ",
+      "department": "specialized"
+    },
+    {
+      "name": "Study Abroad Advisor",
+      "runtime": "codex",
+      "file": "agents/codex/study-abroad-advisor.toml",
+      "description": "Full-spectrum study abroad planning expert covering the US, UK, Canada, Australia, Europe, Hong Kong, and Singapore — proficient in undergraduate, master's, and PhD application strategy, school selection, essay coaching, profile enhancement, standardized test planning, visa preparation, and overseas",
+      "department": "study"
+    },
+    {
+      "name": "Supply Chain Strategist",
+      "runtime": "codex",
+      "file": "agents/codex/supply-chain-strategist.toml",
+      "description": "Expert supply chain management and procurement strategy specialist — skilled in supplier development, strategic sourcing, quality control, and supply chain digitalization. Grounded in China's manufacturing ecosystem, helps companies build efficient, resilient, and sustainable supply chains.",
+      "department": "supply"
+    },
+    {
+      "name": "Analytics Reporter",
+      "runtime": "codex",
+      "file": "agents/codex/support-analytics-reporter.toml",
+      "description": "Expert data analyst transforming raw data into actionable business insights. Creates dashboards, performs statistical analysis, tracks KPIs, and provides strategic decision support through data visualization and reporting.",
+      "department": "support"
+    },
+    {
+      "name": "Executive Summary Generator",
+      "runtime": "codex",
+      "file": "agents/codex/support-executive-summary-generator.toml",
+      "description": "Consultant-grade AI specialist trained to think and communicate like a senior strategy consultant. Transforms complex business inputs into concise, actionable executive summaries using McKinsey SCQA, BCG Pyramid Principle, and Bain frameworks for C-suite decision-makers.",
+      "department": "support"
+    },
+    {
+      "name": "Finance Tracker",
+      "runtime": "codex",
+      "file": "agents/codex/support-finance-tracker.toml",
+      "description": "Expert financial analyst and controller specializing in financial planning, budget management, and business performance analysis. Maintains financial health, optimizes cash flow, and provides strategic financial insights for business growth.",
+      "department": "support"
+    },
+    {
+      "name": "Infrastructure Maintainer",
+      "runtime": "codex",
+      "file": "agents/codex/support-infrastructure-maintainer.toml",
+      "description": "Expert infrastructure specialist focused on system reliability, performance optimization, and technical operations management. Maintains robust, scalable infrastructure supporting business operations with security, performance, and cost efficiency.",
+      "department": "support"
+    },
+    {
+      "name": "Legal Compliance Checker",
+      "runtime": "codex",
+      "file": "agents/codex/support-legal-compliance-checker.toml",
+      "description": "Expert legal and compliance specialist ensuring business operations, data handling, and content creation comply with relevant laws, regulations, and industry standards across multiple jurisdictions.",
+      "department": "support"
+    },
+    {
+      "name": "Support Responder",
+      "runtime": "codex",
+      "file": "agents/codex/support-support-responder.toml",
+      "description": "Expert customer support specialist delivering exceptional customer service, issue resolution, and user experience optimization. Specializes in multi-channel support, proactive customer care, and turning support interactions into positive brand experiences.",
+      "department": "support"
+    },
+    {
+      "name": "Technical Artist",
+      "runtime": "codex",
+      "file": "agents/codex/technical-artist.toml",
+      "description": "Art-to-engine pipeline specialist - Masters shaders, VFX systems, LOD pipelines, performance budgeting, and cross-engine asset optimization",
+      "department": "technical"
+    },
+    {
+      "name": "Terminal Integration Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/terminal-integration-specialist.toml",
+      "description": "Terminal emulation, text rendering optimization, and SwiftTerm integration for modern Swift applications",
+      "department": "terminal"
+    },
+    {
+      "name": "Accessibility Auditor",
+      "runtime": "codex",
+      "file": "agents/codex/testing-accessibility-auditor.toml",
+      "description": "Expert accessibility specialist who audits interfaces against WCAG standards, tests with assistive technologies, and ensures inclusive design. Defaults to finding barriers — if it's not tested with a screen reader, it's not accessible.",
+      "department": "testing"
+    },
+    {
+      "name": "API Tester",
+      "runtime": "codex",
+      "file": "agents/codex/testing-api-tester.toml",
+      "description": "Expert API testing specialist focused on comprehensive API validation, performance testing, and quality assurance across all systems and third-party integrations",
+      "department": "testing"
+    },
+    {
+      "name": "Evidence Collector",
+      "runtime": "codex",
+      "file": "agents/codex/testing-evidence-collector.toml",
+      "description": "Screenshot-obsessed, fantasy-allergic QA specialist - Default to finding 3-5 issues, requires visual proof for everything",
+      "department": "testing"
+    },
+    {
+      "name": "Performance Benchmarker",
+      "runtime": "codex",
+      "file": "agents/codex/testing-performance-benchmarker.toml",
+      "description": "Expert performance testing and optimization specialist focused on measuring, analyzing, and improving system performance across all applications and infrastructure",
+      "department": "testing"
+    },
+    {
+      "name": "Reality Checker",
+      "runtime": "codex",
+      "file": "agents/codex/testing-reality-checker.toml",
+      "description": "",
+      "department": "testing"
+    },
+    {
+      "name": "Test Results Analyzer",
+      "runtime": "codex",
+      "file": "agents/codex/testing-test-results-analyzer.toml",
+      "description": "Expert test analysis specialist focused on comprehensive test result evaluation, quality metrics analysis, and actionable insight generation from testing activities",
+      "department": "testing"
+    },
+    {
+      "name": "Tool Evaluator",
+      "runtime": "codex",
+      "file": "agents/codex/testing-tool-evaluator.toml",
+      "description": "Expert technology assessment specialist focused on evaluating, testing, and recommending tools, software, and platforms for business use and productivity optimization",
+      "department": "testing"
+    },
+    {
+      "name": "Workflow Optimizer",
+      "runtime": "codex",
+      "file": "agents/codex/testing-workflow-optimizer.toml",
+      "description": "Expert process improvement specialist focused on analyzing, optimizing, and automating workflows across all business functions for maximum productivity and efficiency",
+      "department": "testing"
+    },
+    {
+      "name": "Unity Architect",
+      "runtime": "codex",
+      "file": "agents/codex/unity-architect.toml",
+      "description": "Data-driven modularity specialist - Masters ScriptableObjects, decoupled systems, and single-responsibility component design for scalable Unity projects",
+      "department": "unity"
+    },
+    {
+      "name": "Unity Editor Tool Developer",
+      "runtime": "codex",
+      "file": "agents/codex/unity-editor-tool-developer.toml",
+      "description": "Unity editor automation specialist - Masters custom EditorWindows, PropertyDrawers, AssetPostprocessors, ScriptedImporters, and pipeline automation that saves teams hours per week",
+      "department": "unity"
+    },
+    {
+      "name": "Unity Multiplayer Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/unity-multiplayer-engineer.toml",
+      "description": "Networked gameplay specialist - Masters Netcode for GameObjects, Unity Gaming Services (Relay/Lobby), client-server authority, lag compensation, and state synchronization",
+      "department": "unity"
+    },
+    {
+      "name": "Unity Shader Graph Artist",
+      "runtime": "codex",
+      "file": "agents/codex/unity-shader-graph-artist.toml",
+      "description": "Visual effects and material specialist - Masters Unity Shader Graph, HLSL, URP/HDRP rendering pipelines, and custom pass authoring for real-time visual effects",
+      "department": "unity"
+    },
+    {
+      "name": "Unreal Multiplayer Architect",
+      "runtime": "codex",
+      "file": "agents/codex/unreal-multiplayer-architect.toml",
+      "description": "Unreal Engine networking specialist - Masters Actor replication, GameMode/GameState architecture, server-authoritative gameplay, network prediction, and dedicated server setup for UE5",
+      "department": "unreal"
+    },
+    {
+      "name": "Unreal Systems Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/unreal-systems-engineer.toml",
+      "description": "Performance and hybrid architecture specialist - Masters C++/Blueprint continuum, Nanite geometry, Lumen GI, and Gameplay Ability System for AAA-grade Unreal Engine projects",
+      "department": "unreal"
+    },
+    {
+      "name": "Unreal Technical Artist",
+      "runtime": "codex",
+      "file": "agents/codex/unreal-technical-artist.toml",
+      "description": "Unreal Engine visual pipeline specialist - Masters the Material Editor, Niagara VFX, Procedural Content Generation, and the art-to-engine pipeline for UE5 projects",
+      "department": "unreal"
+    },
+    {
+      "name": "Unreal World Builder",
+      "runtime": "codex",
+      "file": "agents/codex/unreal-world-builder.toml",
+      "description": "Open-world and environment specialist - Masters UE5 World Partition, Landscape, procedural foliage, HLOD, and large-scale level streaming for seamless open-world experiences",
+      "department": "unreal"
+    },
+    {
+      "name": "visionOS Spatial Engineer",
+      "runtime": "codex",
+      "file": "agents/codex/visionos-spatial-engineer.toml",
+      "description": "Native visionOS spatial computing, SwiftUI volumetric interfaces, and Liquid Glass design implementation",
+      "department": "visionos"
+    },
+    {
+      "name": "XR Cockpit Interaction Specialist",
+      "runtime": "codex",
+      "file": "agents/codex/xr-cockpit-interaction-specialist.toml",
+      "description": "Specialist in designing and developing immersive cockpit-based control systems for XR environments",
+      "department": "xr"
+    },
+    {
+      "name": "XR Immersive Developer",
+      "runtime": "codex",
+      "file": "agents/codex/xr-immersive-developer.toml",
+      "description": "Expert WebXR and immersive technology developer with specialization in browser-based AR/VR/XR applications",
+      "department": "xr"
+    },
+    {
+      "name": "XR Interface Architect",
+      "runtime": "codex",
+      "file": "agents/codex/xr-interface-architect.toml",
+      "description": "Spatial interaction designer and interface strategist for immersive AR/VR/XR environments",
+      "department": "xr"
+    }
+  ],
+  "duplicates": [
+    {
+      "name": "frontend-ui-polisher",
+      "source": "claude-code",
+      "identicalTo": "frontend-ui-polisher",
+      "path": "C:\\Users\\Admin\\.claude\\skills\\frontend-ui-polisher"
+    },
+    {
+      "name": "photoshop-driver",
+      "source": "claude-code",
+      "identicalTo": "photoshop-driver",
+      "path": "C:\\Users\\Admin\\.claude\\skills\\photoshop-driver"
+    },
+    {
+      "name": "photoshop-posts",
+      "source": "claude-code",
+      "identicalTo": "photoshop-posts",
+      "path": "C:\\Users\\Admin\\.claude\\skills\\photoshop-posts"
+    },
+    {
+      "name": "web-ui-designer",
+      "source": "claude-code",
+      "identicalTo": "web-ui-designer",
+      "path": "C:\\Users\\Admin\\.claude\\skills\\web-ui-designer"
+    },
+    {
+      "name": "carousel-forge",
+      "source": "portfolio",
+      "identicalTo": "carousel-forge",
+      "path": "C:\\Users\\Admin\\Desktop\\Tamim Portfolio\\.claude\\skills\\carousel-forge"
+    },
+    {
+      "name": "agents-sdk",
+      "source": "codex",
+      "identicalTo": "agents-sdk",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\agents-sdk"
+    },
+    {
+      "name": "cloudflare",
+      "source": "codex",
+      "identicalTo": "cloudflare",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\cloudflare"
+    },
+    {
+      "name": "cloudflare-email-service",
+      "source": "codex",
+      "identicalTo": "cloudflare-email-service",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\cloudflare-email-service"
+    },
+    {
+      "name": "cloudflare-one",
+      "source": "codex",
+      "identicalTo": "cloudflare-one",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\cloudflare-one"
+    },
+    {
+      "name": "cloudflare-one-migrations",
+      "source": "codex",
+      "identicalTo": "cloudflare-one-migrations",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\cloudflare-one-migrations"
+    },
+    {
+      "name": "durable-objects",
+      "source": "codex",
+      "identicalTo": "durable-objects",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\durable-objects"
+    },
+    {
+      "name": "sandbox-migrate-to-next",
+      "source": "codex",
+      "identicalTo": "sandbox-migrate-to-next",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\sandbox-migrate-to-next"
+    },
+    {
+      "name": "sandbox-next",
+      "source": "codex",
+      "identicalTo": "sandbox-next",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\sandbox-next"
+    },
+    {
+      "name": "sandbox-stable",
+      "source": "codex",
+      "identicalTo": "sandbox-stable",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\sandbox-stable"
+    },
+    {
+      "name": "turnstile-spin",
+      "source": "codex",
+      "identicalTo": "turnstile-spin",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\turnstile-spin"
+    },
+    {
+      "name": "web-perf",
+      "source": "codex",
+      "identicalTo": "web-perf",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\web-perf"
+    },
+    {
+      "name": "workers-best-practices",
+      "source": "codex",
+      "identicalTo": "workers-best-practices",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\workers-best-practices"
+    },
+    {
+      "name": "wrangler",
+      "source": "codex",
+      "identicalTo": "wrangler",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\wrangler"
+    },
+    {
+      "name": "ai-seo",
+      "source": "claude-app",
+      "identicalTo": "ai-seo",
+      "path": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\ai-search-optimizer",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "ai-seo",
+      "source": "outfred",
+      "identicalTo": "ai-seo",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\ai-seo",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "programmatic-seo",
+      "source": "claude-app",
+      "identicalTo": "programmatic-seo",
+      "path": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\bulk-seo-pages",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "programmatic-seo",
+      "source": "outfred",
+      "identicalTo": "programmatic-seo",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\programmatic-seo",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "content-strategy",
+      "source": "claude-app",
+      "identicalTo": "content-strategy",
+      "path": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\content-strategy",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "content-strategy",
+      "source": "outfred",
+      "identicalTo": "content-strategy",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\content-strategy",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "copywriting",
+      "source": "claude-app",
+      "identicalTo": "copywriting",
+      "path": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\copywriting",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "copywriting",
+      "source": "outfred",
+      "identicalTo": "copywriting",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\copywriting",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "frontend-ui-polisher",
+      "source": "outfred",
+      "identicalTo": "frontend-ui-polisher",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\impeccable",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "marketing-ideas",
+      "source": "claude-app",
+      "identicalTo": "marketing-ideas",
+      "path": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\marketing-ideas",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "marketing-ideas",
+      "source": "outfred",
+      "identicalTo": "marketing-ideas",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\marketing-ideas",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "marketing-psychology",
+      "source": "claude-app",
+      "identicalTo": "marketing-psychology",
+      "path": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\marketing-psychology",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "marketing-psychology",
+      "source": "outfred",
+      "identicalTo": "marketing-psychology",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\marketing-psychology",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "cro",
+      "source": "claude-app",
+      "identicalTo": "cro",
+      "path": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\page-conversion-optimizer",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "cro",
+      "source": "outfred",
+      "identicalTo": "cro",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\cro",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "pdf",
+      "source": "codex",
+      "identicalTo": "pdf",
+      "path": "C:\\Users\\Admin\\.codex\\skills\\pdf",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "performance-marketer",
+      "source": "marketing-os",
+      "identicalTo": "performance-marketer",
+      "path": "C:\\Users\\Admin\\Documents\\marketing-os\\skills\\performance-marketer",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "prism-store-builder",
+      "source": "claude-app",
+      "identicalTo": "prism-store-builder",
+      "path": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\shopify-theme-builder",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "sales-enablement",
+      "source": "claude-app",
+      "identicalTo": "sales-enablement",
+      "path": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\sales-enablement",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "sales-enablement",
+      "source": "outfred",
+      "identicalTo": "sales-enablement",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\sales-enablement",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "schema",
+      "source": "claude-app",
+      "identicalTo": "schema",
+      "path": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\schema-markup-builder",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "schema",
+      "source": "outfred",
+      "identicalTo": "schema",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\schema",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "seo-audit",
+      "source": "claude-app",
+      "identicalTo": "seo-audit",
+      "path": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\seo-site-audit",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "seo-audit",
+      "source": "outfred",
+      "identicalTo": "seo-audit",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\seo-audit",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "web-ui-designer",
+      "source": "outfred",
+      "identicalTo": "web-ui-designer",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\ui-ux-pro-max",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "site-architecture",
+      "source": "claude-app",
+      "identicalTo": "site-architecture",
+      "path": "C:\\Users\\Admin\\AppData\\Roaming\\Claude\\local-agent-mode-sessions\\skills-plugin\\afea3e1f-024e-4308-87b9-f4e8b80e84c5\\708f3dc2-784b-483d-88ed-ecef87a8724d\\skills\\website-structure-planner",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "site-architecture",
+      "source": "outfred",
+      "identicalTo": "site-architecture",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\site-architecture",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "ab-testing",
+      "source": "outfred",
+      "identicalTo": "ab-testing",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\ab-testing",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "ad-creative",
+      "source": "outfred",
+      "identicalTo": "ad-creative",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\ad-creative",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "ads",
+      "source": "outfred",
+      "identicalTo": "ads",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\ads",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "analytics",
+      "source": "outfred",
+      "identicalTo": "analytics",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\analytics",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "aso",
+      "source": "outfred",
+      "identicalTo": "aso",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\aso",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "churn-prevention",
+      "source": "outfred",
+      "identicalTo": "churn-prevention",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\churn-prevention",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "co-marketing",
+      "source": "outfred",
+      "identicalTo": "co-marketing",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\co-marketing",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "cold-email",
+      "source": "outfred",
+      "identicalTo": "cold-email",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\cold-email",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "community-marketing",
+      "source": "outfred",
+      "identicalTo": "community-marketing",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\community-marketing",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "competitor-profiling",
+      "source": "outfred",
+      "identicalTo": "competitor-profiling",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\competitor-profiling",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "competitors",
+      "source": "outfred",
+      "identicalTo": "competitors",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\competitors",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "copy-editing",
+      "source": "outfred",
+      "identicalTo": "copy-editing",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\copy-editing",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "customer-research",
+      "source": "outfred",
+      "identicalTo": "customer-research",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\customer-research",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "directory-submissions",
+      "source": "outfred",
+      "identicalTo": "directory-submissions",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\directory-submissions",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "emails",
+      "source": "outfred",
+      "identicalTo": "emails",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\emails",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "free-tools",
+      "source": "outfred",
+      "identicalTo": "free-tools",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\free-tools",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "image",
+      "source": "outfred",
+      "identicalTo": "image",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\image",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "launch",
+      "source": "outfred",
+      "identicalTo": "launch",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\launch",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "lead-magnets",
+      "source": "outfred",
+      "identicalTo": "lead-magnets",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\lead-magnets",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "onboarding",
+      "source": "outfred",
+      "identicalTo": "onboarding",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\onboarding",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "paywalls",
+      "source": "outfred",
+      "identicalTo": "paywalls",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\paywalls",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "popups",
+      "source": "outfred",
+      "identicalTo": "popups",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\popups",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "pricing",
+      "source": "outfred",
+      "identicalTo": "pricing",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\pricing",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "product-marketing",
+      "source": "outfred",
+      "identicalTo": "product-marketing",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\product-marketing",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "referrals",
+      "source": "outfred",
+      "identicalTo": "referrals",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\referrals",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "revops",
+      "source": "outfred",
+      "identicalTo": "revops",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\revops",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "signup",
+      "source": "outfred",
+      "identicalTo": "signup",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\signup",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "social",
+      "source": "outfred",
+      "identicalTo": "social",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\social",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    },
+    {
+      "name": "video",
+      "source": "outfred",
+      "identicalTo": "video",
+      "path": "C:\\Users\\Admin\\Desktop\\Projects\\Outfred\\skill\\video",
+      "note": "superseded variant (see MERGE-LOG.md)"
+    }
+  ]
+}

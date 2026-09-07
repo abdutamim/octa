@@ -1,0 +1,77 @@
+/* ═══════════════════════════════════════════════════════════════════
+   brand.css — EVERY decision that makes this brand not the last brand.
+   Loads after style.css and wins every conflict.
+
+   style.css holds no brand decisions at all. If you find yourself
+   editing style.css to change how a project looks, the thing you want
+   belongs here instead — or it is a missing grammar variant, which
+   belongs in style.css as a NEW variant, never as a changed default.
+
+   Fill this in BEFORE writing a single line of data.js.
+   → references/grammar.md · references/color.md · references/scale.md
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── 1 · THE THREE COLOURS ─────────────────────────────────────
+     Sample the accent from your own photography rather than
+     inventing it:  node <skill>/scripts/probe.mjs <your-image>   */
+  --ground: #101014;   /* 60–92% of pixels */
+  --ink:    #F3F3F5;   /*  6–12%           */
+  --accent: #5B7FE8;   /*  1–10% — one word per slide */
+
+  --paper:        #FBFAF7;   /* light-ground mode */
+  --ink-on-light: #17120E;
+
+  /* Grid chips. Default: all accent — the labels differentiate, not the
+     hues. Override with six real colours ONLY when the six points are a
+     genuine taxonomy (error types, levels, categories). */
+  --c1:var(--accent); --c2:var(--accent); --c3:var(--accent);
+  --c4:var(--accent); --c5:var(--accent); --c6:var(--accent);
+
+  /* ── 2 · GEOMETRY — move these. ────────────────────────────────
+     Two brands on identical margins look related even in different
+     colours. The margin system is a signature; treat it like one. */
+  --inset:    34px;   /* card side inset       */
+  --insetTop: 60px;   /* card top inset        */
+  --band:    143px;   /* bottom dead zone      */
+  --radius:   30px;   /* card corner           */
+  --gut:      72px;   /* content gutter        */
+  --railY:    40px;   /* chrome top offset     */
+
+  /* shell-specific — only the one your shell uses matters */
+  --notch:    42%;    /* sh-card  step position */
+  --matte:   150px;   /* sh-passe matte         */
+  --panelW:  232px;   /* sh-panel band width    */
+  --split:    62%;    /* sh-band  division      */
+  --frameIn:  46px;   /* sh-frame hairline      */
+  --ruleStep: 90px;   /* gr-rules pitch         */
+
+  /* ── 3 · TYPE MECHANICS ────────────────────────────────────────
+     Leading and tracking are as much of a signature as the typeface.
+     Arabic wants looser leading than a Latin grotesk: .98–1.12 vs
+     .78–.92, because the descenders and the kashida need the room. */
+  --lead:  .92;
+  --track: -.01em;
+  --grain: .30;
+}
+
+/* ── 4 · FONTS ─────────────────────────────────────────────────────
+   Drop files into fonts/ and repoint these. Keep the ROLE names —
+   the core stylesheet binds to Display / Body / Latin / LatinDisp,
+   not to filenames. Uncomment and edit:
+
+@font-face { font-family:"Display"; src:url("fonts/display.otf") format("opentype"); font-display:block }
+@font-face { font-family:"Body";    src:url("fonts/body.ttf")    format("truetype"); font-display:block }
+*/
+
+/* ── 5 · ANYTHING ELSE THIS BRAND NEEDS ────────────────────────────
+   Per-brand overrides go here, not upstream. Examples:
+
+.headline        { font-weight:700 }
+.kicker          { letter-spacing:.3em }
+.sh-panel .shell { background:#1a1512 }
+
+   If two brands need the SAME override, it is not an override — it is
+   a grammar variant that style.css is missing. Add it there as a new
+   named variant so the next brand can choose it instead of inheriting
+   it. That distinction is what stops the template re-forming.        */

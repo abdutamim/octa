@@ -1,0 +1,652 @@
+/* carousel-forge — the CORE stylesheet
+   ═════════════════════════════════════════════════════════════════
+   This file contains only what is true for EVERY brand: canvas size,
+   layer order, type mechanics, and the six grammar axes.
+
+   It contains NO brand decisions. Colours, fonts, geometry and the
+   chosen grammar all live in `brand.css`, which loads after this file
+   and wins every conflict.
+
+   ── THE SIX AXES ───────────────────────────────────────────────────
+   A brand is not three colours. It is a silhouette. These six classes
+   go on `.slide` and decide the shape of every post:
+
+     sh-*   SHELL     how content meets the frame
+            card · full · frame · panel · passe · band
+     ch-*   CHROME    the persistent identity marks
+            rail · foot · corner · spine · index · none
+     gr-*   GROUND    the surface treatment
+            glow · flat · paper · rules · vignette · wash
+     eb-*   EYEBROW   the kicker form
+            wobble · caps · rule · chip · numeral · none
+     ac-*   ACCENT    how the accent colour touches type
+            text · mark · rule · bar · none
+     an-*   ANCHOR    default vertical position of the copy block
+            top · mid · base · third
+
+   6 × 6 × 6 × 6 × 5 × 4 = 25,920 silhouettes. The first three change
+   the shape at feed size, which is the only place sameness shows.
+
+   → references/grammar.md                                           */
+
+/* ── FONTS — four roles, not four filenames. ──────────────────────
+   Drop your own files into fonts/ and keep the role names so the CSS
+   still binds. Every stack falls back to a system font, so a missing
+   file degrades instead of breaking.
+     Display    the headline face. One per brand.
+     Body       running text, kickers, grid chips.
+     Latin      chrome + numerals (a plain grotesk).
+     LatinDisp  optional second display face for emphasis words.
+   For a non-Latin script, Display and Body must cover it.
+   → references/scripts-rtl.md                                       */
+
+@font-face { font-family:"Display";   src:url("fonts/display.otf")        format("opentype"); font-display:block }
+@font-face { font-family:"Body";      src:url("fonts/body.ttf")           format("truetype"); font-display:block }
+@font-face { font-family:"Body";      src:url("fonts/body-bold.ttf")      format("truetype"); font-weight:800; font-display:block }
+@font-face { font-family:"Latin";     src:url("fonts/latin.ttf")          format("truetype"); font-display:block }
+@font-face { font-family:"Latin";     src:url("fonts/latin-medium.ttf")   format("truetype"); font-weight:500; font-display:block }
+@font-face { font-family:"Latin";     src:url("fonts/latin-semibold.ttf") format("truetype"); font-weight:600; font-display:block }
+@font-face { font-family:"Latin";     src:url("fonts/latin-bold.ttf")     format("truetype"); font-weight:700; font-display:block }
+@font-face { font-family:"LatinDisp"; src:url("fonts/latin-display.ttf")  format("truetype"); font-display:block }
+@font-face { font-family:"Sign";      src:url("fonts/sign.ttf")           format("truetype"); font-display:block }
+
+/* ── DEFAULTS ONLY. Every one of these is meant to be overridden in
+      brand.css. Shipping these values IS the template problem. ───── */
+:root {
+  --ground: #101014;
+  --ink:    #F3F3F5;
+  --accent: #5B7FE8;
+
+  --ok:#6FBF73; --bad:#D8443C; --warn:#E8B04B;
+
+  --c1:var(--accent); --c2:var(--accent); --c3:var(--accent);
+  --c4:var(--accent); --c5:var(--accent); --c6:var(--accent);
+
+  --paper:        #FBFAF7;
+  --ink-on-light: #17120E;
+
+  /* canvas — fixed, never per brand */
+  --W: 1080px;  --H: 1350px;
+
+  /* GEOMETRY — per brand. Two brands on the same numbers look related
+     even with different colours, so move them. */
+  --inset:    34px;   /* card side inset            */
+  --insetTop: 60px;   /* card top inset             */
+  --band:    143px;   /* bottom dead zone           */
+  --radius:   30px;   /* card corner                */
+  --gut:      72px;   /* content gutter             */
+  --railY:    40px;   /* chrome top offset          */
+  --notch:    42%;    /* where the card edge steps  */
+  --matte:   150px;   /* sh-passe margin            */
+  --panelW:  232px;   /* sh-panel band width        */
+  --split:    62%;    /* sh-band division           */
+  --frameIn:  46px;   /* sh-frame hairline inset    */
+  --ruleStep: 90px;   /* gr-rules pitch             */
+  --grain:   .30;     /* grain opacity              */
+  --lead:    .92;     /* headline leading           */
+  --track:  -.01em;   /* headline tracking          */
+
+  /* The surface a shell tints. NOT the same as --ground: a light slide keeps
+     --ground dark for the CTA's sake, so a shell that tinted --ground would
+     paint a dark band under dark type. Every shell derives from this. */
+  --surface: var(--ground);
+}
+
+* { box-sizing: border-box }
+html, body { width:var(--W); height:var(--H); margin:0; overflow:hidden; background:var(--ground) }
+body { color:var(--ink); font-family:"Body", system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing:antialiased }
+#root, .slide { width:var(--W); height:var(--H) }
+/* `color` is inherited as a COMPUTED value, so a `color:var(--ink)` on <body>
+   resolves --ink once, at the root, and never flips for a light slide — any
+   element that doesn't set its own colour then inherits light ink onto light
+   paper. Declaring it here, on the same element that overrides --ink, is what
+   makes the polarity flip actually inherit. */
+.slide { position:relative; overflow:hidden; background:var(--ground); color:var(--ink) }
+
+/* ═══════════════════════════════════════════════════════════════════
+   1 · SHELL — how content meets the frame
+   The `.shell` element is an empty layer the variants paint into, so a
+   slide-level form override (f-poster etc.) can hide it without
+   fighting a pseudo-element.
+   ═══════════════════════════════════════════════════════════════════ */
+/* The shell layer lives INSIDE .card at z-index 2: above the ground and any
+   photo (z1), below the copy (z4). Appended by the renderer, so adding a shell
+   variant never means editing nine slide renderers. */
+.shell { position:absolute; inset:0; z-index:2; pointer-events:none }
+
+.card {
+  position:absolute; overflow:hidden;
+  top:var(--insetTop); left:var(--inset);
+  width:calc(var(--W) - var(--inset)*2);
+  height:calc(var(--H) - var(--insetTop) - var(--band));
+  border-radius:var(--radius); background:var(--ground);
+}
+
+/* ── sh-card — a floating card with a stepped top edge (the original).
+      The notch is a strong signature: use it on ONE brand, not four. */
+.sh-card .card {
+  clip-path:polygon(0 0, var(--notch) 0, calc(var(--notch) + 3.5%) 6.4%, 100% 6.4%, 100% 100%, 0 100%);
+}
+.slide.sh-card:not(.latin) .card {
+  clip-path:polygon(100% 0, calc(100% - var(--notch)) 0,
+                    calc(100% - var(--notch) - 3.5%) 6.4%, 0 6.4%, 0 100%, 100% 100%);
+}
+.card.plain { clip-path:none }
+
+/* ── sh-full — no card. Content runs to the frame edge; margins come
+      from --gut alone. The quietest shell, and the hardest: with no
+      card edge to lean on, placement has to be right. */
+.sh-full .card {
+  top:0; left:0; width:var(--W); height:var(--H);
+  border-radius:0; clip-path:none;
+}
+
+/* ── sh-frame — a hairline box, corners open. Gallery/editorial.
+      Inside and outside the rule are the SAME surface — the line is a
+      drawn mark, not a container. */
+.sh-frame .card { top:0; left:0; width:var(--W); height:var(--H); border-radius:0; clip-path:none }
+.sh-frame .shell {
+  border:1.5px solid color-mix(in srgb, var(--ink) 26%, transparent);
+  inset:var(--frameIn);
+  /* corners open: mask out 34px at each end of every edge */
+  -webkit-mask:
+    linear-gradient(90deg,  transparent 0 34px, #000 34px calc(100% - 34px), transparent calc(100% - 34px)),
+    linear-gradient(180deg, transparent 0 34px, #000 34px calc(100% - 34px), transparent calc(100% - 34px));
+  -webkit-mask-composite:source-over;
+          mask-composite:add;
+}
+
+/* ── sh-panel — asymmetric. A vertical band down one side in a second
+      surface; the content column takes the rest. The only shell whose
+      silhouette is not symmetric, so it never reads as the others. */
+.sh-panel .card { top:0; left:0; width:var(--W); height:var(--H); border-radius:0; clip-path:none }
+.sh-panel .shell {
+  inset-inline-start:auto; inset-inline-end:0; width:var(--panelW);
+  background:color-mix(in srgb, var(--ink) 8%, var(--surface));
+  border-inline-start:1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+}
+/* the content column must clear the band */
+.sh-panel .copy, .sh-panel .bodytxt, .sh-panel .hookgrid,
+.sh-panel .docgrid, .sh-panel .cmp { margin-inline-end:var(--panelW) }
+
+/* ── sh-passe — passe-partout. A wide even matte with the content
+      field inset inside it. Forces a high empty fraction, which is why
+      it suits brands whose product IS restraint. */
+.sh-passe .card {
+  top:var(--matte); left:var(--matte);
+  width:calc(var(--W) - var(--matte)*2);
+  height:calc(var(--H) - var(--matte)*2);
+  border-radius:0; clip-path:none;
+  background:color-mix(in srgb, var(--ink) 4%, var(--surface));
+  outline:1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+/* ── sh-band — a horizontal division. Two zones, two surfaces. The
+      argument sits above the line, the support below it. */
+.sh-band .card { top:0; left:0; width:var(--W); height:var(--H); border-radius:0; clip-path:none }
+.sh-band .shell {
+  top:var(--split); bottom:0; inset-inline:0;
+  background:color-mix(in srgb, var(--ink) 7%, var(--surface));
+  border-top:1.5px solid color-mix(in srgb, var(--ink) 20%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   2 · LAYERS — this order IS the depth system. Never per brand.
+   ═══════════════════════════════════════════════════════════════════ */
+.photo, .subject { position:absolute; inset:0; width:100%; height:100%; object-fit:cover }
+.photo   { z-index:1 }
+.subject { z-index:5; pointer-events:none }   /* cutout ABOVE the copy */
+.copy    { position:absolute; z-index:4 }
+.bodytxt { position:absolute; z-index:7 }     /* always on top: must stay readable */
+
+/* local washes only — never a full-frame scrim */
+.wash { position:absolute; inset:0; z-index:2; pointer-events:none }
+.w-top    { background:linear-gradient(180deg, rgba(6,5,4,.88) 0%, rgba(6,5,4,.40) 26%, transparent 48%) }
+.w-bottom { background:linear-gradient(0deg,   rgba(6,5,4,.90) 0%, rgba(6,5,4,.34) 20%, transparent 40%) }
+.w-left   { background:linear-gradient(90deg,  rgba(6,5,4,.86) 0%, rgba(6,5,4,.42) 30%, transparent 58%) }
+.w-right  { background:linear-gradient(270deg, rgba(6,5,4,.86) 0%, rgba(6,5,4,.42) 30%, transparent 58%) }
+.w-bar    { background:linear-gradient(0deg, transparent 0 22%, rgba(4,4,4,.93) 22% 44%, transparent 44%) }
+
+/* grain — every flat fill needs it or it reads as a default swatch.
+   overlay, not soft-light: soft-light is invisible on a near-black ground. */
+.grain {
+  position:absolute; inset:0; z-index:3; opacity:var(--grain); pointer-events:none;
+  mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.42'/%3E%3C/svg%3E");
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   3 · GROUND — the surface treatment of a slide with no photo
+   ═══════════════════════════════════════════════════════════════════ */
+.card.textbg { background:var(--ground) }
+
+/* ── gr-glow — one light source, top-right, falling off fast, over a
+      faint engineering grid. Loud and modern. */
+.gr-glow .card.textbg {
+  background:
+    radial-gradient(ellipse 58% 34% at 88% -4%,
+      color-mix(in srgb, var(--accent) 34%, transparent), transparent 58%),
+    radial-gradient(ellipse 44% 26% at 4% 104%,
+      color-mix(in srgb, var(--accent) 10%, transparent), transparent 54%),
+    linear-gradient(158deg,
+      color-mix(in srgb, var(--ground) 88%, white) 0%, var(--ground) 46%, var(--ground) 100%);
+}
+.gr-glow .card.textbg::before {
+  position:absolute; inset:0; z-index:1; content:""; pointer-events:none; opacity:.5;
+  background-image:
+    linear-gradient(rgba(255,255,255,.026) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.026) 1px, transparent 1px);
+  background-size:96px 96px;
+}
+
+/* ── gr-flat — the colour and nothing else. Grain carries the surface.
+      Hardest to make look designed, and the most expensive when it is. */
+.gr-flat .card.textbg { background:var(--ground) }
+.gr-flat .grain { opacity:calc(var(--grain) * 1.35) }
+
+/* ── gr-paper — light stock. Multiply grain, warm, no gradient. */
+.gr-paper .card.textbg { background:var(--paper) }
+.gr-paper .grain { mix-blend-mode:multiply; opacity:calc(var(--grain) * .4) }
+
+/* ── gr-rules — ruled stock: hairlines at --ruleStep, like a ledger or
+      a manuscript sheet. Type sits ON the rules, not between them. */
+.gr-rules .card.textbg {
+  background:
+    repeating-linear-gradient(180deg,
+      transparent 0 calc(var(--ruleStep) - 1px),
+      color-mix(in srgb, var(--ink) 9%, transparent) calc(var(--ruleStep) - 1px) var(--ruleStep)),
+    var(--ground);
+}
+
+/* ── gr-vignette — bright centre, edges falling away. Photographic
+      without a photograph. */
+.gr-vignette .card.textbg {
+  background:
+    radial-gradient(ellipse 92% 76% at 50% 42%,
+      color-mix(in srgb, var(--ground) 76%, var(--ink)) 0%,
+      var(--ground) 58%,
+      color-mix(in srgb, var(--ground) 84%, #000) 100%);
+}
+
+/* ── gr-wash — one diagonal two-stop sweep. Calm, editorial, no spot. */
+.gr-wash .card.textbg {
+  background:linear-gradient(142deg,
+    color-mix(in srgb, var(--accent) 16%, var(--ground)) 0%,
+    var(--ground) 54%,
+    color-mix(in srgb, var(--ground) 88%, #000) 100%);
+}
+
+.card.paper { background:var(--paper) }
+.card.paper::before { display:none }
+
+/* ═══════════════════════════════════════════════════════════════════
+   4 · CHROME — the persistent identity marks
+   One declaration flips the whole slide for light grounds; never patch
+   individual elements.
+   ═══════════════════════════════════════════════════════════════════ */
+.slide.onlight { --ink: var(--ink-on-light); --surface: var(--paper) }
+.slide.onlight .grain { mix-blend-mode:multiply; opacity:calc(var(--grain) * .4) }
+
+/* ── ch-rail — three-part top rail + badge + footer band (the original).
+      The loudest chrome. It shouts "system" — right for a build/teardown
+      account, wrong for anything that trades on restraint. */
+.rail {
+  position:absolute; top:var(--railY); left:0; right:0; z-index:9;
+  display:flex; justify-content:space-between; padding:0 62px;
+  direction:ltr; color:color-mix(in srgb, var(--ink) 82%, transparent);
+  font:600 17px/1 "Latin", system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing:.16em; text-transform:uppercase;
+}
+.arrow {
+  position:absolute; top:calc(var(--railY) + 56px); inset-inline-end:56px; z-index:9;
+  display:grid; width:52px; height:52px; place-items:center;
+  border:1.6px solid color-mix(in srgb, var(--ink) 70%, transparent); border-radius:15px;
+  color:var(--ink); font:300 27px/1 "Latin", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.foot {
+  position:absolute; bottom:0; left:0; right:0; height:var(--band); z-index:9;
+  display:flex; align-items:center; justify-content:space-between; padding:0 62px;
+  direction:ltr;
+}
+.foot b { color:var(--ink); font:600 22px/1 "Latin", system-ui, -apple-system, "Segoe UI", sans-serif }
+.foot i {
+  margin-inline-start:14px; padding-inline-start:14px; font-style:normal;
+  border-inline-start:1px solid color-mix(in srgb, var(--ink) 26%, transparent);
+  color:color-mix(in srgb, var(--ink) 55%, transparent);
+  font:400 17px/1 "Latin", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.sign { color:var(--ink); font-family:"Sign", "Segoe Script", cursive; font-size:56px; line-height:.8; transform:rotate(-5deg) }
+
+/* ── ch-foot — bottom only. No top rail, no badge. The copy owns the
+      upper 88% of the frame outright. */
+.ch-foot .foot { height:auto; bottom:34px; padding:0 var(--gut) }
+.ch-foot .foot b { font-size:20px }
+/* the compact footer every non-rail chrome shares — it carries the handle
+   only, because the chrome itself is already doing the identity work */
+.ch-spine .foot, .ch-index .foot { height:auto; padding:0 var(--gut) }
+.ch-spine .foot { bottom:34px }
+.ch-index .foot { bottom:92px }
+.ch-spine .foot b, .ch-index .foot b { font-size:19px }
+.ch-spine .sign, .ch-index .sign { display:none }
+
+/* ── ch-corner — ONE mark, one fixed corner, nothing else. For brands
+      whose spec forbids a full lockup on every slide. */
+.mark {
+  position:absolute; z-index:9;
+  font:700 26px/1 "Latin", system-ui, sans-serif; letter-spacing:.06em;
+  color:color-mix(in srgb, var(--ink) 62%, transparent);
+}
+.mark.tr { top:var(--railY); inset-inline-end:var(--gut) }
+.mark.tl { top:var(--railY); inset-inline-start:var(--gut) }
+.mark.br { bottom:var(--railY); inset-inline-end:var(--gut) }
+.mark.bl { bottom:var(--railY); inset-inline-start:var(--gut) }
+.mark em { font-style:normal; color:var(--accent) }
+
+/* ── ch-spine — vertical letterspaced text up one edge. Reads as a
+      book spine or a gallery label; strongest on tall empty frames. */
+.spine {
+  position:absolute; z-index:9; top:0; bottom:0; inset-inline-start:0;
+  width:var(--gut); display:grid; place-items:center; direction:ltr;
+  writing-mode:vertical-rl; transform:rotate(180deg);
+  font:600 16px/1 "Latin", system-ui, sans-serif;
+  letter-spacing:.34em; text-transform:uppercase;
+  color:color-mix(in srgb, var(--ink) 48%, transparent);
+}
+.ch-spine .copy, .ch-spine .bodytxt { margin-inline-start:calc(var(--gut) * .5) }
+
+/* ── ch-index — a page counter and a progress hairline that grows
+      across the deck. Editorial, quiet, and it tells the reader how
+      much is left, which measurably holds the swipe. */
+.pageno {
+  position:absolute; z-index:9; top:var(--railY); inset-inline-end:var(--gut); direction:ltr;
+  font:600 20px/1 "Latin", system-ui, sans-serif; letter-spacing:.1em; color:var(--ink);
+}
+.pageno i { font-style:normal; color:color-mix(in srgb, var(--ink) 42%, transparent) }
+.progress {
+  position:absolute; z-index:9; left:var(--gut); right:var(--gut); bottom:52px; height:2px;
+  background:color-mix(in srgb, var(--ink) 16%, transparent);
+}
+.progress span { display:block; height:100%; background:var(--accent) }
+
+/* ═══════════════════════════════════════════════════════════════════
+   5 · EYEBROW — the kicker form
+   ═══════════════════════════════════════════════════════════════════ */
+.kicker {
+  position:relative; display:inline-block; margin-bottom:26px;
+  /* ink, not accent. An accent picked to carry one large word routinely
+     lands under 4.5:1 at 25px and the audit rejects it. */
+  color:var(--ink); font:800 25px/1.15 "Body", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* ── eb-wobble — a hand-drawn ring. Warm, informal, personal. */
+.eb-wobble .kicker { padding:9px 26px 7px; text-shadow:0 2px 12px rgba(0,0,0,.95) }
+.eb-wobble .kicker::before {
+  position:absolute; inset:-5px -12px; content:"";
+  border:2.4px solid var(--accent);
+  border-radius:60% 42% 58% 44% / 126% 118% 130% 120%;
+}
+
+/* ── eb-caps — letterspaced caps on a hairline. No container at all.
+      The most restrained eyebrow; reads as editorial, not as UI. */
+.eb-caps .kicker {
+  padding:0 0 10px; font-weight:600; font-size:21px;
+  letter-spacing:.26em; text-transform:uppercase;
+  color:color-mix(in srgb, var(--ink) 66%, transparent);
+  border-bottom:1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+/* ── eb-rule — a short accent rule, then the word, on one line. */
+.eb-rule .kicker { padding-inline-start:70px; font-weight:600; font-size:24px }
+.eb-rule .kicker::before {
+  position:absolute; inset-inline-start:0; top:50%; content:"";
+  width:52px; height:3px; background:var(--accent);
+}
+
+/* ── eb-chip — a solid pill. UI-flavoured; use it when the brand IS
+      software, and almost never otherwise. */
+.eb-chip .kicker {
+  padding:10px 24px 8px; border-radius:999px; background:var(--accent);
+  color:color-mix(in srgb, var(--ground) 88%, var(--ink)); font-size:23px;
+}
+
+/* ── eb-numeral — the kicker becomes a margin number. Documentation. */
+.eb-numeral .kicker {
+  padding:0; font-family:"Latin","Body",system-ui,sans-serif; font-weight:800;
+  font-size:76px; line-height:.8; letter-spacing:-.04em;
+  color:color-mix(in srgb, var(--accent) 80%, transparent);
+}
+
+.eb-none .kicker { display:none }
+
+/* ═══════════════════════════════════════════════════════════════════
+   6 · HEADLINE + ACCENT FORM
+   ═══════════════════════════════════════════════════════════════════ */
+.headline {
+  margin:0; display:flex; flex-direction:column;
+  font-family:"Display", system-ui, sans-serif; font-weight:400;
+  font-size:104px; line-height:var(--lead); letter-spacing:var(--track);
+}
+.headline .ln { display:block; white-space:nowrap; position:relative }
+.headline .in1 { padding-inline-start:78px }
+.headline .in2 { padding-inline-start:156px }
+.headline .out1 { padding-inline-end:78px }
+.onphoto .headline { text-shadow:0 8px 40px rgba(0,0,0,.55) }
+
+/* ── ac-text — the accent word changes colour. The default, and the
+      one everybody reaches for. */
+.ac-text .headline .accent { color:var(--accent) }
+
+/* ── ac-mark — a solid block behind the word. The word stays ink;
+      the accent becomes a shape. Loud, print-poster. */
+.ac-mark .headline .accent {
+  background:var(--accent); color:color-mix(in srgb, var(--ground) 90%, var(--ink));
+  padding:0 .16em .04em; box-decoration-break:clone; -webkit-box-decoration-break:clone;
+  align-self:flex-start;
+}
+/* an inline-sized block needs the row to shrink to the ink */
+.ac-mark .headline .ln.accent { display:inline-block; width:auto }
+
+/* ── ac-rule — the word stays ink; a rule sits beneath it. The quietest
+      way to emphasise, and the only one that survives on light stock.
+      `.ln` is a block, so its box is the FULL column — without max-content
+      the rule runs the whole line and reads as a divider, not an
+      underline. Same trap as the hand-drawn marks: measure the ink. */
+.ac-rule .headline .accent { align-self:flex-start; width:max-content }
+.ac-rule .headline .accent::after {
+  position:absolute; inset-inline:0 auto; bottom:.02em; content:"";
+  width:100%; height:.055em; background:var(--accent);
+}
+
+/* ── ac-bar — the accent never touches the word. It is a bar in the
+      margin beside the block. Architectural. */
+.ac-bar .copy::before {
+  position:absolute; inset-inline-start:-34px; top:.12em; bottom:.12em; content:"";
+  width:6px; background:var(--accent);
+}
+
+/* ── ac-none — the accent is banned from type entirely and lives only
+      in the chrome. Law 1's "ban the accent" made structural. */
+
+.slide.onlight .headline { color:var(--ink); text-shadow:none }
+
+.latin .headline { font-family:"LatinDisp", Georgia, "Times New Roman", serif; line-height:calc(var(--lead) - .04); letter-spacing:-.02em; direction:ltr }
+.latin .headline .ln { text-align:left }
+.latin .kicker, .latin .bodytxt,
+.latin .hook h4, .latin .hook p { font-family:"Latin", system-ui, -apple-system, "Segoe UI", sans-serif }
+.latin .bodytxt { font-size:29px; line-height:1.5 }
+.latin .cta .lead { font-family:"LatinDisp", Georgia, "Times New Roman", serif }
+.latin .cta .pre, .latin .cta .post { font-family:"Latin", system-ui, -apple-system, "Segoe UI", sans-serif }
+.latin .ghost { right:auto; left:44px }
+
+/* ── body copy ───────────────────────────────────────────────────── */
+.bodytxt {
+  margin:0; color:var(--ink);
+  font:400 30px/1.62 "Body", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.bodytxt.center { text-align:center }
+.bodytxt b { font-weight:800 }
+.onphoto .bodytxt { color:#FDFAF5; text-shadow:0 2px 9px rgba(0,0,0,.98), 0 0 30px rgba(0,0,0,.86) }
+.slide.onlight .bodytxt { color:color-mix(in srgb, var(--ink) 88%, transparent); text-shadow:none }
+
+/* ── ANCHOR — default vertical placement when a slide omits `at` ──── */
+.an-top   .copy { --anchorT: 190px }
+.an-third .copy { --anchorT: 372px }   /* optical third — the 31–32% band */
+.an-mid   .copy { --anchorT: 500px }
+.an-base  .copy { --anchorT: 800px }
+
+/* ghost step number */
+.ghost {
+  position:absolute; right:44px; bottom:-30px; z-index:2;
+  color:color-mix(in srgb, var(--ink) 5%, transparent);
+  font:700 300px/.78 "Latin", system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing:-.05em;
+}
+.rule { position:absolute; z-index:4; height:9px; width:140px; border-radius:99px; background:var(--accent) }
+
+/* ── grid slide ──────────────────────────────────────────────────── */
+.hookgrid { position:absolute; z-index:6; display:grid; grid-template-columns:1fr 1fr; gap:40px 62px }
+.hook h4 {
+  display:inline-block; margin:0 0 11px; padding:9px 24px 7px; border-radius:999px;
+  font:800 28px/1 "Body", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.hook p { margin:0; color:color-mix(in srgb, var(--ink) 88%, transparent); font:400 27px/1.48 "Body", system-ui, -apple-system, "Segoe UI", sans-serif }
+.hook.c1 h4{background:var(--c1)} .hook.c2 h4{background:var(--c2)}
+.hook.c3 h4{background:var(--c3)} .hook.c4 h4{background:var(--c4)}
+.hook.c5 h4{background:var(--c5)} .hook.c6 h4{background:var(--c6)}
+.hook h4 { color:color-mix(in srgb, var(--ground) 88%, var(--ink)) }
+/* eb-caps brands get editorial grid labels too — a pill would fight them */
+.eb-caps .hook h4 {
+  padding:0 0 8px; border-radius:0; background:none !important; color:var(--ink);
+  font-weight:600; font-size:22px; letter-spacing:.2em; text-transform:uppercase;
+  border-bottom:1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+/* ── CTA — strips the template on purpose ────────────────────────── */
+/* The CTA strips the deck to nothing — Law 3. It has no card, so it reads the
+   slide background directly. A light brand needs a light one, or the flipped
+   ink lands invisible on the dark default. */
+.slide.bare { background:color-mix(in srgb, var(--ground) 92%, #000) }
+.slide.bare.onlight { background:color-mix(in srgb, var(--paper) 95%, #000) }
+.slide.bare .card, .slide.bare .arrow, .slide.bare .shell { display:none }
+.cta { position:absolute; inset:0; z-index:6; display:grid; place-content:center; text-align:center }
+.card .cta { align-content:end; padding:0 90px 92px }
+.card .cta .lead, .card .cta .key { text-shadow:0 4px 22px rgba(0,0,0,.92) }
+.card .cta .pre, .card .cta .post { color:rgba(255,255,255,.9); text-shadow:0 2px 12px rgba(0,0,0,.96) }
+.cta .pre  { color:color-mix(in srgb, var(--ink) 62%, transparent); font:400 30px/1.5 "Body", system-ui, sans-serif; margin-bottom:34px }
+.cta .lead { font-family:"Display", system-ui, sans-serif; font-size:62px; line-height:1.1; color:var(--ink) }
+.cta .key  {
+  margin:10px auto 0; font-family:"Latin", system-ui, sans-serif; font-weight:700; font-size:132px;
+  line-height:1; letter-spacing:-.02em; color:var(--accent); direction:ltr;
+}
+.cta .post { margin-top:44px; color:color-mix(in srgb, var(--ink) 72%, transparent); font:400 27px/1.62 "Body", system-ui, sans-serif; max-width:760px }
+
+/* ═══════════════════════════════════════════════════════════════════
+   7 · SLIDE FORMS — per-slide structure. These may override the brand
+   shell: Law 7 says break the template exactly once, by subtraction.
+   Declared AFTER the shells so a form override wins.
+   → references/archetypes.md
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── BLEED — full-bleed image, type in the void, no card ── */
+.slide.f-bleed .card { top:0; left:0; width:var(--W); height:var(--H); border-radius:0; clip-path:none }
+.slide.f-bleed .shell, .slide.f-bleed .rail, .slide.f-bleed .arrow { display:none }
+.slide.f-bleed .foot { padding:0 56px 30px; height:auto; bottom:0 }
+.slide.f-bleed .foot b { font-size:20px }
+.slide.f-bleed .headline { line-height:.86; letter-spacing:-.025em }
+.slide.f-bleed .headline .mark {
+  background:var(--accent); padding:0 .18em .06em;
+  box-decoration-break:clone; -webkit-box-decoration-break:clone;
+}
+
+/* ── POSTER — flat field, giant type, hand marks, no photo ── */
+.slide.f-poster .card { clip-path:none; border-radius:0; top:0; left:0; width:var(--W); height:var(--H); background:var(--ground) }
+.slide.f-poster .shell { display:none }
+.slide.f-poster .grain { opacity:calc(var(--grain) * 1.4) }
+.slide.f-poster .headline { line-height:.84; letter-spacing:-.03em }
+.marks { position:absolute; inset:0; z-index:6; pointer-events:none }
+.marks svg { position:absolute; overflow:visible }
+.marks path, .marks ellipse { fill:none; stroke:var(--accent); stroke-linecap:round }
+
+/* ── DOC — light documentation ground with connectors ── */
+.slide.f-doc .card { clip-path:none; background:var(--paper); border-radius:0; top:0; left:0; width:var(--W); height:var(--H) }
+.slide.f-doc .grain { mix-blend-mode:multiply; opacity:.10 }
+.docgrid { position:absolute; z-index:6; display:grid; gap:26px; grid-auto-rows:minmax(var(--docH, auto), auto) }
+.doccard {
+  position:relative; border:1.5px solid color-mix(in srgb, var(--ink) 16%, transparent);
+  border-radius:14px; padding:22px 24px; background:color-mix(in srgb, var(--paper) 96%, #fff);
+}
+.doccard .n {
+  position:absolute; top:-16px; inset-inline-start:20px;
+  min-width:34px; height:34px; padding:0 10px; border-radius:99px;
+  display:grid; place-items:center; background:var(--accent);
+  color:color-mix(in srgb, var(--ground) 90%, var(--ink));
+  font:700 19px/1 "Latin", system-ui, sans-serif;
+}
+.doccard h5 { margin:6px 0 8px; font:800 30px/1.15 "Body", system-ui, sans-serif; color:var(--ink) }
+.doccard p  { margin:0; font:400 25px/1.4 "Body", system-ui, sans-serif; color:color-mix(in srgb, var(--ink) 74%, transparent) }
+.connector { position:absolute; z-index:5; pointer-events:none }
+.connector path { fill:none; stroke:var(--ink); stroke-width:3 }
+.connector polygon { fill:var(--ink) }
+.slide:not(.latin) .connector { transform:scaleX(-1) }
+
+/* ── SPEC — margin numeral + rotated real artefact ── */
+.slide.f-spec .card { clip-path:none }
+.specnum {
+  position:absolute; z-index:6; inset-inline-start:34px; top:var(--numT, 150px);
+  writing-mode:vertical-rl; transform:rotate(180deg);
+  color:var(--accent);
+  font:800 var(--numSize, 190px)/.8 "Latin", "Body", system-ui, sans-serif;
+  letter-spacing:-.04em; opacity:var(--numOpacity, .28);
+}
+.slide.f-spec .copy, .slide.f-spec .bodytxt { inset-inline-start:200px }
+.artefact {
+  position:absolute; z-index:5; inset-inline-start:var(--artL, 170px); bottom:var(--artB, -170px);
+  width:var(--artW, 560px); border-radius:16px; overflow:hidden;
+  transform:rotate(var(--artR, -7deg)); box-shadow:0 26px 60px rgba(0,0,0,.45);
+}
+.artefact img { display:block; width:100%; height:var(--artH, 420px); object-fit:cover; object-position:var(--artPos, center) }
+
+/* ── COMPARE — two-up, exactly one variable changed ── */
+.cmp { position:absolute; z-index:6; display:grid; grid-template-columns:1fr 1fr; gap:0 46px }
+.cmp .pill {
+  display:inline-block; margin:0 auto 16px; padding:8px 22px 6px; border-radius:99px;
+  font:800 22px/1 "Body", system-ui, sans-serif;
+}
+.cmp .a .pill { background:color-mix(in srgb, var(--ink) 18%, transparent); color:var(--ink) }
+.cmp .b .pill { background:var(--accent); color:color-mix(in srgb, var(--ground) 90%, var(--ink)) }
+.cmp .col { text-align:center }
+.cmp figure {
+  margin:0; border-radius:14px; overflow:hidden; aspect-ratio:4/5;
+  background:color-mix(in srgb, var(--ink) 8%, transparent);
+  box-shadow:0 14px 40px rgba(0,0,0,.22);
+}
+.cmp figure img { display:block; width:100%; height:100%; object-fit:cover }
+.cmp figure.txt {
+  /* NOT aspect-ratio:4/5 — a sentence in a photo-shaped box is 70% empty. */
+  display:grid; place-items:center; padding:44px 32px; aspect-ratio:auto;
+  min-height:var(--cmpH, 280px);
+  border:2px solid color-mix(in srgb, var(--ink) 20%, transparent);
+  background:color-mix(in srgb, var(--ink) 5%, transparent); box-shadow:none;
+}
+.cmp figure.txt span { font:400 clamp(34px, var(--cmpFs, 52px), 72px)/1.24 "Display", system-ui, serif; color:var(--ink); text-align:center }
+.latin .cmp figure.txt span { font-family:"LatinDisp", Georgia, serif }
+.cmp .a figure.txt { border-style:dashed }
+.cmp figcaption { margin-top:16px; font:400 25px/1.35 "Body", system-ui, sans-serif; color:color-mix(in srgb, var(--ink) 80%, transparent) }
+
+/* ── TILE — zero-gutter gallery on an artboard ── */
+.slide.f-tile .card { clip-path:none; background:var(--accent) }
+.slide.f-tile .shell { display:none }
+.slide.f-tile .card::after {
+  position:absolute; inset:0; z-index:2; content:""; pointer-events:none; opacity:.16;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 118px, #fff 118px 119px),
+    repeating-linear-gradient(90deg, transparent 0 118px, #fff 118px 119px);
+}
+.tiles { position:absolute; z-index:6; display:grid; grid-template-columns:1fr 1fr; gap:0; border-radius:6px; overflow:hidden; grid-auto-rows:1fr }
+.tiles img { display:block; width:100%; height:100%; object-fit:cover; min-height:0 }
+.tiles .cap { padding:26px 24px; background:transparent; display:flex; flex-direction:column; justify-content:flex-end }
+.tiles .cap b { display:block; font:800 38px/1.02 "Latin", system-ui, sans-serif; color:#fff }
+.tiles .cap span { display:block; margin-top:12px; font:400 23px/1.45 "Body", system-ui, sans-serif; color:rgba(255,255,255,.86) }
+
+/* A stacked numeral is a Latin habit. Non-Latin scripts get it horizontal,
+   still in the margin, still behind the copy. */
+.slide:not(.latin) .specnum { writing-mode:horizontal-tb; transform:none; line-height:.82 }
