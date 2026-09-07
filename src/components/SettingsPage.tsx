@@ -7,20 +7,28 @@ import {
   Globe2,
   KeyRound,
   Languages,
+  LogIn,
   Moon,
   Palette,
   RefreshCw,
   Search,
   Send,
+  ShieldAlert,
   Sun,
   Wrench
 } from 'lucide-react'
 import type { AiTestResult, AppSettings } from '../../electron/types'
+import type { BrowserChallengeEvent, ResearchBrowserStatus, ResearchLoginSite } from '../../electron/core/octa/browser'
 import type { Locale, TranslationKey } from '../i18n'
 import { t } from '../i18n'
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error'
 type NotificationState = 'idle' | 'sending' | 'sent' | 'failed'
+const LOGIN_SITES: readonly ResearchLoginSite[] = ['facebook', 'x', 'reddit']
+
+function siteLabelKey(site: ResearchLoginSite): TranslationKey {
+  return site === 'facebook' ? 'researchFacebook' : site === 'x' ? 'researchX' : 'researchReddit'
+}
 
 function SettingField({
   icon,
@@ -83,10 +91,34 @@ export function SettingsPage({
   const [aiState, setAiState] = useState<'idle' | 'testing' | 'success' | 'error'>('idle')
   const [aiMessage, setAiMessage] = useState('')
   const [notificationState, setNotificationState] = useState<NotificationState>('idle')
+  const [browserStatus, setBrowserStatus] = useState<ResearchBrowserStatus | null>(null)
+  const [browserError, setBrowserError] = useState('')
+  const [loginOpen, setLoginOpen] = useState<ResearchLoginSite | null>(null)
+  const [loginPending, setLoginPending] = useState<ResearchLoginSite | null>(null)
+  const [challenge, setChallenge] = useState<BrowserChallengeEvent | null>(null)
 
   const label = (key: TranslationKey): string => t(key, locale)
 
   useEffect(() => setDraft(settings), [settings])
+
+  const refreshBrowserStatus = async (): Promise<void> => {
+    if (!window.octa?.research) return
+    try {
+      setBrowserStatus((await window.octa.research.status()).browser)
+      setBrowserError('')
+    } catch (error) {
+      setBrowserError(error instanceof Error ? error.message : String(error))
+    }
+  }
+
+  useEffect(() => {
+    void refreshBrowserStatus()
+    if (!window.octa?.research) return
+    return window.octa.research.onChallenge((event) => {
+      setChallenge(event)
+      void refreshBrowserStatus()
+    })
+  }, [])
 
   const setValue = <K extends keyof AppSettings>(key: K, value: AppSettings[K]): void => {
     setDraft((current) => ({ ...current, [key]: value }))
@@ -129,6 +161,44 @@ export function SettingsPage({
       setNotificationState((await onNotifyTest()) ? 'sent' : 'failed')
     } catch {
       setNotificationState('failed')
+    }
+  }
+
+  const startLogin = async (site: ResearchLoginSite): Promise<void> => {
+    setLoginPending(site)
+    setBrowserError('')
+    try {
+      await window.octa.research.loginStart(site)
+      setLoginOpen(site)
+      await refreshBrowserStatus()
+    } catch (error) {
+      setBrowserError(error instanceof Error ? error.message : String(error))
+    } finally {
+      setLoginPending(null)
+    }
+  }
+
+  const finishLogin = async (site: ResearchLoginSite): Promise<void> => {
+    setLoginPending(site)
+    try {
+      await window.octa.research.loginDone(site)
+      setLoginOpen(null)
+      await refreshBrowserStatus()
+    } catch (error) {
+      setBrowserError(error instanceof Error ? error.message : String(error))
+    } finally {
+      setLoginPending(null)
+    }
+  }
+
+  const resolveChallenge = async (): Promise<void> => {
+    if (!challenge) return
+    try {
+      await window.octa.research.challengeResolved(challenge.site)
+      setChallenge(null)
+      await refreshBrowserStatus()
+    } catch (error) {
+      setBrowserError(error instanceof Error ? error.message : String(error))
     }
   }
 
@@ -250,6 +320,46 @@ export function SettingsPage({
               <input aria-label={label('braveSearchApiKey')} autoComplete="off" onChange={(event) => setValue('braveSearchApiKey', event.target.value)} placeholder={label('braveSearchApiKeyPlaceholder')} spellCheck={false} type="password" value={draft.braveSearchApiKey} />
             </SettingField>
           </div>
+        </section>
+
+        <section className="settings-section">
+          <SectionHeading icon={<Globe2 size={19} />} title={label('researchBrowserSection')} detail={label('researchBrowserSectionDetail')} />
+          <div className="research-browser-summary">
+            <span className="research-browser-path">{browserStatus?.profilePath ?? label('researchBrowserNotStarted')}</span>
+            <button className="quiet-button" disabled={!browserStatus} onClick={() => void refreshBrowserStatus()} type="button">
+              <RefreshCw size={14} />
+              {label('refresh')}
+            </button>
+          </div>
+          <div className="research-site-list">
+            {LOGIN_SITES.map((site) => {
+              const siteStatus = browserStatus?.sites[site]
+              const isOpen = loginOpen === site
+              const isBusy = loginPending === site
+              return (
+                <div className="research-site-row" key={site}>
+                  <span className="setting-icon"><Globe2 size={16} /></span>
+                  <div className="setting-copy">
+                    <strong>{label(siteLabelKey(site))}</strong>
+                    <span>{siteStatus?.loggedIn ? label('researchLoggedIn') : label('researchNotLoggedIn')}</span>
+                    {siteStatus?.challengeBackoffUntil && <small>{label('researchBackoffUntil')} · {siteStatus.challengeBackoffUntil}</small>}
+                  </div>
+                  <button className={isOpen ? 'accent-button' : 'quiet-button'} disabled={isBusy} onClick={() => void (isOpen ? finishLogin(site) : startLogin(site))} type="button">
+                    {isBusy ? <RefreshCw className="spin" size={14} /> : <LogIn size={14} />}
+                    {isOpen ? label('researchConfirmLogin') : label('researchLogin')}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+          {challenge && (
+            <div className="research-challenge" role="alert">
+              <ShieldAlert size={16} />
+              <span>{label('researchChallengeMessage')} · {challenge.site}</span>
+              <button className="quiet-button" onClick={() => void resolveChallenge()} type="button">{label('researchChallengeResolved')}</button>
+            </div>
+          )}
+          {browserError && <span className="inline-status error">{browserError}</span>}
         </section>
 
         <section className="settings-section">
