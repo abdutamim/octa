@@ -24,6 +24,7 @@ interface JobRow {
   gate: string | null
   input_json: string | null
   result_json: string | null
+  review_json: string | null
   source_count: number
   cost_json: string | null
   started_at: string | null
@@ -46,6 +47,7 @@ export interface CreateJobInput {
   gate?: JobGate | null
   input?: unknown
   result?: unknown
+  review?: unknown
   sourceCount?: number
   cost?: unknown
   startedAt?: string | null
@@ -67,6 +69,7 @@ export interface UpdateJobInput {
   gate?: JobGate | null
   input?: unknown
   result?: unknown
+  review?: unknown
   sourceCount?: number
   cost?: unknown
   startedAt?: string | null
@@ -134,6 +137,7 @@ function mapJob(row: JobRow): JobRecord {
     gate: validGate(row.gate),
     input: parseJson(row.input_json),
     result: parseJson(row.result_json),
+    review: parseJson(row.review_json),
     sourceCount: row.source_count,
     cost: parseJson(row.cost_json),
     startedAt: row.started_at,
@@ -177,6 +181,7 @@ export class JobsRepository {
         gate TEXT,
         input_json TEXT,
         result_json TEXT,
+        review_json TEXT,
         source_count INTEGER NOT NULL DEFAULT 0,
         cost_json TEXT,
         started_at TEXT,
@@ -207,6 +212,15 @@ export class JobsRepository {
         created_at TEXT NOT NULL
       );
     `)
+    this.applyMigrations()
+  }
+
+  /** Apply additive schema changes to databases created by older specs. */
+  private applyMigrations(): void {
+    const columns = this.database.prepare('PRAGMA table_info(job_runs)').all() as Array<{ name?: unknown }>
+    if (!columns.some((column) => column.name === 'review_json')) {
+      this.database.exec('ALTER TABLE job_runs ADD COLUMN review_json TEXT')
+    }
   }
 
   createJob(input: CreateJobInput): JobRecord {
@@ -216,9 +230,9 @@ export class JobsRepository {
       .prepare(
         `INSERT INTO job_runs
           (id, plan_id, workflow, step_id, skill, runner, department, status, autonomy, gate,
-           input_json, result_json, source_count, cost_json, started_at, finished_at,
+           input_json, result_json, review_json, source_count, cost_json, started_at, finished_at,
            approved_by, approved_at, error)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         id,
@@ -233,6 +247,7 @@ export class JobsRepository {
         input.gate ?? 'none',
         jsonValue(input.input),
         jsonValue(input.result),
+        jsonValue(input.review),
         Number.isFinite(input.sourceCount) ? Math.max(0, Math.trunc(input.sourceCount!)) : 0,
         jsonValue(input.cost),
         startedAt,
@@ -260,6 +275,7 @@ export class JobsRepository {
       'gate',
       'input',
       'result',
+      'review',
       'sourceCount',
       'cost',
       'startedAt',
@@ -280,6 +296,7 @@ export class JobsRepository {
       gate: 'gate',
       input: 'input_json',
       result: 'result_json',
+      review: 'review_json',
       sourceCount: 'source_count',
       cost: 'cost_json',
       startedAt: 'started_at',
@@ -291,7 +308,7 @@ export class JobsRepository {
     for (const key of values) {
       if (update[key] === undefined) continue
       let value: unknown = update[key]
-      if (key === 'input' || key === 'result' || key === 'cost') value = jsonValue(value)
+      if (key === 'input' || key === 'result' || key === 'review' || key === 'cost') value = jsonValue(value)
       if (key === 'sourceCount') value = Math.max(0, Math.trunc(Number(value) || 0))
       columns.push([columnNames[key], value])
     }
