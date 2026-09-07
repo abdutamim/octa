@@ -4,6 +4,7 @@ import { DEFAULT_SETTINGS } from '../electron/types'
 import { applyLocale, type Locale } from './i18n'
 import { t } from './i18n'
 import { SettingsPage } from './components/SettingsPage'
+import { BrainPage } from './components/BrainPage'
 import { Sidebar, type Page } from './components/Sidebar'
 
 export function App(): React.JSX.Element {
@@ -69,6 +70,7 @@ export function App(): React.JSX.Element {
               onNotifyTest={() => window.octa.notify.test()}
             />
           )}
+          {page === 'brain' && <BrainPage locale={locale} />}
         </section>
       </div>
     </div>

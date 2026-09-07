@@ -1,8 +1,8 @@
-import { Cloud, Languages, Settings2, Sparkles } from 'lucide-react'
+import { Brain, Cloud, Languages, Settings2, Sparkles } from 'lucide-react'
 import type { Locale, TranslationKey } from '../i18n'
 import { t } from '../i18n'
 
-export type Page = 'settings'
+export type Page = 'settings' | 'brain'
 
 export function Sidebar({
   page,
@@ -31,6 +31,14 @@ export function Sidebar({
       </div>
 
       <nav aria-label={label('settings')}>
+        <button
+          className={`nav-item ${page === 'brain' ? 'active' : ''}`}
+          onClick={() => onChange('brain')}
+          type="button"
+        >
+          <Brain size={18} />
+          <span>{label('brain')}</span>
+        </button>
         <button
           className={`nav-item ${page === 'settings' ? 'active' : ''}`}
           onClick={() => onChange('settings')}

@@ -113,6 +113,42 @@ export class SettingsRepository {
     return this.getSettings()
   }
 
+  /**
+   * Reads an internal JSON setting that is not part of the renderer settings
+   * contract. Intake uses this for its resumable state.
+   */
+  getValue<T>(key: string): T | undefined {
+    const row = this.database
+      .prepare('SELECT value FROM app_settings WHERE key = ?')
+      .get(key) as { value?: string } | undefined
+    if (!row?.value) return undefined
+    try {
+      return JSON.parse(row.value) as T
+    } catch {
+      return row.value as T
+    }
+  }
+
+  /** Stores an internal JSON setting without exposing it in AppSettings. */
+  setValue(key: string, value: unknown): void {
+    if (!key.trim() || key.length > 128) throw new Error('Invalid setting key.')
+    this.database
+      .prepare(
+        `INSERT INTO app_settings (key, value) VALUES (?, ?)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value`
+      )
+      .run(key, JSON.stringify(value))
+  }
+
+  deleteValue(key: string): void {
+    this.database.prepare('DELETE FROM app_settings WHERE key = ?').run(key)
+  }
+
+  /** Allows feature repositories to share this already-open SQLite connection. */
+  getDatabase(): Database.Database {
+    return this.database
+  }
+
   checkpoint(): void {
     this.database.pragma('wal_checkpoint(TRUNCATE)')
   }

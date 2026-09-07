@@ -2,6 +2,8 @@ import { app, BrowserWindow, ipcMain, Notification, shell } from 'electron'
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { GeminiClient } from './cloud/gemini'
+import { CompanyBrain } from './core/octa/brain'
+import { IntakeInterview } from './core/octa/intake'
 import { Notifier } from './core/notify'
 import { requireAiAuth } from './cloud/vertex'
 import { SettingsRepository } from './db/settings'
@@ -21,6 +23,8 @@ app.setPath('userData', octaHome)
 let mainWindow: BrowserWindow | undefined
 let repository: SettingsRepository | undefined
 let notifier: Notifier | undefined
+let brain: CompanyBrain | undefined
+let intake: IntakeInterview | undefined
 let ipcRegistered = false
 
 function broadcast(channel: string, payload: unknown): void {
@@ -54,6 +58,37 @@ function createWindow(): BrowserWindow {
   return window
 }
 
+function requireBrain(): CompanyBrain {
+  if (!brain) throw new Error('Company brain is unavailable.')
+  return brain
+}
+
+function requireIntake(): IntakeInterview {
+  if (!intake) throw new Error('Company intake is unavailable.')
+  return intake
+}
+
+async function configureBrain(settings: AppSettings): Promise<void> {
+  if (!repository) throw new Error('Settings storage is unavailable.')
+  brain?.close()
+  brain = new CompanyBrain({
+    vaultPath: settings.vaultPath,
+    octaHome: settings.octaHomePath,
+    database: repository.getDatabase()
+  })
+  intake = new IntakeInterview({ vaultPath: settings.vaultPath, settings: repository })
+  await brain.start()
+}
+
+function proposalId(value: unknown): number {
+  const candidate = typeof value === 'object' && value !== null && 'id' in value
+    ? (value as { id?: unknown }).id
+    : value
+  const id = typeof candidate === 'number' ? candidate : Number(candidate)
+  if (!Number.isSafeInteger(id) || id <= 0) throw new Error('A valid proposal id is required.')
+  return id
+}
+
 function registerIpc(): void {
   if (ipcRegistered) return
   ipcRegistered = true
@@ -63,9 +98,12 @@ function registerIpc(): void {
     return { settings: repository.getSettings() }
   })
 
-  ipcMain.handle('settings:update', (_event, update: Partial<AppSettings>): AppSettings => {
+  ipcMain.handle('settings:update', async (_event, update: Partial<AppSettings>): Promise<AppSettings> => {
     if (!repository) throw new Error('Settings storage is unavailable.')
     const next = repository.setSettings(update)
+    if (!brain || update.vaultPath !== undefined || update.octaHomePath !== undefined) {
+      await configureBrain(next)
+    }
     broadcast('settings:changed', next)
     return next
   })
@@ -91,6 +129,32 @@ function registerIpc(): void {
     }) ?? false
   )
 
+  ipcMain.handle('brain:proposals', (_event, status?: string) => {
+    const allowed = status === 'pending' || status === 'approved' || status === 'rejected' ? status : undefined
+    return requireBrain().listProposals(allowed)
+  })
+
+  ipcMain.handle('brain:approve', async (_event, value: unknown) => {
+    const selected = requireBrain().approveProposal(proposalId(value))
+    return requireBrain().applyProposal(selected)
+  })
+
+  ipcMain.handle('brain:reject', (_event, value: unknown) =>
+    requireBrain().rejectProposal(proposalId(value))
+  )
+
+  ipcMain.handle('brain:status', () => requireBrain().status())
+
+  ipcMain.handle('intake:next', (_event, options?: { mode?: 'company' | 'client'; client?: string; reset?: boolean }) =>
+    requireIntake().next(options)
+  )
+
+  ipcMain.handle('intake:answer', (_event, input: { answer: string; questionId?: string } | string) =>
+    requireIntake().answer(input)
+  )
+
+  ipcMain.handle('intake:state', () => requireIntake().getState())
+
   ipcMain.on('window:minimize', (event) => BrowserWindow.fromWebContents(event.sender)?.minimize())
   ipcMain.on('window:maximize', (event) => {
     const window = BrowserWindow.fromWebContents(event.sender)
@@ -114,6 +178,7 @@ async function start(): Promise<void> {
       return true
     }
   })
+  await configureBrain(repository.getSettings())
   registerIpc()
   mainWindow = createWindow()
 }
@@ -128,6 +193,9 @@ app.on('activate', () => {
 })
 
 app.on('before-quit', () => {
+  brain?.close()
+  brain = undefined
+  intake = undefined
   repository?.checkpoint()
   repository?.close()
   repository = undefined

@@ -166,11 +166,35 @@ input, select { user-select: text; }
 
 .app-loading { display: grid; width: 100%; height: 100%; place-items: center; background: #110a10; }
 
+.brain-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 1080px; margin: 0 auto; }
+.brain-card { min-width: 0; padding: 21px; border-radius: 18px; }
+.brain-card-heading { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px; color: #d3acb3; }
+.brain-card-heading h2 { margin: 1px 0 0; color: var(--ink); font-size: 14px; font-weight: 700; }
+.brain-card-heading p { margin: 5px 0 0; color: var(--faint); font-size: 10px; }
+.brain-file-list, .brain-proposal-list { display: flex; flex-direction: column; gap: 8px; }
+.brain-file { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border: 1px solid rgba(240, 223, 188, 0.07); border-radius: 10px; color: var(--cream-soft); background: rgba(31, 15, 28, 0.28); font-family: "Cascadia Mono", Consolas, monospace; font-size: 10px; }
+.brain-empty { margin: 0 0 15px; color: var(--muted); font-size: 11px; }
+.brain-path { display: block; margin-top: 14px; overflow: hidden; color: var(--faint); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.brain-proposal { padding: 12px; border: 1px solid rgba(240, 223, 188, 0.08); border-radius: 12px; background: rgba(31, 15, 28, 0.28); }
+.brain-proposal-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--cream-soft); font-size: 10px; }
+.brain-proposal-meta span { color: var(--faint); font-size: 9px; }
+.brain-proposal pre { max-height: 150px; margin: 10px 0 0; overflow: auto; color: var(--muted); font-family: "Cascadia Mono", Consolas, monospace; font-size: 9px; line-height: 1.5; white-space: pre-wrap; }
+.brain-proposal small { display: block; margin-top: 8px; color: var(--faint); font-size: 9px; }
+.brain-intake-card { grid-column: 1 / -1; }
+.brain-intake-flow { display: flex; flex-direction: column; gap: 12px; }
+.brain-question-arabic { margin: 0; color: var(--ink); font-size: 16px; line-height: 1.7; }
+.brain-question-english { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.brain-intake-flow textarea { min-height: 110px; padding: 12px; resize: vertical; border: 1px solid rgba(240, 223, 188, 0.1); border-radius: 10px; outline: 0; color: var(--cream-soft); background: #261522; font: inherit; font-size: 11px; line-height: 1.6; }
+.brain-intake-flow textarea:focus { border-color: rgba(200, 91, 128, 0.52); }
+.brain-error { display: block; max-width: 1080px; margin: -12px auto 16px; }
+
 @media (max-width: 900px) {
   .workspace { grid-template-columns: 205px minmax(0, 1fr); }
   .page { padding: 39px 28px 48px; }
   .setting-field { grid-template-columns: 36px minmax(0, 1fr); }
   .setting-control { grid-column: 2; }
+  .brain-grid { grid-template-columns: 1fr; }
+  .brain-intake-card { grid-column: auto; }
 }
 
 @media (max-width: 620px) {
