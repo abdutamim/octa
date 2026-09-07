@@ -3,6 +3,8 @@ import { Ban, Check, Circle, Play, RefreshCw } from 'lucide-react'
 import type { Locale, TranslationKey } from '../i18n'
 import { t } from '../i18n'
 import type { JobEvent as RuntimeJobEvent, JobRecord as RuntimeJobRecord, JobStatus } from '../../electron/types'
+import type { PlannerResult } from '../../electron/core/octa/planner'
+import { PlanCard } from './PlanCard'
 
 function statusKey(status: JobStatus): TranslationKey {
   const keys: Record<JobStatus, TranslationKey> = {
@@ -36,6 +38,10 @@ export function JobsPage({ locale }: { locale: Locale }): React.JSX.Element {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [logs, setLogs] = useState<Record<string, RuntimeJobEvent[]>>({})
   const [draft, setDraft] = useState('')
+  const [plannerDraft, setPlannerDraft] = useState('')
+  const [plannerResult, setPlannerResult] = useState<PlannerResult | null>(null)
+  const [plannerError, setPlannerError] = useState<string | null>(null)
+  const [planning, setPlanning] = useState(false)
   const [starting, setStarting] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -51,7 +57,7 @@ export function JobsPage({ locale }: { locale: Locale }): React.JSX.Element {
 
   useEffect(() => {
     void loadJobs()
-    return window.octa.jobs.onEvent((event) => {
+    const stopJobsEvents = window.octa.jobs.onEvent((event) => {
       setSelectedId((current) => current ?? event.jobId)
       setLogs((current) => ({
         ...current,
@@ -59,7 +65,57 @@ export function JobsPage({ locale }: { locale: Locale }): React.JSX.Element {
       }))
       if (event.type === 'done') void loadJobs()
     })
+    const stopPlannerQuestions = window.octa.planner.onQuestions((event) => {
+      setPlannerResult((current) => current && current.planId === event.planId
+        ? { ...current, status: 'needs_input', questions: event.questions, plan: { ...current.plan, questions: event.questions } }
+        : current)
+    })
+    const stopPlannerRounds = window.octa.planner.onRound((event) => {
+      setPlannerResult((current) => current && current.planId === event.planId && event.plan
+        ? { ...current, plan: event.plan, questions: event.plan.questions, round: Math.max(current.round, event.round) }
+        : current)
+    })
+    return () => {
+      stopJobsEvents()
+      stopPlannerQuestions()
+      stopPlannerRounds()
+    }
   }, [])
+
+  const startPlanner = async (): Promise<void> => {
+    if (!plannerDraft.trim()) return
+    setPlanning(true)
+    setPlannerError(null)
+    try {
+      const result = await window.octa.planner.plan({ brief: plannerDraft.trim(), language: locale === 'ar' ? 'ar-EG' : 'en' })
+      setPlannerResult(result)
+      setPlannerDraft('')
+    } catch (error) {
+      setPlannerError(error instanceof Error ? error.message : String(error))
+    } finally {
+      setPlanning(false)
+    }
+  }
+
+  const answerPlanner = async (answers: Record<string, string>): Promise<void> => {
+    if (!plannerResult) return
+    try {
+      setPlannerError(null)
+      setPlannerResult(await window.octa.planner.answer({ planId: plannerResult.planId, answers }))
+    } catch (error) {
+      setPlannerError(error instanceof Error ? error.message : String(error))
+    }
+  }
+
+  const approvePlanner = async (): Promise<void> => {
+    if (!plannerResult) return
+    try {
+      setPlannerError(null)
+      setPlannerResult(await window.octa.planner.approve(plannerResult.planId))
+    } catch (error) {
+      setPlannerError(error instanceof Error ? error.message : String(error))
+    }
+  }
 
   const startStopSlop = async (): Promise<void> => {
     if (!draft.trim()) return
@@ -106,6 +162,27 @@ export function JobsPage({ locale }: { locale: Locale }): React.JSX.Element {
           {label('refreshJobs')}
         </button>
       </header>
+
+      <section className="planner-launcher glass">
+        <div>
+          <span className="job-card-eyebrow">{label('planPlannerLauncher')}</span>
+          <h2>{label('planTitle')}</h2>
+          <p>{label('planPlannerDetail')}</p>
+        </div>
+        <textarea
+          aria-label={label('planBrief')}
+          onChange={(event) => setPlannerDraft(event.target.value)}
+          placeholder={label('planBriefPlaceholder')}
+          rows={3}
+          value={plannerDraft}
+        />
+        <button className="accent-button" disabled={planning || !plannerDraft.trim()} onClick={() => void startPlanner()} type="button">
+          <Play size={15} />
+          {planning ? label('planWorking') : label('planStart')}
+        </button>
+      </section>
+      {plannerError && <p className="planner-error" role="alert">{plannerError}</p>}
+      {plannerResult && <PlanCard result={plannerResult} locale={locale} onAnswer={answerPlanner} onApprove={approvePlanner} />}
 
       <section className="job-launcher glass">
         <div>

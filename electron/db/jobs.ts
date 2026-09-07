@@ -33,6 +33,17 @@ interface JobRow {
   error: string | null
 }
 
+interface PlanRow {
+  id: string
+  conversation_id: string | null
+  brief_md: string
+  plan_json: string
+  round: number
+  question_round: number
+  status: string
+  created_at: string
+}
+
 export interface CreateJobInput {
   id?: string
   planId?: string | null
@@ -79,6 +90,39 @@ export interface UpdateJobInput {
 export interface ListJobsOptions {
   status?: JobStatus | string
   limit?: number
+}
+
+export type PlanStatus = 'draft' | 'needs_input' | 'needs_approval' | 'approved'
+
+export interface PlanRecord {
+  id: string
+  conversationId: string | null
+  briefMd: string
+  plan: unknown
+  round: number
+  questionRound: number
+  status: PlanStatus
+  createdAt: string
+}
+
+export interface CreatePlanInput {
+  id: string
+  conversationId?: string | null
+  briefMd: string
+  plan: unknown
+  round?: number
+  questionRound?: number
+  status?: PlanStatus
+  createdAt?: string
+}
+
+export interface UpdatePlanInput {
+  conversationId?: string | null
+  briefMd?: string
+  plan?: unknown
+  round?: number
+  questionRound?: number
+  status?: PlanStatus
 }
 
 function jsonValue(value: unknown): string | null {
@@ -144,6 +188,24 @@ function mapJob(row: JobRow): JobRecord {
   }
 }
 
+function validPlanStatus(value: string): PlanStatus {
+  const statuses: PlanStatus[] = ['draft', 'needs_input', 'needs_approval', 'approved']
+  return statuses.includes(value as PlanStatus) ? (value as PlanStatus) : 'draft'
+}
+
+function mapPlan(row: PlanRow): PlanRecord {
+  return {
+    id: row.id,
+    conversationId: row.conversation_id,
+    briefMd: row.brief_md,
+    plan: parseJson(row.plan_json),
+    round: row.round,
+    questionRound: row.question_round,
+    status: validPlanStatus(row.status),
+    createdAt: row.created_at
+  }
+}
+
 /** SQLite persistence for the job spine. One row is written for every run. */
 export class JobsRepository {
   private readonly database: Database.Database
@@ -204,9 +266,17 @@ export class JobsRepository {
         brief_md TEXT NOT NULL,
         plan_json TEXT NOT NULL,
         round INTEGER NOT NULL DEFAULT 0,
+        question_round INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'draft',
         created_at TEXT NOT NULL
       );
     `)
+    const planColumns = this.database
+      .prepare('PRAGMA table_info(plans)')
+      .all() as Array<{ name: string }>
+    const names = new Set(planColumns.map((column) => column.name))
+    if (!names.has('question_round')) this.database.exec('ALTER TABLE plans ADD COLUMN question_round INTEGER NOT NULL DEFAULT 0')
+    if (!names.has('status')) this.database.exec("ALTER TABLE plans ADD COLUMN status TEXT NOT NULL DEFAULT 'draft'")
   }
 
   createJob(input: CreateJobInput): JobRecord {
@@ -323,6 +393,80 @@ export class JobsRepository {
       | JobRow
       | undefined
     return row ? mapJob(row) : undefined
+  }
+
+  createPlan(input: CreatePlanInput): PlanRecord {
+    const id = input.id.trim()
+    if (!id) throw new Error('Plan id is required.')
+    const briefMd = input.briefMd
+    if (!briefMd.trim()) throw new Error('Plan brief is required.')
+    this.database
+      .prepare(
+        `INSERT INTO plans
+          (id, conversation_id, brief_md, plan_json, round, question_round, status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(
+        id,
+        input.conversationId ?? null,
+        briefMd,
+        JSON.stringify(input.plan),
+        Math.max(0, Math.trunc(input.round ?? 0)),
+        Math.max(0, Math.trunc(input.questionRound ?? 0)),
+        input.status ?? 'draft',
+        input.createdAt ?? isoNow()
+      )
+    const plan = this.getPlan(id)
+    if (!plan) throw new Error(`Plan ${id} was not created.`)
+    return plan
+  }
+
+  updatePlan(id: string, update: UpdatePlanInput): PlanRecord | undefined {
+    const columns: Array<[string, unknown]> = []
+    const values: Array<keyof UpdatePlanInput> = [
+      'conversationId',
+      'briefMd',
+      'plan',
+      'round',
+      'questionRound',
+      'status'
+    ]
+    const columnNames: Record<keyof UpdatePlanInput, string> = {
+      conversationId: 'conversation_id',
+      briefMd: 'brief_md',
+      plan: 'plan_json',
+      round: 'round',
+      questionRound: 'question_round',
+      status: 'status'
+    }
+    for (const key of values) {
+      if (update[key] === undefined) continue
+      let value: unknown = update[key]
+      if (key === 'plan') value = JSON.stringify(value)
+      if (key === 'round' || key === 'questionRound') value = Math.max(0, Math.trunc(Number(value) || 0))
+      columns.push([columnNames[key], value])
+    }
+    if (columns.length === 0) return this.getPlan(id)
+    const setClause = columns.map(([column]) => `${column} = ?`).join(', ')
+    const result = this.database
+      .prepare(`UPDATE plans SET ${setClause} WHERE id = ?`)
+      .run(...columns.map(([, value]) => value), id)
+    return result.changes === 0 ? undefined : this.getPlan(id)
+  }
+
+  getPlan(id: string): PlanRecord | undefined {
+    const row = this.database
+      .prepare('SELECT id, conversation_id, brief_md, plan_json, round, question_round, status, created_at FROM plans WHERE id = ?')
+      .get(id) as PlanRow | undefined
+    return row ? mapPlan(row) : undefined
+  }
+
+  listPlans(limit = 100): PlanRecord[] {
+    const safeLimit = Math.max(1, Math.min(500, Math.trunc(limit)))
+    const rows = this.database
+      .prepare('SELECT id, conversation_id, brief_md, plan_json, round, question_round, status, created_at FROM plans ORDER BY created_at DESC LIMIT ?')
+      .all(safeLimit) as PlanRow[]
+    return rows.map(mapPlan)
   }
 
   approveJob(id: string, approvedBy = 'owner'): JobRecord | undefined {
