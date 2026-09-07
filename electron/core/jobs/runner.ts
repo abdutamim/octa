@@ -17,8 +17,10 @@ import { delimiter, basename, extname, join, relative, resolve } from 'node:path
 import type { ChatMessage, ChatProvider, ToolDefinition } from '../../cloud/chat'
 import { GeminiChatProvider } from '../../cloud/gemini-chat'
 import { requireAiAuth } from '../../cloud/vertex'
-import { DEFAULT_SETTINGS, type AppSettings, type JobEvent, type JobResult, type JobStartRequest, type JobStatus } from '../../types'
+import { DEFAULT_SETTINGS, type AppSettings, type JobAutonomy, type JobEvent, type JobGate, type JobResult, type JobStartRequest, type JobStatus } from '../../types'
 import { JobsRepository } from '../../db/jobs'
+import { parseSkillFrontmatter, type SkillFrontmatter } from '../skills/frontmatter'
+import { runnerForSkill } from '../skills/policy'
 
 export const DEFAULT_OCTA_HOME = 'C:\\Octa'
 export const DEFAULT_JOB_TIME_BUDGET_MS = 30 * 60_000
@@ -100,6 +102,7 @@ export interface SkillResolution {
   entry: SkillManifestEntry
   skillPath: string
   skillMarkdown: string
+  frontmatter: SkillFrontmatter
   manifestPath: string
 }
 
@@ -113,6 +116,9 @@ export interface RunSkillRequest {
   name: string
   input?: unknown
   runner?: JobStartRequest['runner']
+  department?: string | null
+  autonomy?: JobAutonomy
+  gate?: JobGate
   language?: string
   homePath?: string
   skillsLibraryPath?: string
@@ -654,10 +660,13 @@ export function resolveSkill(name: string, options: SkillResolutionOptions = {})
   if (!skillPath) {
     throw new Error(`Skill "${requestedName}" is listed in ${manifestPath}, but its SKILL.md folder is missing.`)
   }
+  const resolvedSkillPath = resolve(skillPath)
+  const skillMarkdown = readFileSync(join(resolvedSkillPath, 'SKILL.md'), 'utf8')
   return {
     entry,
-    skillPath: resolve(skillPath),
-    skillMarkdown: readFileSync(join(skillPath, 'SKILL.md'), 'utf8'),
+    skillPath: resolvedSkillPath,
+    skillMarkdown,
+    frontmatter: parseSkillFrontmatter(skillMarkdown),
     manifestPath: resolve(manifestPath)
   }
 }
@@ -994,12 +1003,17 @@ export class JobRunner {
     const id = safeJobId(spec.id)
     const settings = this.getSettings()
     const skill = spec.skillPath
-      ? {
-          entry: { name: spec.skill ?? 'skill', folder: basename(spec.skillPath) },
-          skillPath: resolve(spec.skillPath),
-          skillMarkdown: readFileSync(join(spec.skillPath, 'SKILL.md'), 'utf8'),
-          manifestPath: ''
-        }
+      ? (() => {
+          const skillPath = resolve(spec.skillPath!)
+          const skillMarkdown = readFileSync(join(skillPath, 'SKILL.md'), 'utf8')
+          return {
+            entry: { name: spec.skill ?? 'skill', folder: basename(skillPath) },
+            skillPath,
+            skillMarkdown,
+            frontmatter: parseSkillFrontmatter(skillMarkdown),
+            manifestPath: ''
+          }
+        })()
       : spec.skill
         ? this.resolveSkill(spec.skill, spec)
         : undefined
@@ -1262,6 +1276,9 @@ export class JobRunner {
     const context: JobRunnerArgvContext = {
       workspace: active.folder,
       skillPath: active.skill?.skillPath,
+      allowedTools: active.skill?.frontmatter.allowedTools.length
+        ? active.skill.frontmatter.allowedTools
+        : undefined,
       systemPromptFile: runner === 'claude-plan' ? 'planner.md' : undefined,
       outputSchema: runner === 'codex-exec' || runner === 'codex-scout' ? 'result.schema.json' : runner === 'codex-critic' ? 'critique.schema.json' : 'review.schema.json'
     }
@@ -1463,12 +1480,19 @@ export function runSkill(request: RunSkillRequest, options?: JobRunnerOptions): 
     skillsLibraryPath: request.skillsLibraryPath ?? options?.skillsLibraryPath,
     settings: runner.getSettingsSnapshot()
   })
-  const manifestRunner = resolution.entry.runner === 'claude' ? 'claude-skill' : 'codex-exec'
+  const manifestRunner = runnerForSkill(
+    resolution.entry.folder,
+    resolution.frontmatter.runner,
+    resolution.entry.runner
+  )
   return runner.startJob({
     runner: request.runner ?? manifestRunner,
     skill: request.name,
     skillPath: resolution.skillPath,
     input: request.input,
+    department: request.department,
+    autonomy: request.autonomy,
+    gate: request.gate,
     language: request.language,
     homePath: request.homePath,
     skillsLibraryPath: request.skillsLibraryPath,
