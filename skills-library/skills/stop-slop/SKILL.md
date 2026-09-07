@@ -14,6 +14,15 @@ Eliminate predictable AI writing patterns from prose.
 
 1. **Cut filler phrases.** Remove throat-clearing openers, emphasis crutches, and all adverbs. See [references/phrases.md](references/phrases.md).
 
+### Arabic language pass
+
+When the input `language` is Arabic (`ar`, `ar-EG`, `ar-MSA`, or Arabic mixed
+with another language), also read and apply [references/phrases-ar.md](references/phrases-ar.md).
+Review its Egyptian and MSA AI-tell phrases, ornamental openers, exaggerated
+marketing metaphors, and repeated exclamation marks. Rewrite them in natural,
+direct Arabic while preserving quoted text, proper names, and the author's
+meaning.
+
 2. **Break formulaic structures.** Avoid binary contrasts, negative listings, dramatic fragmentation, rhetorical setups, false agency. See [references/structures.md](references/structures.md).
 
 3. **Use active voice.** Every sentence needs a human subject doing something. No passive constructions. No inanimate objects performing human actions ("the complaint becomes a fix").
