@@ -6,6 +6,7 @@ import { t } from './i18n'
 import { SettingsPage } from './components/SettingsPage'
 import { BrainPage } from './components/BrainPage'
 import { JobsPage } from './components/JobsPage'
+import { MapPage } from './components/MapPage'
 import { SkillsPage } from './components/SkillsPage'
 import { Sidebar, type Page } from './components/Sidebar'
 
@@ -73,6 +74,7 @@ export function App(): React.JSX.Element {
             />
           )}
           {page === 'brain' && <BrainPage locale={locale} />}
+          {page === 'map' && <MapPage locale={locale} />}
           {page === 'jobs' && <JobsPage locale={locale} />}
           {page === 'skills' && <SkillsPage locale={locale} />}
         </section>
