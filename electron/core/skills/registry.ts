@@ -16,6 +16,7 @@ export interface Skill {
   autonomy: SkillAutonomy
   use: string
   description: string
+  argumentHint?: string
   runner: SkillExecutorRunner
 }
 
@@ -108,6 +109,7 @@ function publicEntry(entry: Record<string, unknown>, libraryPath: string): Skill
     autonomy: autonomyField(entry.autonomy),
     use: stringField(entry.use),
     description: stringField(entry.description),
+    ...(frontmatter?.argumentHint ? { argumentHint: frontmatter.argumentHint } : {}),
     runner: runnerForSkill(folder, frontmatter?.runner, stringField(entry.runner))
   }
 }
