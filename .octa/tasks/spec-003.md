@@ -13,3 +13,7 @@ Build:
 3. IPC `planner:plan|answer|approve|get`, events `planner:questions`, `planner:round`. Minimal `src/components/PlanCard.tsx` (summary, steps table, questions form, debate viewer) used by the Jobs page for now.
 4. Tests with a fake runner: 5 ambiguous brief fixtures → ≥1 blocking question each; a complete brief → 0 questions; seeded weak plan changed after Astra's critique within 2 rounds and visible in `debate.md`; invalid JSON retry; 4-round cap; schema validation.
 5. One real end-to-end run (both CLIs are logged in): brief "اعمل ماركتنج لمشروع جديد" with no details → paste the questions Octa asked into the report.
+
+
+## Note added 2026-09-07
+The installed Claude Code session may be logged out (`claude -p` returned "OAuth session expired"). If real `claude -p` calls fail with auth errors, implement and test everything with the fake runner, keep the real end-to-end run as a documented manual step in the report, and do not retry logins yourself.

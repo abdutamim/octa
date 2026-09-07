@@ -231,6 +231,9 @@ export function SettingsPage({
             <SettingField icon={<FolderOpen size={18} />} label={label('octaHomePath')} detail={label('octaHomePathDetail')}>
               <input aria-label={label('octaHomePath')} onChange={(event) => setValue('octaHomePath', event.target.value)} placeholder={label('octaHomePathPlaceholder')} spellCheck={false} value={draft.octaHomePath} />
             </SettingField>
+            <SettingField icon={<FolderOpen size={18} />} label={label('skillsLibraryPath')} detail={label('skillsLibraryPathDetail')}>
+              <input aria-label={label('skillsLibraryPath')} onChange={(event) => setValue('skillsLibraryPath', event.target.value)} placeholder={label('skillsLibraryPathPlaceholder')} spellCheck={false} value={draft.skillsLibraryPath} />
+            </SettingField>
             <SettingField icon={<FolderOpen size={18} />} label={label('vaultPath')} detail={label('vaultPathDetail')}>
               <input aria-label={label('vaultPath')} onChange={(event) => setValue('vaultPath', event.target.value)} placeholder={label('vaultPathPlaceholder')} spellCheck={false} value={draft.vaultPath} />
             </SettingField>

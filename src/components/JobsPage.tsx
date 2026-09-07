@@ -1,0 +1,187 @@
+import { useEffect, useState } from 'react'
+import { Ban, Check, Circle, Play, RefreshCw } from 'lucide-react'
+import type { Locale, TranslationKey } from '../i18n'
+import { t } from '../i18n'
+import type { JobEvent as RuntimeJobEvent, JobRecord as RuntimeJobRecord, JobStatus } from '../../electron/types'
+
+function statusKey(status: JobStatus): TranslationKey {
+  const keys: Record<JobStatus, TranslationKey> = {
+    running: 'jobStatusRunning',
+    ok: 'jobStatusOk',
+    failed: 'jobStatusFailed',
+    needs_approval: 'jobStatusNeedsApproval',
+    needs_input: 'jobStatusNeedsInput',
+    cancelled: 'jobStatusCancelled'
+  }
+  return keys[status]
+}
+
+function eventLine(event: RuntimeJobEvent, locale: Locale): string {
+  switch (event.type) {
+    case 'text':
+      return event.text
+    case 'tool':
+      return `${t('jobTool', locale)} ${event.name}${event.phase ? ` · ${t(event.phase === 'start' ? 'jobToolStarted' : 'jobToolCompleted', locale)}` : ''}`
+    case 'usage':
+      return `${t('jobUsage', locale)} ${event.inputTokens ?? 0} in / ${event.outputTokens ?? 0} out`
+    case 'error':
+      return `${t('jobError', locale)} ${event.message}`
+    case 'done':
+      return `${t('jobDone', locale)} ${t(statusKey(event.status), locale)}`
+  }
+}
+
+export function JobsPage({ locale }: { locale: Locale }): React.JSX.Element {
+  const [jobs, setJobs] = useState<RuntimeJobRecord[]>([])
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [logs, setLogs] = useState<Record<string, RuntimeJobEvent[]>>({})
+  const [draft, setDraft] = useState('')
+  const [starting, setStarting] = useState(false)
+  const [loading, setLoading] = useState(false)
+
+  const label = (key: TranslationKey): string => t(key, locale)
+  const loadJobs = async (): Promise<void> => {
+    setLoading(true)
+    try {
+      setJobs(await window.octa.jobs.list({ limit: 100 }))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void loadJobs()
+    return window.octa.jobs.onEvent((event) => {
+      setSelectedId((current) => current ?? event.jobId)
+      setLogs((current) => ({
+        ...current,
+        [event.jobId]: [...(current[event.jobId] ?? []), event].slice(-500)
+      }))
+      if (event.type === 'done') void loadJobs()
+    })
+  }, [])
+
+  const startStopSlop = async (): Promise<void> => {
+    if (!draft.trim()) return
+    setStarting(true)
+    try {
+      const started = await window.octa.jobs.start({
+        runner: 'codex-exec',
+        skill: 'stop-slop',
+        input: { text: draft.trim() },
+        language: locale,
+        gate: 'none'
+      })
+      setSelectedId(started.id)
+      setDraft('')
+      await loadJobs()
+    } finally {
+      setStarting(false)
+    }
+  }
+
+  const cancel = async (id: string): Promise<void> => {
+    await window.octa.jobs.cancel(id)
+    await loadJobs()
+  }
+
+  const approve = async (id: string): Promise<void> => {
+    await window.octa.jobs.approve(id)
+    await loadJobs()
+  }
+
+  const selected = jobs.find((job) => job.id === selectedId) ?? jobs[0]
+  const selectedLogs = selected ? logs[selected.id] ?? [] : []
+
+  return (
+    <main className="page jobs-page">
+      <header className="page-heading">
+        <div>
+          <span className="eyebrow">{label('jobsEyebrow')}</span>
+          <h1>{label('jobsTitle')}</h1>
+          <p>{label('jobsIntro')}</p>
+        </div>
+        <button className="language-chip" disabled={loading} onClick={() => void loadJobs()} type="button">
+          <RefreshCw className={loading ? 'spin' : ''} size={15} />
+          {label('refreshJobs')}
+        </button>
+      </header>
+
+      <section className="job-launcher glass">
+        <div>
+          <span className="job-card-eyebrow">{label('jobDemoEyebrow')}</span>
+          <h2>{label('jobDemoTitle')}</h2>
+          <p>{label('jobDemoDetail')}</p>
+        </div>
+        <textarea
+          aria-label={label('jobInput')}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder={label('jobInputPlaceholder')}
+          rows={4}
+          value={draft}
+        />
+        <button className="accent-button" disabled={starting || !draft.trim()} onClick={() => void startStopSlop()} type="button">
+          <Play size={15} />
+          {starting ? label('startingJob') : label('runStopSlop')}
+        </button>
+      </section>
+
+      <div className="jobs-layout">
+        <section className="jobs-list glass" aria-label={label('jobRuns')}>
+          <div className="jobs-section-heading">
+            <div>
+              <span className="job-card-eyebrow">{label('jobRuns')}</span>
+              <h2>{jobs.length}</h2>
+            </div>
+            <Circle size={12} />
+          </div>
+          <div className="job-list-items">
+            {jobs.length === 0 && <p className="empty-state">{label('noJobs')}</p>}
+            {jobs.map((job) => (
+              <button
+                className={`job-list-item ${selected?.id === job.id ? 'selected' : ''}`}
+                key={job.id}
+                onClick={() => setSelectedId(job.id)}
+                type="button"
+              >
+                <span className={`job-status-dot status-${job.status}`} />
+                <span className="job-list-copy">
+                  <strong>{job.skill ?? job.runner}</strong>
+                  <small>{job.runner} · {job.id.slice(0, 8)}</small>
+                </span>
+                <span className={`job-status status-${job.status}`}>{label(statusKey(job.status))}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="job-log glass" aria-label={label('liveLog')}>
+          <header className="job-log-heading">
+            <div>
+              <span className="job-card-eyebrow">{label('liveLog')}</span>
+              <h2>{selected?.skill ?? selected?.runner ?? label('selectJob')}</h2>
+            </div>
+            {selected?.status === 'running' && (
+              <button className="quiet-button" onClick={() => void cancel(selected.id)} type="button">
+                <Ban size={14} />
+                {label('cancelJob')}
+              </button>
+            )}
+            {selected?.status === 'needs_approval' && (
+              <button className="accent-button" onClick={() => void approve(selected.id)} type="button">
+                <Check size={14} />
+                {label('approveJob')}
+              </button>
+            )}
+          </header>
+          <pre className="job-log-output">
+            {selectedLogs.length > 0
+              ? selectedLogs.map((event, index) => `${eventLine(event, locale)}${index === selectedLogs.length - 1 ? '' : '\n'}`).join('')
+              : label('noLiveEvents')}
+          </pre>
+          {selected && <p className="job-folder">{selected.id} · {label(statusKey(selected.status))}</p>}
+        </section>
+      </div>
+    </main>
+  )
+}
