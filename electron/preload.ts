@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { BrainProposal, BrainStatus, ProposalStatus } from './core/octa/brain'
 import type { IntakeAnswerResult, IntakeQuestion, IntakeStartOptions, IntakeState } from './core/octa/intake'
+import type { Skill, SkillListOptions } from './core/skills/registry'
 import type {
   AiTestResult,
   AppSettings,
@@ -36,6 +37,10 @@ const api = {
     answer: (input: { answer: string; questionId?: string } | string): Promise<IntakeAnswerResult> =>
       ipcRenderer.invoke('intake:answer', input),
     state: (): Promise<IntakeState | null> => ipcRenderer.invoke('intake:state')
+  },
+  skills: {
+    list: (options?: SkillListOptions): Promise<Skill[]> => ipcRenderer.invoke('skills:list', options),
+    get: (name: string): Promise<Skill | null> => ipcRenderer.invoke('skills:get', name)
   },
   jobs: {
     start: (spec: JobStartRequest): Promise<JobStartResponse> => ipcRenderer.invoke('jobs:start', spec),
