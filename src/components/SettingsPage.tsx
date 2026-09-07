@@ -1,0 +1,279 @@
+import { useEffect, useState } from 'react'
+import {
+  BellRing,
+  Check,
+  Cloud,
+  FolderOpen,
+  Globe2,
+  KeyRound,
+  Languages,
+  Moon,
+  Palette,
+  RefreshCw,
+  Search,
+  Send,
+  Sun,
+  Wrench
+} from 'lucide-react'
+import type { AiTestResult, AppSettings } from '../../electron/types'
+import type { Locale, TranslationKey } from '../i18n'
+import { t } from '../i18n'
+
+type SaveState = 'idle' | 'saving' | 'saved' | 'error'
+type NotificationState = 'idle' | 'sending' | 'sent' | 'failed'
+
+function SettingField({
+  icon,
+  label,
+  detail,
+  children
+}: {
+  icon: React.ReactNode
+  label: string
+  detail: string
+  children: React.ReactNode
+}): React.JSX.Element {
+  return (
+    <div className="setting-field">
+      <span className="setting-icon">{icon}</span>
+      <div className="setting-copy">
+        <strong>{label}</strong>
+        <span>{detail}</span>
+      </div>
+      <div className="setting-control">{children}</div>
+    </div>
+  )
+}
+
+function SectionHeading({
+  icon,
+  title,
+  detail
+}: {
+  icon: React.ReactNode
+  title: string
+  detail: string
+}): React.JSX.Element {
+  return (
+    <header className="settings-section-heading">
+      <span className="section-icon">{icon}</span>
+      <div>
+        <h2>{title}</h2>
+        <p>{detail}</p>
+      </div>
+    </header>
+  )
+}
+
+export function SettingsPage({
+  settings,
+  locale,
+  onUpdate,
+  onAiTest,
+  onNotifyTest
+}: {
+  settings: AppSettings
+  locale: Locale
+  onUpdate: (update: Partial<AppSettings>) => Promise<AppSettings>
+  onAiTest: () => Promise<AiTestResult>
+  onNotifyTest: () => Promise<boolean>
+}): React.JSX.Element {
+  const [draft, setDraft] = useState<AppSettings>(settings)
+  const [saveState, setSaveState] = useState<SaveState>('idle')
+  const [aiState, setAiState] = useState<'idle' | 'testing' | 'success' | 'error'>('idle')
+  const [aiMessage, setAiMessage] = useState('')
+  const [notificationState, setNotificationState] = useState<NotificationState>('idle')
+
+  const label = (key: TranslationKey): string => t(key, locale)
+
+  useEffect(() => setDraft(settings), [settings])
+
+  const setValue = <K extends keyof AppSettings>(key: K, value: AppSettings[K]): void => {
+    setDraft((current) => ({ ...current, [key]: value }))
+    setSaveState('idle')
+  }
+
+  const save = async (): Promise<AppSettings | undefined> => {
+    setSaveState('saving')
+    try {
+      const next = await onUpdate(draft)
+      setDraft(next)
+      setSaveState('saved')
+      return next
+    } catch {
+      setSaveState('error')
+      return undefined
+    }
+  }
+
+  const testAi = async (): Promise<void> => {
+    const saved = await save()
+    if (!saved) return
+    setAiState('testing')
+    setAiMessage('')
+    try {
+      const result = await onAiTest()
+      setAiState('success')
+      setAiMessage(`${label('aiConnected')} · ${result.provider} · ${result.latencyMs} ms`)
+    } catch (error) {
+      setAiState('error')
+      setAiMessage(error instanceof Error ? error.message : String(error))
+    }
+  }
+
+  const testNotifications = async (): Promise<void> => {
+    const saved = await save()
+    if (!saved) return
+    setNotificationState('sending')
+    try {
+      setNotificationState((await onNotifyTest()) ? 'sent' : 'failed')
+    } catch {
+      setNotificationState('failed')
+    }
+  }
+
+  return (
+    <main className="page settings-page">
+      <header className="page-heading">
+        <div>
+          <span className="eyebrow">{label('settingsEyebrow')}</span>
+          <h1>{label('settingsTitle')}</h1>
+          <p>{label('settingsIntro')}</p>
+        </div>
+        <button className="language-chip" onClick={() => void onUpdate({ locale: locale === 'ar' ? 'en' : 'ar' })} type="button">
+          <Languages size={15} />
+          {locale === 'ar' ? label('english') : label('arabic')}
+        </button>
+      </header>
+
+      <div className="settings-card glass">
+        <section className="settings-section">
+          <SectionHeading icon={<Cloud size={19} />} title={label('aiSection')} detail={label('aiSectionDetail')} />
+          <div className="settings-fields">
+            <SettingField icon={<KeyRound size={18} />} label={label('geminiApiKey')} detail={label('geminiApiKeyDetail')}>
+              <input
+                aria-label={label('geminiApiKey')}
+                autoComplete="off"
+                onChange={(event) => setValue('geminiApiKey', event.target.value)}
+                placeholder={label('geminiApiKeyPlaceholder')}
+                spellCheck={false}
+                type="password"
+                value={draft.geminiApiKey}
+              />
+            </SettingField>
+            <SettingField icon={<KeyRound size={18} />} label={label('groqApiKey')} detail={label('groqApiKeyDetail')}>
+              <input
+                aria-label={label('groqApiKey')}
+                autoComplete="off"
+                onChange={(event) => setValue('groqApiKey', event.target.value)}
+                placeholder={label('groqApiKeyPlaceholder')}
+                spellCheck={false}
+                type="password"
+                value={draft.groqApiKey}
+              />
+            </SettingField>
+            <SettingField icon={<Wrench size={18} />} label={label('aiProvider')} detail={label('aiProviderDetail')}>
+              <select aria-label={label('aiProvider')} onChange={(event) => setValue('aiProvider', event.target.value as AppSettings['aiProvider'])} value={draft.aiProvider}>
+                <option value="gemini">{label('geminiProvider')}</option>
+                <option value="vertex">{label('vertexProvider')}</option>
+              </select>
+            </SettingField>
+            {draft.aiProvider === 'vertex' && (
+              <>
+                <SettingField icon={<Globe2 size={18} />} label={label('vertexProjectId')} detail={label('vertexProjectIdDetail')}>
+                  <input aria-label={label('vertexProjectId')} onChange={(event) => setValue('vertexProjectId', event.target.value)} placeholder={label('vertexProjectIdPlaceholder')} spellCheck={false} value={draft.vertexProjectId} />
+                </SettingField>
+                <SettingField icon={<KeyRound size={18} />} label={label('vertexKeyPath')} detail={label('vertexKeyPathDetail')}>
+                  <input aria-label={label('vertexKeyPath')} onChange={(event) => setValue('vertexKeyPath', event.target.value)} placeholder={label('vertexKeyPathPlaceholder')} spellCheck={false} value={draft.vertexKeyPath} />
+                </SettingField>
+                <SettingField icon={<Globe2 size={18} />} label={label('vertexLocation')} detail={label('vertexLocationDetail')}>
+                  <input aria-label={label('vertexLocation')} onChange={(event) => setValue('vertexLocation', event.target.value)} placeholder={label('vertexLocationPlaceholder')} spellCheck={false} value={draft.vertexLocation} />
+                </SettingField>
+              </>
+            )}
+          </div>
+          <div className="section-action-row">
+            <button className="accent-button" disabled={aiState === 'testing'} onClick={() => void testAi()} type="button">
+              <RefreshCw className={aiState === 'testing' ? 'spin' : ''} size={15} />
+              {aiState === 'testing' ? label('testingAi') : label('testAi')}
+            </button>
+            {aiMessage && <span className={`inline-status ${aiState === 'error' ? 'error' : 'success'}`}>{aiMessage}</span>}
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <SectionHeading icon={<BellRing size={19} />} title={label('notificationsSection')} detail={label('notificationsSectionDetail')} />
+          <div className="settings-fields">
+            <SettingField icon={<BellRing size={18} />} label={label('ntfyTopic')} detail={label('ntfyTopicDetail')}>
+              <input aria-label={label('ntfyTopic')} autoComplete="off" onChange={(event) => setValue('ntfyTopic', event.target.value)} placeholder={label('ntfyTopicPlaceholder')} spellCheck={false} value={draft.ntfyTopic} />
+            </SettingField>
+            <SettingField icon={<Globe2 size={18} />} label={label('ntfyServer')} detail={label('ntfyServerDetail')}>
+              <input aria-label={label('ntfyServer')} onChange={(event) => setValue('ntfyServer', event.target.value)} placeholder={label('ntfyServerPlaceholder')} spellCheck={false} type="url" value={draft.ntfyServer} />
+            </SettingField>
+          </div>
+          <div className="section-action-row">
+            <button className="quiet-button" disabled={notificationState === 'sending'} onClick={() => void testNotifications()} type="button">
+              <Send size={15} />
+              {notificationState === 'sending'
+                ? label('sendingNotification')
+                : notificationState === 'sent'
+                  ? label('notificationSent')
+                  : notificationState === 'failed'
+                    ? label('notificationFailed')
+                    : label('testNotifications')}
+            </button>
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <SectionHeading icon={<FolderOpen size={19} />} title={label('pathsSection')} detail={label('pathsSectionDetail')} />
+          <div className="settings-fields">
+            <SettingField icon={<FolderOpen size={18} />} label={label('octaHomePath')} detail={label('octaHomePathDetail')}>
+              <input aria-label={label('octaHomePath')} onChange={(event) => setValue('octaHomePath', event.target.value)} placeholder={label('octaHomePathPlaceholder')} spellCheck={false} value={draft.octaHomePath} />
+            </SettingField>
+            <SettingField icon={<FolderOpen size={18} />} label={label('vaultPath')} detail={label('vaultPathDetail')}>
+              <input aria-label={label('vaultPath')} onChange={(event) => setValue('vaultPath', event.target.value)} placeholder={label('vaultPathPlaceholder')} spellCheck={false} value={draft.vaultPath} />
+            </SettingField>
+            <SettingField icon={<Wrench size={18} />} label={label('photoshopPath')} detail={label('photoshopPathDetail')}>
+              <input aria-label={label('photoshopPath')} onChange={(event) => setValue('photoshopPath', event.target.value)} placeholder={label('photoshopPathPlaceholder')} spellCheck={false} value={draft.photoshopPath} />
+            </SettingField>
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <SectionHeading icon={<Search size={19} />} title={label('searchSection')} detail={label('searchSectionDetail')} />
+          <div className="settings-fields">
+            <SettingField icon={<Search size={18} />} label={label('braveSearchApiKey')} detail={label('braveSearchApiKeyDetail')}>
+              <input aria-label={label('braveSearchApiKey')} autoComplete="off" onChange={(event) => setValue('braveSearchApiKey', event.target.value)} placeholder={label('braveSearchApiKeyPlaceholder')} spellCheck={false} type="password" value={draft.braveSearchApiKey} />
+            </SettingField>
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <SectionHeading icon={<Palette size={19} />} title={label('appearanceSection')} detail={label('appearanceDetail')} />
+          <div className="settings-fields">
+            <SettingField icon={draft.theme === 'dark' ? <Moon size={18} /> : <Sun size={18} />} label={label('theme')} detail={label('appearanceDetail')}>
+              <select aria-label={label('theme')} onChange={(event) => setValue('theme', event.target.value as AppSettings['theme'])} value={draft.theme}>
+                <option value="dark">{label('dark')}</option>
+                <option value="light">{label('light')}</option>
+              </select>
+            </SettingField>
+            <SettingField icon={<Languages size={18} />} label={label('locale')} detail={label('languageHint')}>
+              <select aria-label={label('locale')} onChange={(event) => setValue('locale', event.target.value as AppSettings['locale'])} value={draft.locale}>
+                <option value="ar">{label('arabic')}</option>
+                <option value="en">{label('english')}</option>
+              </select>
+            </SettingField>
+          </div>
+        </section>
+
+        <footer className="settings-footer">
+          <span className="save-note"><Check size={15} /> {label('localStorageNote')}</span>
+          <button className="save-button" disabled={saveState === 'saving'} onClick={() => void save()} type="button">
+            {saveState === 'saving' ? label('saving') : saveState === 'saved' ? label('saved') : saveState === 'error' ? label('saveError') : label('saveChanges')}
+          </button>
+        </footer>
+      </div>
+    </main>
+  )
+}

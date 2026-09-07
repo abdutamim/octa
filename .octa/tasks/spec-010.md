@@ -1,0 +1,15 @@
+# Task: spec 010 — Native build pipeline (replaces Octa Code)
+
+Read `docs/06-SPECS.md` section 010, `docs/01-RUNTIME-CONTRACT.md` §1 (`build` runner), `docs/07-DECISIONS.md` D11/D15/D16. Study the old Octa Code for design only (read-only): `prompts/planner.md`, `spec_writer.md`, `spec_critic.md`, `coder.md`, `coder_recovery.md`, `qa_reviewer.md`, `qa_fixer.md`, `validation_fixer.md`, `implementation_plan/*.py` (plan/phase/subtask model), `qa/loop.py`, `recovery.py`, `merge/`, `agents/memory_manager.py`, `runners/roadmap/*`, `ideation/*`. Re-implement in TypeScript; never import or spawn the Python.
+
+Build `electron/core/octa/build/`:
+1. `spec.ts` — from a sentence or a plan step, run the Fable/Astra debate (spec 003's `plan()` with a "spec" profile) to produce `spec.md` + `plan.json` (phases → subtasks with dependencies, files touched, acceptance per subtask, verification commands). Complexity assessment (small/medium/large) chooses the number of phases.
+2. `workspace.ts` — git worktree per build under `<octaHome>/builds/<id>` (branch `build/<id>`), isolated by default, `direct` option; project detection (node/python/astro/next) and the project's test command.
+3. `coder.ts` — one `codex-exec` (Luna, max, fast) session per subtask with a context pack: spec, plan, the subtask, the last 3 session summaries (`memory/` folder, the old backend's insight-extractor idea), files touched so far; commit per subtask (`build/<id>: <subtask>`); session summary written after each.
+4. `qa.ts` — after all subtasks: `codex-review` (Sol) against the spec's acceptance + run the project's tests; failures → fixer session (Luna) → re-review; max 3 loops.
+5. `merge.ts` — conflict preview, AI-assisted resolution (Luna) when conflicts exist, merge into the target branch or `gh pr create`; `discard` and `review` (diff summary) commands.
+6. `recovery.ts` — resume from the last committed subtask, rollback to the last good commit, mark stuck for human after 3 failed retries.
+7. `analysis.ts` — read-only phases: roadmap (features from the codebase + Bedo's brief), competitor roadmap (uses spec 004's research engine for the competitor part, then Luna maps gaps to features), ideation passes (code quality, security, performance, UX, documentation) each producing a ranked markdown list.
+8. `register.ts` — a built tool becomes a skill folder via `skill-creator` (run as `claude-skill`) or a project entry in `knowledge/projects/` (spec 005 proposal).
+9. IPC `build:start|status|resume|merge|discard|review|analyze`, events; `src/components/BuildsPage.tsx` (builds list, phases/subtasks with status, QA loop log, merge buttons).
+10. Tests with a fake runner: plan model + dependency ordering, worktree lifecycle (real git in a temp dir), commit-per-subtask, QA loop cap, resume after simulated crash, rollback. Real run: build a two-page Astro site ("home + contact", Arabic, RTL) in an isolated worktree, run its build, and report the preview command; then "ابنيلي tool يعمل word count لملف" → registered skill appears in the registry.

@@ -14,7 +14,7 @@ cd "$DIR" || exit 2
   echo; echo "When completely finished (typecheck + tests green, committed, report written), print the single line OCTA_DONE."
 } | codex exec --json -m gpt-5.6-luna \
     -c 'model_reasoning_effort="max"' -c 'service_tier="priority"' -c 'features.fast_mode=true' \
-    -c 'approval_policy="never"' -s workspace-write -C "$DIR" \
+    --dangerously-bypass-approvals-and-sandbox -C "$DIR" \
     --add-dir "C:/Users/Admin/Desktop/Projects/tamim-os" \
     --add-dir "C:/Users/Admin/Documents/Codex/2026-08-15/c-users-admin-appdata-local-programs/work/octa-code-backend-final-20260830" \
     --skip-git-repo-check --color never - > "$LOG" 2>&1
