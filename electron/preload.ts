@@ -1,4 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import type { BrainProposal, BrainStatus, ProposalStatus } from './core/octa/brain'
+import type { IntakeAnswerResult, IntakeQuestion, IntakeStartOptions, IntakeState } from './core/octa/intake'
 import type { AiTestResult, AppSettings, RendererState } from './types'
 
 const api = {
@@ -12,6 +14,20 @@ const api = {
   },
   notify: {
     test: (): Promise<boolean> => ipcRenderer.invoke('notify:test')
+  },
+  brain: {
+    proposals: (status?: ProposalStatus): Promise<BrainProposal[]> =>
+      ipcRenderer.invoke('brain:proposals', status),
+    approve: (id: number): Promise<BrainProposal> => ipcRenderer.invoke('brain:approve', id),
+    reject: (id: number): Promise<BrainProposal> => ipcRenderer.invoke('brain:reject', id),
+    status: (): Promise<BrainStatus> => ipcRenderer.invoke('brain:status')
+  },
+  intake: {
+    next: (options?: IntakeStartOptions): Promise<IntakeQuestion | null> =>
+      ipcRenderer.invoke('intake:next', options),
+    answer: (input: { answer: string; questionId?: string } | string): Promise<IntakeAnswerResult> =>
+      ipcRenderer.invoke('intake:answer', input),
+    state: (): Promise<IntakeState | null> => ipcRenderer.invoke('intake:state')
   },
   window: {
     minimize: (): void => ipcRenderer.send('window:minimize'),
