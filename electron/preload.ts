@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { BrainProposal, BrainStatus, ProposalStatus } from './core/octa/brain'
+import type { BrowserChallengeEvent, ResearchBrowserStatus } from './core/octa/browser'
 import type { IntakeAnswerResult, IntakeQuestion, IntakeStartOptions, IntakeState } from './core/octa/intake'
 import type { Skill, SkillListOptions } from './core/skills/registry'
 import type {
@@ -8,6 +9,12 @@ import type {
   PlannerPlanRequest,
   PlannerResult
 } from './core/octa/planner'
+import type {
+  ResearchLoginSite,
+  ResearchStartRequest,
+  ResearchStartResponse,
+  ResearchStatusResponse
+} from './core/octa/research'
 import type {
   AiTestResult,
   AppSettings,
@@ -76,6 +83,23 @@ const api = {
       const wrapped = (_event: Electron.IpcRendererEvent, jobEvent: JobEvent): void => listener(jobEvent)
       ipcRenderer.on('jobs:events', wrapped)
       return () => ipcRenderer.removeListener('jobs:events', wrapped)
+    }
+  },
+  research: {
+    start: (request: ResearchStartRequest): Promise<ResearchStartResponse> =>
+      ipcRenderer.invoke('research:start', request),
+    status: (jobId?: string): Promise<ResearchStatusResponse> =>
+      ipcRenderer.invoke('research:status', jobId),
+    challengeResolved: (site: string): Promise<ResearchBrowserStatus> =>
+      ipcRenderer.invoke('research:challenge:resolved', { site }),
+    loginStart: (site: ResearchLoginSite): Promise<ResearchBrowserStatus> =>
+      ipcRenderer.invoke('research:login:start', { site }),
+    loginDone: (site: ResearchLoginSite): Promise<ResearchBrowserStatus> =>
+      ipcRenderer.invoke('research:login:done', { site }),
+    onChallenge: (listener: (event: BrowserChallengeEvent) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, browserEvent: BrowserChallengeEvent): void => listener(browserEvent)
+      ipcRenderer.on('browser:challenge', wrapped)
+      return () => ipcRenderer.removeListener('browser:challenge', wrapped)
     }
   },
   window: {

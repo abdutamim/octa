@@ -8,7 +8,10 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()],
     build: {
       rollupOptions: {
-        input: resolve('electron/main.ts'),
+        input: {
+          main: resolve('electron/main.ts'),
+          'mcp-server': resolve('electron/core/octa/mcp-server.ts')
+        },
         external: ['better-sqlite3']
       }
     }

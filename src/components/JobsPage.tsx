@@ -5,6 +5,8 @@ import { t } from '../i18n'
 import type { JobEvent as RuntimeJobEvent, JobRecord as RuntimeJobRecord, JobStatus } from '../../electron/types'
 import type { PlannerResult } from '../../electron/core/octa/planner'
 import { PlanCard } from './PlanCard'
+import type { SourceLedgerEntry } from '../../electron/core/octa/sources'
+import { SourcesTable } from './SourcesTable'
 
 function statusKey(status: JobStatus): TranslationKey {
   const keys: Record<JobStatus, TranslationKey> = {
@@ -44,6 +46,7 @@ export function JobsPage({ locale }: { locale: Locale }): React.JSX.Element {
   const [planning, setPlanning] = useState(false)
   const [starting, setStarting] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [selectedSources, setSelectedSources] = useState<SourceLedgerEntry[]>([])
 
   const label = (key: TranslationKey): string => t(key, locale)
   const loadJobs = async (): Promise<void> => {
@@ -116,6 +119,21 @@ export function JobsPage({ locale }: { locale: Locale }): React.JSX.Element {
       setPlannerError(error instanceof Error ? error.message : String(error))
     }
   }
+  const selected = jobs.find((job) => job.id === selectedId) ?? jobs[0]
+
+  useEffect(() => {
+    let active = true
+    if (!selected || selected.runner !== 'codex-scout') {
+      setSelectedSources([])
+      return () => { active = false }
+    }
+    void window.octa.research.status(selected.id).then((status) => {
+      if (active) setSelectedSources(status.job?.sources ?? [])
+    }).catch(() => {
+      if (active) setSelectedSources([])
+    })
+    return () => { active = false }
+  }, [selected?.id, selected?.runner])
 
   const startStopSlop = async (): Promise<void> => {
     if (!draft.trim()) return
@@ -146,7 +164,6 @@ export function JobsPage({ locale }: { locale: Locale }): React.JSX.Element {
     await loadJobs()
   }
 
-  const selected = jobs.find((job) => job.id === selectedId) ?? jobs[0]
   const selectedLogs = selected ? logs[selected.id] ?? [] : []
 
   return (
@@ -259,6 +276,7 @@ export function JobsPage({ locale }: { locale: Locale }): React.JSX.Element {
           {selected && <p className="job-folder">{selected.id} · {label(statusKey(selected.status))}</p>}
         </section>
       </div>
+      {selected?.runner === 'codex-scout' && <SourcesTable locale={locale} sources={selectedSources} />}
     </main>
   )
 }

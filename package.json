@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "electron-rebuild --force --only better-sqlite3 --version 42.6.0 --arch x64 && electron-vite dev",
     "dev:renderer": "vite --config vite.renderer.config.ts",
+    "research:demo": "tsx scripts/research-demo.ts",
     "rebuild:electron": "electron-rebuild --force --only better-sqlite3 --version 42.6.0 --arch x64",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "test": "vitest run --config vitest.config.mjs --configLoader native --pool=threads --no-file-parallelism",
@@ -16,10 +17,12 @@
     "build": "npm run typecheck && npm test && electron-vite build && node scripts/verify-build.mjs"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "better-sqlite3": "12.11.1",
     "ffmpeg-static": "^5.3.0",
     "framer-motion": "12.42.2",
     "lucide-react": "0.544.0",
+    "playwright": "^1.63.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "uiohook-napi": "^1.5.5"
@@ -39,6 +42,7 @@
     "electron-vite": "5.0.0",
     "lightningcss-win32-x64-msvc": "1.32.0",
     "tailwindcss": "4.3.2",
+    "tsx": "^4.23.13",
     "typescript": "6.0.3",
     "vite": "^7.3.6",
     "vitest": "4.1.9"
