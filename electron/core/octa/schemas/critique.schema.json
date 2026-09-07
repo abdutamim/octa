@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "octa://planner/critique.schema.json",
+  "title": "Octa planner critique",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "issues": { "type": "array", "items": { "type": "string" } },
+    "missing_questions": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } },
+    "verdict": { "type": "string", "enum": ["agree", "revise"] }
+  },
+  "required": ["issues", "missing_questions", "risks", "verdict"]
+}

@@ -4,6 +4,13 @@ import { join } from 'node:path'
 import { GeminiClient } from './cloud/gemini'
 import { CompanyBrain } from './core/octa/brain'
 import { IntakeInterview } from './core/octa/intake'
+import {
+  Planner,
+  compileBrief,
+  type PlannerAnswerRequest,
+  type PlannerPlanRequest,
+  type PlannerResult
+} from './core/octa/planner'
 import { Notifier } from './core/notify'
 import { requireAiAuth } from './cloud/vertex'
 import { SettingsRepository } from './db/settings'
@@ -31,6 +38,7 @@ let skillsRegistry: SkillRegistry | undefined
 let notifier: Notifier | undefined
 let brain: CompanyBrain | undefined
 let intake: IntakeInterview | undefined
+let planner: Planner | undefined
 let ipcRegistered = false
 
 function broadcast(channel: string, payload: unknown): void {
@@ -77,6 +85,11 @@ function requireIntake(): IntakeInterview {
 function requireSkillsRegistry(): SkillRegistry {
   if (!skillsRegistry) throw new Error('Skills registry is unavailable.')
   return skillsRegistry
+}
+
+function requirePlanner(): Planner {
+  if (!planner) throw new Error('Planner is unavailable.')
+  return planner
 }
 
 async function configureBrain(settings: AppSettings): Promise<void> {
@@ -173,6 +186,44 @@ function registerIpc(): void {
     requireSkillsRegistry().getSkill(name) ?? null
   )
 
+  ipcMain.handle('planner:plan', async (_event, request: PlannerPlanRequest): Promise<PlannerResult> => {
+    const settings = repository?.getSettings()
+    if (!settings) throw new Error('Settings storage is unavailable.')
+    const options = {
+      homePath: settings.octaHomePath,
+      skillsLibraryPath: settings.skillsLibraryPath || undefined,
+      conversationId: request.conversationId,
+      planId: request.planId,
+      language: request.language,
+      client: request.client,
+      maxDebateRounds: request.maxDebateRounds,
+      maxQuestionRounds: request.maxQuestionRounds
+    }
+    const brief = request.brief?.trim()
+      ? request.brief
+      : await compileBrief(
+          request.conversation ?? [],
+          request.attachments ?? [],
+          requireBrain(),
+          { homePath: settings.octaHomePath, planId: request.planId, language: request.language }
+        )
+    return requirePlanner().plan(brief, options)
+  })
+
+  ipcMain.handle('planner:answer', (_event, request: PlannerAnswerRequest): Promise<PlannerResult> =>
+    requirePlanner().answer(request.planId, request.answers)
+  )
+
+  ipcMain.handle('planner:approve', (_event, value: string | { planId: string; approvedBy?: string }): Promise<PlannerResult> => {
+    const planId = typeof value === 'string' ? value : value.planId
+    const approvedBy = typeof value === 'string' ? 'owner' : value.approvedBy ?? 'owner'
+    return requirePlanner().approve(planId, approvedBy)
+  })
+
+  ipcMain.handle('planner:get', (_event, planId: string): PlannerResult | null =>
+    requirePlanner().get(planId)
+  )
+
   ipcMain.handle('jobs:start', (_event, spec: JobSpec): JobStartResponse => {
     if (!jobRunner) throw new Error('Job runner is unavailable.')
     const handle = jobRunner.startJob(spec)
@@ -250,6 +301,13 @@ async function start(): Promise<void> {
     }
   })
   await configureBrain(repository.getSettings())
+  planner = new Planner({
+    jobs: jobsRepository,
+    jobRunner,
+    homePath: repository.getSettings().octaHomePath,
+    skillsLibraryPath: repository.getSettings().skillsLibraryPath || undefined,
+    onEvent: (event) => broadcast(event.type, event)
+  })
   registerIpc()
   mainWindow = createWindow()
 }
@@ -267,6 +325,8 @@ app.on('before-quit', () => {
   brain?.close()
   brain = undefined
   intake = undefined
+  planner?.close()
+  planner = undefined
   repository?.checkpoint()
   jobsRepository?.checkpoint()
   repository?.close()

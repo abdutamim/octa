@@ -3,6 +3,12 @@ import type { BrainProposal, BrainStatus, ProposalStatus } from './core/octa/bra
 import type { IntakeAnswerResult, IntakeQuestion, IntakeStartOptions, IntakeState } from './core/octa/intake'
 import type { Skill, SkillListOptions } from './core/skills/registry'
 import type {
+  PlannerAnswerRequest,
+  PlannerEvent,
+  PlannerPlanRequest,
+  PlannerResult
+} from './core/octa/planner'
+import type {
   AiTestResult,
   AppSettings,
   JobEvent,
@@ -41,6 +47,23 @@ const api = {
   skills: {
     list: (options?: SkillListOptions): Promise<Skill[]> => ipcRenderer.invoke('skills:list', options),
     get: (name: string): Promise<Skill | null> => ipcRenderer.invoke('skills:get', name)
+  },
+  planner: {
+    plan: (request: PlannerPlanRequest): Promise<PlannerResult> => ipcRenderer.invoke('planner:plan', request),
+    answer: (request: PlannerAnswerRequest): Promise<PlannerResult> => ipcRenderer.invoke('planner:answer', request),
+    approve: (planId: string, approvedBy?: string): Promise<PlannerResult> =>
+      ipcRenderer.invoke('planner:approve', { planId, approvedBy }),
+    get: (planId: string): Promise<PlannerResult | null> => ipcRenderer.invoke('planner:get', planId),
+    onQuestions: (listener: (event: Extract<PlannerEvent, { type: 'planner:questions' }>) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, plannerEvent: Extract<PlannerEvent, { type: 'planner:questions' }>): void => listener(plannerEvent)
+      ipcRenderer.on('planner:questions', wrapped)
+      return () => ipcRenderer.removeListener('planner:questions', wrapped)
+    },
+    onRound: (listener: (event: Extract<PlannerEvent, { type: 'planner:round' }>) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, plannerEvent: Extract<PlannerEvent, { type: 'planner:round' }>): void => listener(plannerEvent)
+      ipcRenderer.on('planner:round', wrapped)
+      return () => ipcRenderer.removeListener('planner:round', wrapped)
+    }
   },
   jobs: {
     start: (spec: JobStartRequest): Promise<JobStartResponse> => ipcRenderer.invoke('jobs:start', spec),
