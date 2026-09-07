@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <title>carousel-forge</title>
+    <!-- core first, brand second. brand.css wins every conflict — that is the
+         whole point of the split: nothing brand-specific lives upstream. -->
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="brand.css" />
+  </head>
+  <body>
+    <main id="root"></main>
+
+    <script src="data.js"></script>
+    <script>
+      const q = new URLSearchParams(location.search);
+      const post =
+        window.POSTS.find((p) => p.id === (q.get("post") || window.POSTS[0].id)) || window.POSTS[0];
+      const s = post.slides[Number(q.get("slide") || 0)] || post.slides[0];
+
+      /* Script direction. Explicit `latin` / `rtl` win; otherwise detect, because
+         a post with no Arabic in it rendered RTL puts every full stop on the
+         wrong side and nobody notices until it ships. */
+      const hasArabic = /[؀-ۿݐ-ݿ]/.test(JSON.stringify(post));
+      const isLatin = post.latin !== undefined ? Boolean(post.latin) : !hasArabic;
+      const isRtl = post.rtl !== undefined ? Boolean(post.rtl) : !isLatin;
+      document.documentElement.dir = isRtl ? "rtl" : "ltr";
+      document.documentElement.lang = isRtl ? "ar" : "en";
+
+      const px = (v) => (v == null ? "auto" : typeof v === "number" ? v + "px" : v);
+      const pos = (p = {}) =>
+        `top:${px(p.t)};right:${px(p.r)};bottom:${px(p.b)};left:${px(p.l)};width:${px(p.w)}`;
+
+      const focus = s.focus || post.focus || "50% 50%";
+      const img = (cls, src) =>
+        `<img class="${cls}" src="${src}" alt="" style="object-position:${focus}" />`;
+
+      /* ── THE KIT — the six grammar axes. → references/grammar.md
+         Resolved widest-to-narrowest so a single slide can break the brand
+         shell for one frame (Law 7: break the template exactly once). */
+      const KIT = Object.assign(
+        { shell: "card", chrome: "rail", ground: "glow",
+          eyebrow: "wobble", accent: "text", anchor: "top" },
+        window.KIT || {}, post.kit || {}, s.kit || {}
+      );
+
+      /* Read the gutter from CSS rather than hardcoding 72: brand.css is
+         allowed to move it, and a fallback that ignores it puts every default
+         block on a margin the brand explicitly rejected. */
+      const cssVar = (n, d) =>
+        parseInt(getComputedStyle(document.documentElement).getPropertyValue(n), 10) || d;
+      const GUT = cssVar("--gut", 72);
+
+      /* Default vertical position when a slide omits `at`. */
+      const ANCHOR_T = { top: 190, third: 372, mid: 500, base: 800 };
+      const defAt = (t) => ({ t: t ?? ANCHOR_T[KIT.anchor] ?? 250, r: GUT, l: GUT });
+
+      const idx = Number(q.get("slide") || 0);
+      const total = post.slides.length;
+      const pad2 = (n) => String(n).padStart(2, "0");
+
+      /* ── CHROME — six ways for a brand to sign every slide. The rail is one
+         option, not the system. A brand whose spec says "symbol in a fixed
+         corner, never the full lockup" cannot use `rail` at all. ── */
+      const railEl = () =>
+        `<div class="rail"><span>${post.railLeft || ""}</span>` +
+        `<span>${post.handle || ""}</span><span>${post.railRight || ""}</span></div>` +
+        `<div class="arrow">${isRtl ? "←" : "→"}</div>`;
+
+      const footEl = () =>
+        `<div class="foot"><span><b>${post.handle || ""}</b>` +
+        `<i>${post.site || ""}</i></span>` +
+        `<span class="sign">${post.sign || ""}</span></div>`;
+
+      const CHROME = {
+        rail: () => (s.bare ? "" : railEl()) + footEl(),
+        foot: () => footEl(),
+        // ONE mark, one fixed corner, nothing else.
+        corner: () =>
+          `<div class="mark ${post.markPos || "tr"}">${post.mark || post.handle || ""}</div>`,
+        spine: () =>
+          (s.bare ? "" : `<div class="spine">${post.railRight || post.site || ""}</div>`) + footEl(),
+        // a counter plus a hairline that grows: it tells the reader how much
+        // is left, which is the cheapest thing that holds a swipe
+        index: () =>
+          (s.bare
+            ? ""
+            : `<div class="pageno">${pad2(idx + 1)}<i>/${pad2(total)}</i></div>` +
+              `<div class="progress"><span style="width:${Math.round(((idx + 1) / total) * 100)}%"></span></div>`) +
+          footEl(),
+        none: () => "",
+      };
+      const chrome = () => (CHROME[KIT.chrome] || CHROME.rail)();
+
+      const washes = () =>
+        (s.wash || []).map((w) => `<div class="wash w-${w}"></div>`).join("");
+
+      const headline = (lines = []) =>
+        `<h1 class="headline"${s.hsize ? ` style="font-size:${s.hsize}px"` : ""}>` +
+        lines
+          .map((l) => {
+            const cls = ["ln", l.in === 1 && "in1", l.in === 2 && "in2", l.out && "out1", l.accent && "accent"]
+              .filter(Boolean)
+              .join(" ");
+            /* per-line overrides: `size` sets this line only, `gap` opens air
+               above it. A ringed line needs both — the ring has to clear the
+               line above it or the two words read as one block. */
+            const st = [l.size && `font-size:${l.size}px`, l.gap && `margin-block-start:${l.gap}px`]
+              .filter(Boolean)
+              .join(";");
+            return `<span class="${cls}"${st ? ` style="${st}"` : ""}>${l.text}</span>`;
+          })
+          .join("") +
+        `</h1>`;
+
+      const kicker = () =>
+        s.kicker ? `<div><span class="kicker">${s.kicker}</span></div>` : "";
+
+      const bodyEl = (text, at, center) =>
+        text
+          ? `<p class="bodytxt${center ? " center" : ""}" style="${pos(at)}">${text}</p>`
+          : "";
+
+      const copyBlock = () =>
+        `<div class="copy" style="${pos(s.at)}">${kicker()}${headline(s.lines)}</div>`;
+
+      /* Hand-drawn marks for the POSTER form. The wobble is the point — a
+         perfect ellipse reads as a shape tool and kills the whole effect, so
+         every path is deliberately off. Each mark: {type,x,y,w,h,rot,sw}. */
+      const MARK = {
+        circle: (w, h) =>
+          `<ellipse cx="${w / 2}" cy="${h / 2}" rx="${w / 2 - 4}" ry="${h / 2 - 4}"
+             transform="rotate(-2 ${w / 2} ${h / 2})"/>
+           <path d="M${w * 0.06} ${h * 0.62} C ${w * 0.2} ${h * 1.0}, ${w * 0.82} ${h * 1.02}, ${w * 0.97} ${h * 0.44}"
+             opacity=".62"/>`,
+        underline: (w, h) =>
+          `<path d="M2 ${h * 0.45} C ${w * 0.28} ${h * 0.9}, ${w * 0.62} ${h * 0.06}, ${w - 2} ${h * 0.6}"/>`,
+        arrow: (w, h) =>
+          `<path d="M2 2 C ${w * 0.5} ${h * 0.18}, ${w * 0.62} ${h * 0.55}, ${w - 14} ${h - 12}"/>
+           <path d="M${w - 40} ${h - 22} L${w - 10} ${h - 8} L${w - 26} ${h - 40}"/>`,
+        bracket: (w, h) =>
+          `<path d="M${w - 6} 4 C ${w * 0.3} ${h * 0.04}, ${w * 0.22} ${h * 0.1}, 8 ${h * 0.5}
+                    C ${w * 0.22} ${h * 0.9}, ${w * 0.3} ${h * 0.96}, ${w - 6} ${h - 4}"/>`,
+        strike: (w, h) =>
+          `<path d="M2 ${h * 0.62} C ${w * 0.34} ${h * 0.3}, ${w * 0.6} ${h * 0.78}, ${w - 2} ${h * 0.38}"/>`,
+      };
+      /* Marks are placed as an empty layer here and MEASURED after layout —
+         see drawMarks(). Hand-coding coordinates for a mark that is supposed to
+         wrap a word does not survive a single copy edit: the circle ends up
+         cutting through the letters instead of around them. */
+      const marks = (list) => (!list || !list.length ? `<div class="marks"></div>` : `<div class="marks"></div>`);
+
+      /* Resolve `on:` to a real element. Defaults to the accent line, because
+         that is the word you almost always want to ring. */
+      function markTarget(on) {
+        if (!on || on === "accent") return document.querySelector(".headline .accent");
+        if (on === "headline") return document.querySelector(".headline");
+        if (on === "kicker") return document.querySelector(".kicker");
+        const m = /^line(\d+)$/.exec(on);
+        if (m) return document.querySelectorAll(".headline .ln")[Number(m[1]) - 1];
+        return document.querySelector(on);
+      }
+
+      function drawMarks(list) {
+        const layer = document.querySelector(".marks");
+        if (!layer || !list || !list.length) return;
+        const host = layer.getBoundingClientRect();
+
+        /* Measure the GLYPHS, not the box. `.ln` is display:block, so its
+           bounding rect is the full column width — using it made the underline
+           run past the word and pushed the arrow off-canvas. A Range over the
+           text nodes gives the real ink extents. */
+        const inkBox = (el) => {
+          try {
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            const rr = range.getBoundingClientRect();
+            if (rr.width > 1 && rr.height > 1) return rr;
+          } catch {}
+          return el.getBoundingClientRect();
+        };
+
+        for (const m of list) {
+          const el = markTarget(m.on);
+          if (!el) continue;
+          const r = inkBox(el);
+          const pad = m.pad ?? 16;
+          // the box the mark occupies, relative to the marks layer
+          let x, y, w, h;
+          if (m.type === "underline" || m.type === "strike") {
+            w = r.width + pad;
+            h = m.h || 38;
+            x = r.left - host.left - pad / 2;
+            y = (m.type === "strike" ? r.top + r.height * 0.44 : r.bottom - r.height * 0.14) - host.top;
+          } else if (m.type === "arrow") {
+            /* Points up at the target. Prefers the outside gutter, but a
+               near-full-width headline has no gutter — then it drops below the
+               word instead. Clamped last, so it can never leave the canvas. */
+            w = m.w || 190;
+            h = m.h || 130;
+            const roomL = r.left - host.left;
+            const roomR = host.right - r.right;
+            if (roomL >= w + 40) {
+              x = roomL - w - 18;
+              y = r.bottom - host.top + 12;
+            } else if (roomR >= w + 40) {
+              x = r.right - host.left + 18;
+              y = r.bottom - host.top + 12;
+            } else {
+              x = r.left - host.left + Math.min(60, r.width * 0.1);
+              y = r.bottom - host.top + 16;
+            }
+          } else {
+            /* An ellipse is narrowest at its own ends, so a uniform pad
+               clips the first and last letter. It needs more room sideways
+               than it does top and bottom. */
+            const padX = m.padX ?? pad * 1.9;
+            const padY = m.padY ?? pad * 0.85;
+            w = r.width + padX * 2;
+            h = r.height + padY * 2;
+            x = r.left - host.left - padX;
+            y = r.top - host.top - padY;
+          }
+          // last word on placement: nothing is allowed off the canvas
+          x = Math.max(16, Math.min(x + (m.dx || 0), host.width - w - 16));
+          y = Math.max(8, Math.min(y + (m.dy || 0), host.height - h - 8));
+          const f = MARK[m.type] || MARK.underline;
+          // arrow is authored pointing down-right; flip it to aim at the target
+          const flip = m.type === "arrow" ? " scale(1,-1)" : "";
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("width", w);
+          svg.setAttribute("height", h);
+          svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+          svg.setAttribute(
+            "style",
+            `left:${x}px;top:${y}px;stroke-width:${m.sw || 4};` +
+              `transform:rotate(${m.rot || 0}deg)${flip};` +
+              `transform-origin:center;${m.opacity ? `opacity:${m.opacity}` : ""}`
+          );
+          svg.innerHTML = f(w, h);
+          layer.appendChild(svg);
+        }
+      }
+
+      /* Connector strokes between doc cards — the thing that makes a grid of
+         boxes read as a sequence rather than a list. */
+      const connectors = (count, cols, at = {}) => {
+        if (count < 2) return "";
+        const top = (at.t ?? 430) + 60;
+        const left = at.l ?? 76;
+        const right = at.r ?? 76;
+        const w = 1080 - left - right;
+        const colW = (w - 26 * (cols - 1)) / cols;
+        const arms = [];
+        for (let i = 0; i < count - 1; i += 1) {
+          const sameRow = (i + 1) % cols !== 0;
+          if (!sameRow) continue;
+          const x = left + colW * ((i % cols) + 1) + 26 * (i % cols);
+          arms.push(
+            `<path d="M${x - 24} ${top} L${x - 4} ${top}"/>
+             <polygon points="${x - 4},${top - 6} ${x + 6},${top} ${x - 4},${top + 6}"/>`
+          );
+        }
+        return arms.length
+          ? `<svg class="connector" width="1080" height="1350" viewBox="0 0 1080 1350">${arms.join("")}</svg>`
+          : "";
+      };
+
+      /* ── slide types ── */
+      const photoCard = (inner) => `
+        <div class="card${s.plain ? " plain" : ""}">
+          ${img("photo", s.image)}
+          ${washes()}
+          <div class="grain"></div>
+          ${inner}
+          ${s.cut ? img("subject", s.cut) : ""}
+          ${bodyEl(s.body, s.bodyAt, s.bodyCenter)}
+        </div>`;
+
+      const designedCard = (inner) => `
+        <div class="card textbg${s.paper ? " paper" : ""}${s.plain ? " plain" : ""}">
+          <div class="grain"></div>
+          ${s.step ? `<div class="ghost">${s.step}</div>` : ""}
+          ${inner}
+        </div>`;
+
+      const R = {
+        cover: () => photoCard(copyBlock()),
+
+        // photo slide with copy — same as cover, kept separate so intent is legible
+        photo: () => photoCard(copyBlock()),
+
+        // designed background: no photo, no coverage problems
+        /* Type-only slides take the brand ANCHOR. Payload slides below pass an
+           explicit `t` instead, because a grid or a card stack needs the
+           headline high whatever the brand's default anchor is. */
+        teach: () =>
+          designedCard(`
+            <div class="copy" style="${pos(s.at || defAt())}">
+              ${kicker()}${headline(s.lines)}
+            </div>
+            ${s.rule !== false ? `<div class="rule" style="top:${s.ruleT || 690}px;right:${GUT}px"></div>` : ""}
+            ${bodyEl(s.body, s.bodyAt || { t: 754, r: GUT, w: 800 })}`),
+
+        // naked promise: type carries the slide. Body is optional and rare.
+        promise: () =>
+          designedCard(`
+            <div class="copy" style="${pos(s.at || defAt())}">
+              ${kicker()}${headline(s.lines)}
+            </div>
+            ${bodyEl(s.body, s.bodyAt, s.bodyCenter)}`),
+
+        grid: () =>
+          designedCard(`
+            <div class="copy" style="${pos(s.at || defAt(150))}">
+              ${kicker()}${headline(s.lines)}
+            </div>
+            <div class="hookgrid" style="${pos(s.gridAt || { t: 420, r: 66, l: 66 })}">
+              ${(s.hooks || [])
+                .map((h, i) => `<div class="hook c${i + 1}"><h4>${h.name}</h4><p>${h.text}</p></div>`)
+                .join("")}
+            </div>`),
+
+        /* ── BLEED — full-bleed image, type in the void, no card ── */
+        bleed: () => `
+          <div class="card">
+            ${img("photo", s.image)}
+            ${washes()}
+            <div class="grain"></div>
+            <div class="copy" style="${pos(s.at)}">${kicker()}${headline(s.lines)}</div>
+            ${s.cut ? img("subject", s.cut) : ""}
+            ${bodyEl(s.body, s.bodyAt, s.bodyCenter)}
+          </div>`,
+
+        /* ── POSTER — flat field, giant type, hand-drawn marks ── */
+        poster: () =>
+          `<div class="card">
+            <div class="grain"></div>
+            <div class="copy" style="${pos(s.at || defAt())}">
+              ${kicker()}${headline(s.lines)}
+            </div>
+            ${marks(s.marks)}
+            ${bodyEl(s.body, s.bodyAt, s.bodyCenter)}
+          </div>`,
+
+        /* ── DOC — light ground, numbered cards, connectors ── */
+        doc: () => {
+          const cards = (s.steps || [])
+            .map(
+              (c, i) => `<div class="doccard"><div class="n">${c.n ?? i + 1}</div>
+                 <h5>${c.name}</h5><p>${c.text}</p></div>`
+            )
+            .join("");
+          const cols = s.cols || 2;
+          return `<div class="card">
+            <div class="grain"></div>
+            <div class="copy" style="${pos(s.at || { t: 130, l: 80, r: 80 })}">
+              ${kicker()}${headline(s.lines)}
+            </div>
+            ${connectors(s.steps ? s.steps.length : 0, cols, s.docAt)}
+            <div class="docgrid" style="${pos(s.docAt || { t: 430, l: 76, r: 76 })};
+                 grid-template-columns:repeat(${cols},1fr)${
+                   s.docH ? `;--docH:${s.docH}px` : ""
+                 }">${cards}</div>
+          </div>`;
+        },
+
+        /* ── SPEC — margin numeral + rotated real artefact ── */
+        spec: () => `
+          <div class="card">
+            <div class="grain"></div>
+            ${s.step ? `<div class="specnum" style="${[["numSize","px"],["numOpacity",""],["numT","px"]]
+              .filter(([k]) => s[k] != null)
+              .map(([k,u]) => `--${k}:${s[k]}${u}`).join(";")}">${s.step}</div>` : ""}
+            <div class="copy" style="${pos(s.at || { t: 150, r: 70 })}">
+              ${kicker()}${headline(s.lines)}
+            </div>
+            ${bodyEl(s.body, s.bodyAt || { t: 640, l: 200, r: 70 })}
+            ${
+              s.artefact
+                ? `<div class="artefact" style="${
+                    ["artW", "artH", "artL", "artB", "artR", "artPos"]
+                      .filter((k) => s[k] != null)
+                      .map((k) => `--${k}:${typeof s[k] === "number" ? s[k] + (k === "artR" ? "deg" : "px") : s[k]}`)
+                      .join(";")
+                  }"><img src="${s.artefact}" alt=""></div>`
+                : ""
+            }
+          </div>`,
+
+        /* ── COMPARE — two-up, exactly one variable changed ── */
+        compare: () => {
+          /* A side can be an image OR a slab of text. The text mode is what
+             makes `compare` usable on a brand with no photography — a wrong
+             sentence next to a right one is still one variable changed. */
+          const col = (c, cls) => `
+            <div class="col ${cls}">
+              <span class="pill">${c.pill}</span>
+              ${
+                c.text
+                  ? `<figure class="txt"><span>${c.text}</span></figure>`
+                  : `<figure>${c.image ? `<img src="${c.image}" alt="">` : ""}</figure>`
+              }
+              ${c.caption ? `<figcaption>${c.caption}</figcaption>` : ""}
+            </div>`;
+          const inner = `
+            <div class="copy" style="${pos(s.at || { t: 140, l: 80, r: 80 })}">
+              ${kicker()}${headline(s.lines)}
+            </div>
+            <div class="cmp" style="${pos(s.cmpAt || { t: 470, l: 90, r: 90 })}">
+              ${col(s.a, "a")}${col(s.b, "b")}
+            </div>`;
+          return s.image
+            ? `<div class="card">${img("photo", s.image)}${washes()}<div class="grain"></div>${inner}</div>`
+            : `<div class="card textbg"><div class="grain"></div>${inner}</div>`;
+        },
+
+        /* ── TILE — zero-gutter gallery on an artboard ── */
+        tile: () => `
+          <div class="card">
+            <div class="grain"></div>
+            <div class="tiles" style="${pos(s.tilesAt || { t: 150, l: 80, r: 80, })}">
+              ${(s.works || []).map((w) => `<img src="${w}" alt="">`).join("")}
+              <div class="cap"><b>${s.capTitle || ""}</b><span>${s.capText || ""}</span></div>
+            </div>
+          </div>`,
+
+        // CTA. Default strips the template to nothing (`bare: true`).
+        // Give it an `image` only when the photo IS the invitation.
+        cta: () => {
+          const block = `
+            <div class="cta">
+              ${s.pre ? `<div class="pre">${s.pre}</div>` : ""}
+              <div class="lead">${s.lead || ""}</div>
+              <div class="key">${s.key || ""}</div>
+              ${s.post ? `<div class="post">${s.post}</div>` : ""}
+            </div>`;
+          return s.image ? photoCard(block) : block;
+        },
+      };
+
+      const cls = [
+        "slide",
+        // the six grammar axes — these decide the SILHOUETTE, and the
+        // silhouette is the only thing visible at feed size
+        `sh-${KIT.shell}`, `ch-${KIT.chrome}`, `gr-${KIT.ground}`,
+        `eb-${KIT.eyebrow}`, `ac-${KIT.accent}`, `an-${KIT.anchor}`,
+        s.bare && "bare",
+        (s.onlight || s.light || s.type === "doc" || KIT.ground === "paper") && "onlight",
+        ["cover", "photo", "bleed", "compare"].includes(s.type) && "onphoto",
+        // the archetype class drives the structural CSS → references/archetypes.md
+        ["bleed", "poster", "doc", "spec", "compare", "tile"].includes(s.type) &&
+          `f-${s.type}`,
+        isLatin && "latin",
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      document.getElementById("root").innerHTML =
+        `<article class="${cls}">${(R[s.type] || R.cover)()}${chrome()}</article>`;
+
+      /* The shell layer paints by z-index (2), not by source order, so
+         appending it last is safe and keeps every slide renderer unaware of
+         which shell the brand chose. */
+      const cardEl = document.querySelector(".card");
+      if (cardEl) cardEl.insertAdjacentHTML("beforeend", `<div class="shell"></div>`);
+
+      document.fonts.ready.then(() => {
+        // marks must be measured AFTER the webfont has swapped in — measuring
+        // against the fallback metrics puts the ring in the wrong place
+        drawMarks(s.marks);
+        window.__ready = true;
+      });
+    </script>
+  </body>
+</html>

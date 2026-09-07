@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>story</title>
+<style>
+@font-face{font-family:"PingAR";src:url("./fonts/PingARLT-ExtraLight.otf") format("opentype");font-weight:300;font-display:block}
+@font-face{font-family:"PingAR";src:url("./fonts/PingARLT-Regular.otf")    format("opentype");font-weight:400;font-display:block}
+@font-face{font-family:"PingAR";src:url("./fonts/PingARLT-Bold.otf")       format("opentype");font-weight:700;font-display:block}
+
+:root{
+  --ink:    oklch(21% 0.008 70);    /* الغامق الدافي — أساس التعتيم */
+  --gold:   oklch(88% 0.048 85);    /* الذهبي: الكلمة المميزة، السعر، الأيقونات */
+  --tan:    oklch(85% 0.058 85);    /* خلفية بادچ تابي */
+  --text-1: oklch(97% 0.010 85);    /* الهيدلاين والعناوين */
+  --text-2: oklch(93% 0.011 85);    /* النص الثانوي */
+  --text-3: oklch(90% 0.011 85);    /* الهامشي: التاجلاين والتواصل */
+}
+
+/* تصدير: الصفحة بمقاس الستوري بالظبط من غير هوامش */
+@page{size:1080px 1920px;margin:0}
+@media print{
+  html,body{width:1080px;height:1920px;background:#fff}
+  #story{position:absolute;top:0;left:0}
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#0c0a09;overflow:hidden}
+
+#story{position:absolute;top:0;left:0;width:1080px;height:1920px;
+  font-family:"PingAR",sans-serif;overflow:hidden;isolation:isolate;
+  /* القيم دي بتتحمّل من layout.json — الأرقام هنا مجرد احتياطي */
+  --logo-top:132px;--logo-left:82px;--logo-name:23px;--logo-mark:52px;--logo-gap:22px;
+  --rule-top:246px;--rule-left:82px;--rule-w:118px;
+  --text-top:300px;--text-left:82px;--text-w:556px;
+  --hook-size:58px;--hook-line:1.45;
+  --service-size:31px;--service-gap:74px;
+  --price-size:50px;--price-gap:14px;
+  --kicker-size:26px;--kicker-gap:34px;
+  --feat-top:1210px;--feat-side:82px;--feat-icon:36px;--feat-text:19px;
+  --feat-pad:34px;--feat-radius:30px;--feat-op:90%;
+  --cta-top:1432px;--cta-side:82px;--cta-gap:44px;--cta-title:36px;--cta-tag:25px;
+  --badge-h:44px;--badge-px:40px;--badge-py:17px;--badge-radius:20px;--badge-bg:#5FF5B6;
+  --div-top:1545px;
+  --contact-top:1572px;--contact-icon:24px;--contact-text:23px;--contact-gap:30px;
+  --panel-w:900px;--panel-h:960px;--panel-blur:64px;--bot-h:920px}
+#bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+
+/* اللوحة الغامقة أعلى الشمال — حواف ناعمة */
+#topPanel{position:absolute;left:var(--panel-x,-140px);top:-140px;
+  width:var(--panel-w);height:var(--panel-h);
+  z-index:1;background:var(--ink);opacity:.80;filter:blur(var(--panel-blur))}
+
+/* تعتيم أسفل الإطار — الصورة لسه بتبان من ورا */
+#botScrim{position:absolute;left:0;right:0;bottom:0;height:var(--bot-h);z-index:1;
+  background:linear-gradient(to bottom,
+    transparent 0%,
+    color-mix(in oklab, var(--ink) 62%, transparent) 24%,
+    color-mix(in oklab, var(--ink) 90%, transparent) 50%,
+    color-mix(in oklab, var(--ink) 97%, transparent) 100%)}
+
+.pad{position:absolute;z-index:4}
+
+/* اللوجو أعلى الشمال (LTR: الاسم ثم المارك) */
+.mark{top:var(--logo-top);left:var(--logo-left);display:flex;align-items:center;
+  gap:var(--logo-gap);direction:ltr}
+.mark span{font-weight:700;font-size:var(--logo-name);letter-spacing:.34em;color:var(--text-1)}
+.mark img{height:var(--logo-mark);width:auto;display:block}
+.mark-rule{top:var(--rule-top);left:var(--rule-left);width:var(--rule-w);height:2px;
+  background:var(--gold);opacity:.85}
+
+/* الكتلة النصية */
+.block{top:var(--text-top);left:var(--text-left);width:var(--text-w);text-align:right}
+.hook{font-weight:700;font-size:var(--hook-size);line-height:var(--hook-line);
+  color:var(--text-1);white-space:pre-line}
+.hook em{font-style:normal;color:var(--gold)}
+.service{font-weight:400;font-size:var(--service-size);color:var(--text-2);
+  margin-top:var(--service-gap)}
+.price{font-weight:700;font-size:var(--price-size);line-height:1.3;color:var(--gold);
+  margin-top:var(--price-gap)}
+.price sup{font-size:.52em;vertical-align:super;line-height:0;font-weight:700}
+.kicker{font-weight:400;font-size:var(--kicker-size);line-height:1.55;color:var(--text-2);
+  margin-top:var(--kicker-gap)}
+
+/* شريط المزايا */
+.features{top:var(--feat-top);right:var(--feat-side);left:var(--feat-side)}
+.feat-card{display:flex;align-items:stretch;
+  background:color-mix(in oklab, var(--ink) var(--feat-op), transparent);
+  border:1px solid color-mix(in oklab, var(--gold) 20%, transparent);
+  border-radius:var(--feat-radius);padding:var(--feat-pad) 10px}
+.feat-item{flex:1;display:flex;flex-direction:column;align-items:center;
+  text-align:center;gap:16px;padding:0 14px}
+.feat-item:not(:last-child){border-inline-end:1px solid color-mix(in oklab, var(--gold) 16%, transparent)}
+.feat-item svg{width:var(--feat-icon);height:var(--feat-icon);color:var(--gold);flex-shrink:0}
+.feat-item span{font-weight:400;font-size:var(--feat-text);line-height:1.45;color:var(--text-2)}
+
+/* الـCTA: البادچ شمال، النص يمينه */
+.cta{top:var(--cta-top);right:var(--cta-side);left:var(--cta-side);
+  display:flex;align-items:center;justify-content:flex-start;
+  gap:var(--cta-gap);direction:ltr}
+.badge{flex-shrink:0;background:var(--badge-bg);border-radius:var(--badge-radius);
+  padding:var(--badge-py) var(--badge-px);display:flex;align-items:center;justify-content:center}
+.badge img{height:var(--badge-h);width:auto;display:block}
+.cta-text{direction:rtl;text-align:right}
+.cta-title{font-weight:700;font-size:var(--cta-title);color:var(--text-1)}
+.cta-tagline{font-weight:400;font-size:var(--cta-tag);color:var(--text-3);margin-top:9px}
+
+/* فاصل ثم صف التواصل */
+.divider{top:var(--div-top);right:var(--cta-side);left:var(--cta-side);height:1px;
+  background:color-mix(in oklab, var(--gold) 22%, transparent)}
+.contact{top:var(--contact-top);right:var(--cta-side);left:var(--cta-side);
+  display:flex;align-items:center;justify-content:center;direction:ltr}
+.c-item{display:flex;align-items:center;gap:12px;padding:0 var(--contact-gap)}
+.c-item:not(:last-child){border-inline-end:1px solid color-mix(in oklab, var(--gold) 20%, transparent)}
+.c-item svg{width:var(--contact-icon);height:var(--contact-icon);color:var(--gold);flex-shrink:0}
+.c-item span{font-weight:400;font-size:var(--contact-text);color:var(--text-3);white-space:nowrap}
+</style></head>
+<body>
+<div id="story">
+  <img id="bg"><div id="topPanel"></div><div id="botScrim"></div>
+
+  <div class="pad mark">
+    <span>ARCHIDOT STUDIO</span>
+    <img src="img/archidot-mark.svg" alt="">
+  </div>
+  <div class="pad mark-rule"></div>
+
+  <div class="pad block">
+    <div class="hook"    id="hook"></div>
+    <div class="service" id="service"></div>
+    <div class="price"   id="price"></div>
+    <div class="kicker"  id="kicker"></div>
+  </div>
+
+  <div class="pad features">
+    <div class="feat-card">
+      <div class="feat-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="5"/><path d="M9.2 13 7.4 21l4.6-2.8 4.6 2.8-1.8-8"/></svg>
+        <span>تصاميم عصرية<br>وإبداعية</span>
+      </div>
+      <div class="feat-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="7.5" width="21" height="9" rx="1.6" transform="rotate(-38 12 12)"/><path d="M8.6 7.6v2.6M11.6 10.1v2.2M14.6 12.6v2.6"/></svg>
+        <span>دقة في التنفيذ<br>والتفاصيل</span>
+      </div>
+      <div class="feat-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6.8V12l3.4 2"/></svg>
+        <span>تسليم سريع<br>وفي الوقت المحدد</span>
+      </div>
+      <div class="feat-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13.5v-1.2a8 8 0 0 1 16 0v1.2"/><rect x="2.6" y="13" width="4.6" height="6.6" rx="1.8"/><rect x="16.8" y="13" width="4.6" height="6.6" rx="1.8"/></svg>
+        <span>استشارة ودعم<br>متواصل</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="pad cta">
+    <div class="badge" id="logos"><img id="lg-tabby" src="img/tabby-mark-dark.svg" alt="tabby"></div>
+    <div class="cta-text">
+      <div class="cta-title"   id="ctaTitle"></div>
+      <div class="cta-tagline" id="ctaTagline"></div>
+    </div>
+  </div>
+
+  <div class="pad divider"></div>
+
+  <div class="pad contact">
+    <div class="c-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.7a8.4 8.4 0 0 1-12.2 7.5L3.5 20.5l1.4-4.7A8.4 8.4 0 1 1 20.5 11.7z"/><path d="M8.9 9.1c.2 1.9 1.9 3.6 3.8 3.9l.9-1.2 1.9.7-.2 1.6c-2.9.3-5.9-2.6-6.2-5.5l1.6-.2.7 1.9-1 .8"/></svg>
+      <span id="waNumber"></span>
+    </div>
+    <div class="c-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5.4"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r=".95" fill="currentColor" stroke="none"/></svg>
+      <span id="igHandle"></span>
+    </div>
+    <div class="c-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.4 7-11.8A7 7 0 1 0 5 9.2C5 13.6 12 21 12 21z"/><circle cx="12" cy="9.2" r="2.4"/></svg>
+      <span id="locName"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(async () => {
+  const id = new URLSearchParams(location.search).get('id') || '01-room';
+  const data = await (await fetch('./prompts.json?cb=' + Math.random())).json();
+  const s = data.stories.find(x => x.id === id);
+  if (!s) { document.title = 'ERR-no-story'; return; }
+  const r = s.render, c = data.contact || {};
+
+  // تحميل layout.json وتطبيقه كمتغيرات CSS
+  const MAP = {
+    logo:{top:"--logo-top",left:"--logo-left",nameSize:"--logo-name",markHeight:"--logo-mark",gap:"--logo-gap"},
+    rule:{top:"--rule-top",left:"--rule-left",width:"--rule-w"},
+    text:{top:"--text-top",left:"--text-left",width:"--text-w",hookSize:"--hook-size",
+          hookLineHeight:["--hook-line",""],serviceSize:"--service-size",serviceGap:"--service-gap",
+          priceSize:"--price-size",priceGap:"--price-gap",kickerSize:"--kicker-size",kickerGap:"--kicker-gap"},
+    features:{top:"--feat-top",sideMargin:"--feat-side",iconSize:"--feat-icon",textSize:"--feat-text",
+              padY:"--feat-pad",radius:"--feat-radius",opacity:["--feat-op","%"]},
+    cta:{top:"--cta-top",sideMargin:"--cta-side",gap:"--cta-gap",titleSize:"--cta-title",
+         taglineSize:"--cta-tag",badgeHeight:"--badge-h",badgePadX:"--badge-px",badgePadY:"--badge-py",
+         badgeRadius:"--badge-radius",badgeColor:["--badge-bg",""]},
+    divider:{top:"--div-top"},
+    contact:{top:"--contact-top",iconSize:"--contact-icon",textSize:"--contact-text",itemGap:"--contact-gap"},
+    panels:{topWidth:"--panel-w",topHeight:"--panel-h",topBlur:"--panel-blur",bottomHeight:"--bot-h"}
+  };
+  try {
+    const L = await (await fetch("./layout.json?cb=" + Math.random())).json();
+    const el = document.getElementById("story");
+    for (const grp in MAP) {
+      if (!L[grp]) continue;
+      for (const k in MAP[grp]) {
+        if (L[grp][k] === undefined) continue;
+        const v = MAP[grp][k];
+        const name = Array.isArray(v) ? v[0] : v;
+        const unit = Array.isArray(v) ? v[1] : "px";
+        el.style.setProperty(name, L[grp][k] + unit);
+      }
+    }
+    window.__layout = L;
+  } catch (e) { console.warn("layout.json not loaded, using fallbacks", e); }
+  if (new URLSearchParams(location.search).get('notext')) {
+    document.querySelectorAll('.pad').forEach(n => n.style.visibility='hidden');
+  }
+
+  // ?layer=... -> يعرض عنصر واحد بس على خلفية شفافة (لتصدير PSD بطبقات)
+  const LAYER = new URLSearchParams(location.search).get("layer");
+  if (LAYER) {
+    // كل طبقة: إيه اللي يبان، وإيه اللي يتخفي جواه.
+    // الجرافيك متفصّل عن النص عشان لما السكربت يخفي طبقة النص
+    // ما يخفيش الأيقونات والبادچ معاها.
+    const DEF = {
+      bg:           { show: ["#bg"] },
+      scrim:        { show: ["#topPanel", "#botScrim"] },
+      logo:         { show: [".mark", ".mark-rule"] },
+      text:         { show: [".block"] },
+      features:     { show: [".features"] },
+      badge:        { show: [".cta"],               hide: [".cta-text"] },
+      ctatext:      { show: [".cta"],               hide: [".badge"] },
+      contactgfx:   { show: [".divider", ".contact"], hide: [".contact span"] },
+      contacttext:  { show: [".contact"],           hide: [".contact svg"] },
+    }[LAYER] || { show: [] };
+
+    document.documentElement.style.background = "transparent";
+    document.body.style.background = "transparent";
+    ["#bg", "#topPanel", "#botScrim"].forEach(sel => {
+      const n = document.querySelector(sel); if (n) n.style.visibility = "hidden";
+    });
+    document.querySelectorAll(".pad").forEach(n => n.style.visibility = "hidden");
+
+    setTimeout(() => {
+      (DEF.show || []).forEach(sel =>
+        document.querySelectorAll(sel).forEach(n => n.style.visibility = "visible"));
+      (DEF.hide || []).forEach(sel =>
+        document.querySelectorAll(sel).forEach(n => n.style.visibility = "hidden"));
+    }, 30);
+  }
+
+  const esc = t => t.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+  document.getElementById('bg').src = r.image;
+  // *كلمة* -> ذهبي
+  document.getElementById('hook').innerHTML =
+    esc(r.hook).replace(/\*(.+?)\*/g, '<em>$1</em>');
+  document.getElementById('service').textContent = r.service;
+  document.getElementById('price').innerHTML = r.price.replace(/²/g, '<sup>2</sup>');
+  document.getElementById('kicker').textContent  = r.kicker;
+  document.getElementById('ctaTitle').textContent   = r.footerFallback || r.footer;
+  document.getElementById('ctaTagline').textContent = r.tagline || '';
+  document.getElementById('waNumber').textContent = c.whatsappDisplay || '';
+  document.getElementById('igHandle').textContent = c.instagram || '';
+  document.getElementById('locName').textContent  = c.location  || '';
+
+  const badge = document.getElementById('lg-tabby');
+  await new Promise(res => { badge.complete ? res() : (badge.onload = res, badge.onerror = res); });
+  if (!badge.naturalWidth) document.querySelector('.badge').style.display = 'none';
+
+  // ── تعتيم اللوحة العلوية يتحسب من الصورة: أقل شفافية تحقق WCAG ──
+  await document.fonts.ready;
+  await new Promise(res => { const i = document.getElementById('bg');
+    i.complete ? res() : (i.onload = res, i.onerror = res); });
+  {
+    const img = document.getElementById('bg');
+    const cv = document.createElement('canvas');
+    cv.width = 216; cv.height = 384;
+    const cx = cv.getContext('2d', { willReadFrequently: true });
+    const sc = Math.max(cv.width / img.naturalWidth, cv.height / img.naturalHeight);
+    const dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
+    cx.drawImage(img, (cv.width - dw) / 2, (cv.height - dh) / 2, dw, dh);
+
+    // العيّنة من مكان الكتلة النصية الفعلي — لو اتحركت، القياس يتحرك معاها
+    const bb = document.querySelector(".block").getBoundingClientRect();
+    const sx = Math.max(0, Math.round((bb.left   / 1080) * cv.width));
+    const sy = Math.max(0, Math.round((bb.top    / 1920) * cv.height));
+    const sw = Math.max(4, Math.round((bb.width  / 1080) * cv.width));
+    const sh = Math.max(4, Math.round((bb.height / 1920) * cv.height));
+    const d = cx.getImageData(sx, sy,
+                              Math.min(sw, cv.width - sx),
+                              Math.min(sh, cv.height - sy)).data;
+    const lin = c2 => { c2/=255; return c2<=.03928 ? c2/12.92 : Math.pow((c2+.055)/1.055, 2.4); };
+    const lum = (r2,g2,b2) => .2126*lin(r2) + .7152*lin(g2) + .0722*lin(b2);
+
+    let brightest = 0, bi = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      const L = lum(d[i], d[i+1], d[i+2]);
+      if (L > brightest) { brightest = L; bi = i; }
+    }
+    const bp = [d[bi], d[bi+1], d[bi+2]];
+
+    // أخفت لون فوق اللوحة = الذهبي. لازم يحقق 3.6:1 (هامش فوق 3.0 المطلوبة لنص كبير)
+    const dim = 0.6900;                     // لمعان oklch(88% .048 85)
+    const maxBgLum = (dim + 0.05) / 3.6 - 0.05;
+    const INK = [46, 41, 35];               // oklch(21% .008 70)
+    let a = 0.80;
+    for (let t = 60; t <= 100; t++) {
+      a = t / 100;
+      const mix = bp.map((c2, k) => c2 * (1 - a) + INK[k] * a);
+      if (lum(mix[0], mix[1], mix[2]) <= maxBgLum) break;
+    }
+    document.getElementById('topPanel').style.opacity = Math.min(a, 0.97);
+    window.__panel = { alpha: a, brightest: bp };
+  }
+
+  await document.fonts.ready;
+
+  // ── اللوحة الغامقة تتفصّل على الكتلة النصية ──
+  // من غير كده، أي تحريك أو تكبير للنص بيخليه يقع بره التعتيم
+  // والتباين بيسقط من غير ما حد ياخد باله.
+  {
+    const L2 = window.__layout || {};
+    const auto = L2.panels?.auto !== false;
+    if (auto) {
+      const b = document.querySelector(".block").getBoundingClientRect();
+      // النعومة بتفرّد حافة اللوحة على مدى blur تقريبًا — لازم تتحسب
+      // في المقاس، وإلا اللوحة بتبان أكبر مما بتغطي فعليًا والنص يقع بره.
+      const blur = L2.panels?.topBlur ?? 64;
+      const pad  = (L2.panels?.padding ?? 150) + blur;
+      const el2 = document.getElementById("story");
+      el2.style.setProperty("--panel-x", Math.round(b.left - pad) + "px");
+      el2.style.setProperty("--panel-w", Math.round(b.width + pad * 2) + "px");
+      el2.style.setProperty("--panel-h", Math.round(b.bottom + pad + 140) + "px");
+    }
+  }
+
+  // حارس: الكتلة النصية ما تعديش المنطقة الآمنة لكل صورة
+  const limit = 1920 * (r.textEndPct / 100);
+  const block = document.querySelector('.block');
+  const hook  = document.getElementById('hook');
+  let size = parseFloat(getComputedStyle(hook).fontSize) || 58;
+  while (block.getBoundingClientRect().bottom > limit && size > 38) {
+    size -= 2; hook.style.fontSize = size + 'px';
+  }
+  // ?rects=1 -> يطلّع مواضع العناصر الحقيقية عشان القياس يبقى مضبوط
+  if (new URLSearchParams(location.search).get("rects")) {
+    const pick = ["#hook","#service","#price","#kicker",".feat-card",
+                  ".cta-title",".cta-tagline",".contact"];
+    const out = {};
+    for (const sel of pick) {
+      const n = document.querySelector(sel);
+      if (!n) continue;
+      const r = n.getBoundingClientRect();
+      out[sel] = [Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom)];
+    }
+    // معلومات النص الكاملة — عشان سكربت فوتوشوب يبني طبقات نص حية مطابقة
+    // getComputedStyle بيرجّع oklch(...) والكانفاس في وضع headless
+    // مش بيحوّلها. الحل الأضمن: نرسم النص فعليًا ونقرا بكسل منه.
+    const _c = document.createElement("canvas");
+    _c.width = _c.height = 8;
+    const _x = _c.getContext("2d", { willReadFrequently: true });
+    const rgbHex = css => {
+      _x.clearRect(0, 0, 8, 8);
+      _x.fillStyle = css;
+      _x.fillRect(0, 0, 8, 8);
+      const d = _x.getImageData(0, 0, 1, 1).data;
+      return "#" + [d[0], d[1], d[2]]
+        .map(v => v.toString(16).padStart(2, "0")).join("");
+    };
+    const live = [];
+    const TEXTS = [
+      ["#hook","العنوان"],["#service","الخدمة"],["#price","السعر"],
+      ["#kicker","سطر صغير"],["#ctaTitle","عنوان الدفع"],["#ctaTagline","تاجلاين"],
+      ["#waNumber","واتساب"],["#igHandle","إنستجرام"],["#locName","الموقع"]
+    ];
+    for (const [sel, label] of TEXTS) {
+      const n = document.querySelector(sel);
+      if (!n || !n.textContent.trim()) continue;
+      const cs = getComputedStyle(n), r = n.getBoundingClientRect();
+      live.push({
+        sel, label,
+        text: n.innerText,
+        size: parseFloat(cs.fontSize),
+        weight: parseInt(cs.fontWeight) || 400,
+        color: rgbHex(cs.color),
+        leading: parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.4,
+        align: cs.textAlign === "right" ? "right" : (cs.textAlign === "center" ? "center" : "left"),
+        left: Math.round(r.left), top: Math.round(r.top),
+        width: Math.round(r.width), height: Math.round(r.height),
+        rtl: /[؀-ۿ]/.test(n.innerText)
+      });
+    }
+    document.title = "RECTS" + JSON.stringify({ rects: out, live });
+    return;
+  }
+  document.title = 'ready|a=' + (window.__panel?.alpha ?? '?') + '|' + size;
+})();
+</script>
+</body></html>

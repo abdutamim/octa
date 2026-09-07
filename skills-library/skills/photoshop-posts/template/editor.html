@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+<title>محرر ستوريات آركيدوت</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,"Segoe UI",sans-serif;background:#15130f;color:#eee7dc;
+  display:flex;height:100vh;overflow:hidden}
+
+/* ── المعاينة ── */
+#stage{flex:1;display:flex;align-items:center;justify-content:center;background:#0b0a08;
+  position:relative}
+#frame{width:1080px;height:1920px;border:0;transform-origin:center center;
+  box-shadow:0 30px 80px rgba(0,0,0,.6)}
+#zoomTag{position:absolute;top:14px;left:14px;font-size:12px;opacity:.5}
+
+/* خطوط المنطقة الآمنة بتاعة إنستجرام */
+#safe{position:absolute;pointer-events:none;border-top:2px dashed rgba(255,90,90,.55);
+  border-bottom:2px dashed rgba(255,90,90,.55)}
+#safe::before,#safe::after{content:"منطقة إنستجرام — بتتغطى";position:absolute;left:8px;
+  font-size:11px;color:rgba(255,120,120,.9);background:rgba(0,0,0,.55);padding:2px 6px;border-radius:4px}
+#safe::before{top:-20px} #safe::after{bottom:-20px}
+
+/* ── لوحة التحكم ── */
+#panel{width:390px;background:#1c1915;border-inline-start:1px solid #322c24;
+  display:flex;flex-direction:column}
+#head{padding:14px 16px;border-bottom:1px solid #322c24;display:flex;gap:8px;align-items:center}
+#head select{flex:1;background:#241f19;color:#eee7dc;border:1px solid #3d352b;
+  border-radius:8px;padding:7px 9px;font-family:inherit;font-size:13px}
+#head button{background:#c9a86a;color:#1b1710;border:0;border-radius:8px;
+  padding:7px 12px;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px}
+#body{flex:1;overflow-y:auto;padding:8px 14px 40px}
+
+details{border-bottom:1px solid #2a251e}
+summary{cursor:pointer;padding:11px 2px;font-weight:700;font-size:14px;color:#d9c9a8;
+  list-style:none;user-select:none}
+summary::before{content:"▸ ";transition:.15s}
+details[open] summary::before{content:"▾ "}
+
+.row{display:grid;grid-template-columns:1fr 62px;gap:8px;align-items:center;
+  padding:5px 0 5px 4px}
+.row label{font-size:12.5px;opacity:.82}
+.row input[type=range]{grid-column:1/-1;width:100%;accent-color:#c9a86a;margin-top:-2px}
+.row input[type=number],.row input[type=color]{background:#241f19;color:#eee7dc;
+  border:1px solid #3d352b;border-radius:6px;padding:4px 6px;font-size:12px;width:100%;
+  font-family:inherit}
+.row input[type=color]{height:28px;padding:2px}
+
+#out{position:fixed;inset:auto 16px 16px 16px;max-width:360px;background:#0f0d0a;
+  border:1px solid #3d352b;border-radius:10px;padding:12px;font-size:11px;
+  max-height:40vh;overflow:auto;display:none;white-space:pre;direction:ltr;text-align:left}
+#toast{position:fixed;top:16px;right:50%;transform:translateX(50%);background:#2f8f5b;
+  color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;
+  opacity:0;transition:.25s;pointer-events:none}
+#toast.on{opacity:1}
+</style></head>
+<body>
+
+<div id="stage">
+  <iframe id="frame" src="story.html?id=01-room"></iframe>
+  <div id="safe"></div>
+  <div id="zoomTag"></div>
+</div>
+
+<div id="panel">
+  <div id="head">
+    <select id="pick">
+      <option value="01-room">01 — غرفة</option>
+      <option value="02-home">02 — بيت</option>
+      <option value="03-facade">03 — واجهة</option>
+    </select>
+    <button id="save">حفظ layout.json</button>
+  </div>
+  <div id="body"></div>
+</div>
+
+<div id="out"></div>
+<div id="toast"></div>
+
+<script>
+/* ــــ تعريف كل مقبض: [المفتاح, الاسم بالعربي, أقل, أكبر, النوع] ــــ */
+const GROUPS = {
+  logo: ["اللوجو", [
+    ["top","المسافة من فوق",0,600],["left","المسافة من الشمال",0,500],
+    ["nameSize","حجم الاسم",12,48],["markHeight","حجم المارك",20,140],["gap","المسافة بينهم",0,80]
+  ]],
+  rule: ["الخط الذهبي", [
+    ["top","من فوق",0,700],["left","من الشمال",0,500],["width","العرض",0,400]
+  ]],
+  text: ["الكتلة النصية", [
+    ["top","من فوق",100,900],["left","من الشمال",0,500],["width","عرض العمود",250,940],
+    ["hookSize","حجم الهيدلاين",24,110],["hookLineHeight","تباعد السطور",1,2.2,"f"],
+    ["serviceSize","حجم الخدمة",14,60],["serviceGap","مسافة قبل الخدمة",0,200],
+    ["priceSize","حجم السعر",20,100],["priceGap","مسافة قبل السعر",0,120],
+    ["kickerSize","حجم السطر الصغير",12,50],["kickerGap","مسافة قبله",0,140]
+  ]],
+  features: ["شريط المزايا", [
+    ["top","من فوق",900,1700],["sideMargin","الهامش الجانبي",0,260],
+    ["iconSize","حجم الأيقونة",16,80],["textSize","حجم النص",10,40],
+    ["padY","الحشو الرأسي",8,90],["radius","الاستدارة",0,60],["opacity","التعتيم %",30,100]
+  ]],
+  cta: ["الـCTA وتابي", [
+    ["top","من فوق",1100,1800],["sideMargin","الهامش الجانبي",0,260],["gap","المسافة بين البادچ والنص",0,180],
+    ["titleSize","حجم العنوان",16,70],["taglineSize","حجم التاجلاين",10,46],
+    ["badgeHeight","حجم لوجو تابي",20,130],["badgePadX","حشو أفقي",6,90],
+    ["badgePadY","حشو رأسي",4,60],["badgeRadius","استدارة البادچ",0,90],
+    ["badgeColor","لون البادچ",0,0,"c"]
+  ]],
+  divider: ["الفاصل", [ ["top","من فوق",1200,1800] ]],
+  contact: ["صف التواصل", [
+    ["top","من فوق",1200,1850],["iconSize","حجم الأيقونة",10,50],
+    ["textSize","حجم النص",10,44],["itemGap","المسافة بين العناصر",4,90]
+  ]],
+  panels: ["التعتيم", [
+    ["padding","هامش اللوحة حوالين النص",40,400],
+    ["topBlur","نعومة حوافها",0,180],["bottomHeight","ارتفاع التدرّج السفلي",200,1400]
+  ]]
+};
+
+/* الربط بين مفاتيح JSON ومتغيرات CSS — نفس اللي في story.html */
+const VAR = {
+  logo:{top:"--logo-top",left:"--logo-left",nameSize:"--logo-name",markHeight:"--logo-mark",gap:"--logo-gap"},
+  rule:{top:"--rule-top",left:"--rule-left",width:"--rule-w"},
+  text:{top:"--text-top",left:"--text-left",width:"--text-w",hookSize:"--hook-size",
+        hookLineHeight:["--hook-line",""],serviceSize:"--service-size",serviceGap:"--service-gap",
+        priceSize:"--price-size",priceGap:"--price-gap",kickerSize:"--kicker-size",kickerGap:"--kicker-gap"},
+  features:{top:"--feat-top",sideMargin:"--feat-side",iconSize:"--feat-icon",textSize:"--feat-text",
+            padY:"--feat-pad",radius:"--feat-radius",opacity:["--feat-op","%"]},
+  cta:{top:"--cta-top",sideMargin:"--cta-side",gap:"--cta-gap",titleSize:"--cta-title",
+       taglineSize:"--cta-tag",badgeHeight:"--badge-h",badgePadX:"--badge-px",badgePadY:"--badge-py",
+       badgeRadius:"--badge-radius",badgeColor:["--badge-bg",""]},
+  divider:{top:"--div-top"},
+  contact:{top:"--contact-top",iconSize:"--contact-icon",textSize:"--contact-text",itemGap:"--contact-gap"},
+  panels:{topBlur:"--panel-blur",bottomHeight:"--bot-h"}
+};
+
+let L = null;
+const frame = document.getElementById("frame");
+
+/* ــ تحجيم المعاينة عشان تدخل في الشاشة ــ */
+function fit(){
+  const st = document.getElementById("stage");
+  const k = Math.min((st.clientHeight - 50) / 1920, (st.clientWidth - 50) / 1080);
+  frame.style.transform = "scale(" + k + ")";
+  document.getElementById("zoomTag").textContent = "معاينة " + Math.round(k*100) + "%";
+  // خطوط المنطقة الآمنة: 13% فوق و13% تحت
+  const w = 1080*k, h = 1920*k;
+  const s = document.getElementById("safe");
+  s.style.width = w + "px"; s.style.height = (h*0.74) + "px";
+  s.style.left = ((st.clientWidth - w)/2) + "px";
+  s.style.top  = ((st.clientHeight - h)/2 + h*0.13) + "px";
+}
+addEventListener("resize", fit);
+
+/* ــ تطبيق قيمة على الإطار مباشرة ــ */
+function apply(grp, key, val){
+  const doc = frame.contentDocument;
+  if (!doc) return;
+  const el = doc.getElementById("story");
+  if (!el) return;
+  const v = VAR[grp][key];
+  const name = Array.isArray(v) ? v[0] : v;
+  const unit = Array.isArray(v) ? v[1] : "px";
+  el.style.setProperty(name, val + unit);
+}
+
+/* ــ بناء لوحة المقابض ــ */
+function build(){
+  const body = document.getElementById("body");
+  body.innerHTML = "";
+  for (const grp in GROUPS){
+    const [label, knobs] = GROUPS[grp];
+    const d = document.createElement("details");
+    if (grp === "cta" || grp === "text") d.open = true;
+    d.innerHTML = "<summary>" + label + "</summary>";
+    for (const [key, name, min, max, type] of knobs){
+      const cur = L[grp]?.[key];
+      if (cur === undefined) continue;
+      const row = document.createElement("div"); row.className = "row";
+      if (type === "c"){
+        row.innerHTML = '<label>' + name + '</label>' +
+          '<input type="color" value="' + cur + '">';
+        const c = row.querySelector("input");
+        c.oninput = () => { L[grp][key] = c.value; apply(grp, key, c.value); };
+      } else {
+        const step = type === "f" ? 0.01 : 1;
+        row.innerHTML = '<label>' + name + '</label>' +
+          '<input type="number" step="' + step + '" value="' + cur + '">' +
+          '<input type="range" min="' + min + '" max="' + max + '" step="' + step + '" value="' + cur + '">';
+        const [num, rng] = row.querySelectorAll("input");
+        const set = v => { L[grp][key] = parseFloat(v); num.value = v; rng.value = v; apply(grp, key, v); };
+        const reload = (grp === "panels" && key === "padding") ||
+                       (grp === "text") || (grp === "features");
+        let t = null;
+        const setMaybeReload = v => {
+          set(v);
+          if (reload) { clearTimeout(t); t = setTimeout(refit, 260); }
+        };
+        rng.oninput = e => setMaybeReload(e.target.value);
+        num.oninput = e => setMaybeReload(e.target.value);
+      }
+      d.appendChild(row);
+    }
+    body.appendChild(d);
+  }
+}
+
+/* ــ الحفظ: بيكتب layout.json فعليًا لو السيرفر بيسمح، وإلا بينسخه ــ */
+document.getElementById("save").onclick = async () => {
+  const json = JSON.stringify(L, null, 2);
+  try {
+    const r = await fetch("layout.json", { method:"PUT", body: json });
+    if (!r.ok) throw new Error(r.status);
+    toast("اتحفظ ✓ شغّل: bash render.sh");
+  } catch {
+    await navigator.clipboard.writeText(json).catch(()=>{});
+    document.getElementById("out").style.display = "block";
+    document.getElementById("out").textContent = json;
+    toast("اتنسخ ✓ الصقه في layout.json");
+  }
+};
+/* إعادة تفصيل اللوحة بعد أي تغيير في النص أو الحشو */
+async function refit(){
+  try { await fetch("layout.json", { method:"PUT", body: JSON.stringify(L, null, 2) }); } catch {}
+  const f = document.getElementById("frame");
+  f.src = f.src.split("&cb=")[0] + "&cb=" + Math.random();
+}
+function toast(t){
+  const el = document.getElementById("toast");
+  el.textContent = t; el.classList.add("on");
+  setTimeout(()=>el.classList.remove("on"), 2600);
+}
+
+document.getElementById("pick").onchange = e => {
+  frame.src = "story.html?id=" + e.target.value + "&cb=" + Math.random();
+};
+
+/* ــ التشغيل ــ */
+(async () => {
+  L = await (await fetch("layout.json?cb=" + Math.random())).json();
+  build(); fit();
+})();
+frame.addEventListener("load", () => setTimeout(() => {
+  // نعيد تطبيق القيم الحالية بعد ما الإطار يعيد التحميل
+  for (const grp in VAR) for (const key in VAR[grp])
+    if (L?.[grp]?.[key] !== undefined) apply(grp, key, L[grp][key]);
+}, 400));
+</script>
+</body></html>
