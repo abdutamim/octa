@@ -7,11 +7,13 @@ import { SettingsPage } from './components/SettingsPage'
 import { BrainPage } from './components/BrainPage'
 import { JobsPage } from './components/JobsPage'
 import { SkillsPage } from './components/SkillsPage'
+import { OctaPage } from './components/OctaPage'
+import { WorkflowsPage } from './components/WorkflowsPage'
 import { Sidebar, type Page } from './components/Sidebar'
 
 export function App(): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
-  const [page, setPage] = useState<Page>('settings')
+  const [page, setPage] = useState<Page>('octa')
   const [loading, setLoading] = useState(true)
   const locale: Locale = settings.locale
 
@@ -63,6 +65,7 @@ export function App(): React.JSX.Element {
       <div className="workspace">
         <Sidebar page={page} locale={locale} onChange={setPage} onToggleLocale={toggleLocale} />
         <section className="content">
+          {page === 'octa' && <OctaPage locale={locale} />}
           {page === 'settings' && (
             <SettingsPage
               settings={settings}
@@ -74,6 +77,7 @@ export function App(): React.JSX.Element {
           )}
           {page === 'brain' && <BrainPage locale={locale} />}
           {page === 'jobs' && <JobsPage locale={locale} />}
+          {page === 'workflows' && <WorkflowsPage locale={locale} />}
           {page === 'skills' && <SkillsPage locale={locale} />}
         </section>
       </div>

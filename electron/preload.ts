@@ -102,6 +102,10 @@ const api = {
       return () => ipcRenderer.removeListener('browser:challenge', wrapped)
     }
   },
+  files: {
+    read: (path: string): Promise<string> => ipcRenderer.invoke('files:read', path),
+    open: (path: string): Promise<string> => ipcRenderer.invoke('files:open', path)
+  },
   window: {
     minimize: (): void => ipcRenderer.send('window:minimize'),
     maximize: (): void => ipcRenderer.send('window:maximize'),
