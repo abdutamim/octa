@@ -15,7 +15,8 @@ function statusKey(status: JobStatus): TranslationKey {
     failed: 'jobStatusFailed',
     needs_approval: 'jobStatusNeedsApproval',
     needs_input: 'jobStatusNeedsInput',
-    cancelled: 'jobStatusCancelled'
+    cancelled: 'jobStatusCancelled',
+    stale: 'jobStatusStale'
   }
   return keys[status]
 }
@@ -119,6 +120,19 @@ export function JobsPage({ locale }: { locale: Locale }): React.JSX.Element {
       setPlannerError(error instanceof Error ? error.message : String(error))
     }
   }
+
+  const savePlannerWorkflow = async (): Promise<void> => {
+    if (!plannerResult) return
+    const name = window.prompt(label('planWorkflowNamePrompt'), plannerResult.plan.workflow)
+    if (!name?.trim()) return
+    try {
+      setPlannerError(null)
+      await window.octa.workflows.save(name.trim(), plannerResult.plan)
+      setPlannerError(label('planSavedWorkflow'))
+    } catch {
+      setPlannerError(label('workflowError'))
+    }
+  }
   const selected = jobs.find((job) => job.id === selectedId) ?? jobs[0]
 
   useEffect(() => {
@@ -199,7 +213,7 @@ export function JobsPage({ locale }: { locale: Locale }): React.JSX.Element {
         </button>
       </section>
       {plannerError && <p className="planner-error" role="alert">{plannerError}</p>}
-      {plannerResult && <PlanCard result={plannerResult} locale={locale} onAnswer={answerPlanner} onApprove={approvePlanner} />}
+      {plannerResult && <PlanCard result={plannerResult} locale={locale} onAnswer={answerPlanner} onApprove={approvePlanner} onSaveAsWorkflow={savePlannerWorkflow} />}
 
       <section className="job-launcher glass">
         <div>

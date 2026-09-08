@@ -1,5 +1,5 @@
 import { spawn as nodeSpawn, type ChildProcess, type SpawnOptions } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { basename, delimiter, dirname, extname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { JobOutput, JobResult } from '../../types'
@@ -24,9 +24,9 @@ export const REVIEW_SCHEMA = {
         required: ['criterion', 'detail', 'severity']
       }
     },
-    fixed_output_path: { type: 'string' }
+    fixed_output_path: { type: ['string', 'null'] }
   },
-  required: ['verdict', 'issues']
+  required: ['verdict', 'issues', 'fixed_output_path']
 } as const
 
 export type ReviewVerdict = 'pass' | 'revise'
@@ -401,6 +401,25 @@ function usageFromEvent(value: unknown): ReviewCost | undefined {
   return costFrom(usage)
 }
 
+function findNativeCodex(root: string, depth: number): string | undefined {
+  if (depth < 0 || !existsSync(root)) return undefined
+  let entries
+  try {
+    entries = readdirSync(root, { withFileTypes: true })
+  } catch {
+    return undefined
+  }
+  for (const entry of entries) {
+    const candidate = join(root, entry.name)
+    if (entry.isFile() && entry.name.toLowerCase() === 'codex.exe') return candidate
+    if (entry.isDirectory()) {
+      const nested = findNativeCodex(candidate, depth - 1)
+      if (nested) return nested
+    }
+  }
+  return undefined
+}
+
 function resolveCodexBinary(environment: NodeJS.ProcessEnv = process.env): string | undefined {
   const explicit = environment.CODEX_BINARY?.trim()
   if (explicit) return explicit
@@ -409,7 +428,10 @@ function resolveCodexBinary(environment: NodeJS.ProcessEnv = process.env): strin
   for (const directory of pathValue.split(delimiter).filter(Boolean)) {
     for (const name of names) {
       const candidate = join(directory, name)
-      if (existsSync(candidate)) return candidate
+      if (!existsSync(candidate)) continue
+      if (process.platform !== 'win32' || extname(candidate).toLowerCase() === '.exe') return candidate
+      const native = findNativeCodex(join(directory, 'node_modules', '@openai', 'codex'), 6)
+      if (native) return native
     }
   }
   return undefined

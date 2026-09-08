@@ -10,10 +10,12 @@ export type JobRunnerName =
   | 'codex-scout'
   | 'codex-critic'
   | 'codex-review'
+  | 'octa-code'
+  | 'workflow'
   | 'gemini-inline'
 
 /** Final job states plus the transient state shown while a subprocess runs. */
-export type JobStatus = 'running' | 'ok' | 'failed' | 'needs_approval' | 'needs_input' | 'cancelled'
+export type JobStatus = 'running' | 'ok' | 'failed' | 'needs_approval' | 'needs_input' | 'cancelled' | 'stale'
 export type JobAutonomy = 'led' | 'assisted' | 'auto'
 export type JobGate = 'none' | 'review' | 'approve'
 
@@ -45,6 +47,7 @@ export interface JobResult {
 
 export interface JobRecord {
   id: string
+  workflowRunId: string | null
   planId: string | null
   workflow: string | null
   stepId: string | null
@@ -64,10 +67,18 @@ export interface JobRecord {
   approvedBy: string | null
   approvedAt: string | null
   error: string | null
+  state: unknown
+  gatePayload: unknown
+  gateCreatedAt: string | null
+  gateExpiresAt: string | null
+  gateDecision: string | null
+  gateComments: string | null
+  attempt: number
 }
 
 export interface JobStartRequest {
   id?: string
+  workflowRunId?: string | null
   runner: JobRunnerName
   skill?: string
   input?: unknown
@@ -86,6 +97,8 @@ export interface JobStartRequest {
   inputTokenBudget?: number
   maxRetries?: number
   retryDelayMs?: number
+  /** Workflow orchestration keeps review in spec 006 so it can persist gate state. */
+  skipReview?: boolean
 }
 
 export interface JobStartResponse {

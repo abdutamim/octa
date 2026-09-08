@@ -13,6 +13,7 @@ import type {
 
 interface JobRow {
   id: string
+  workflow_run_id: string | null
   plan_id: string | null
   workflow: string | null
   step_id: string | null
@@ -32,6 +33,13 @@ interface JobRow {
   approved_by: string | null
   approved_at: string | null
   error: string | null
+  state_json: string | null
+  gate_payload_json: string | null
+  gate_created_at: string | null
+  gate_expires_at: string | null
+  gate_decision: string | null
+  gate_comments: string | null
+  attempt: number
 }
 
 interface PlanRow {
@@ -45,8 +53,42 @@ interface PlanRow {
   created_at: string
 }
 
+interface WorkflowRow {
+  id: string
+  name: string
+  version: number
+  definition_json: string
+  created_at: string
+  updated_at: string
+}
+
+interface WorkflowStatsRow {
+  workflow_id: string
+  clean_runs: number
+  rejection_count: number
+  autonomy: string
+  promoted_at: string | null
+  demoted_at: string | null
+  updated_at: string
+}
+
+interface RecurringJobRow {
+  id: string
+  name: string
+  workflow: string
+  every: string
+  next_run_at: string | null
+  last_run_at: string | null
+  autonomy: string
+  enabled: number
+  input_json: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface CreateJobInput {
   id?: string
+  workflowRunId?: string | null
   planId?: string | null
   workflow?: string | null
   stepId?: string | null
@@ -66,9 +108,17 @@ export interface CreateJobInput {
   approvedBy?: string | null
   approvedAt?: string | null
   error?: string | null
+  state?: unknown
+  gatePayload?: unknown
+  gateCreatedAt?: string | null
+  gateExpiresAt?: string | null
+  gateDecision?: string | null
+  gateComments?: string | null
+  attempt?: number
 }
 
 export interface UpdateJobInput {
+  workflowRunId?: string | null
   planId?: string | null
   workflow?: string | null
   stepId?: string | null
@@ -88,6 +138,13 @@ export interface UpdateJobInput {
   approvedBy?: string | null
   approvedAt?: string | null
   error?: string | null
+  state?: unknown
+  gatePayload?: unknown
+  gateCreatedAt?: string | null
+  gateExpiresAt?: string | null
+  gateDecision?: string | null
+  gateComments?: string | null
+  attempt?: number
 }
 
 export interface ListJobsOptions {
@@ -128,6 +185,74 @@ export interface UpdatePlanInput {
   status?: PlanStatus
 }
 
+export interface WorkflowRecord {
+  id: string
+  name: string
+  version: number
+  definition: unknown
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SaveWorkflowInput {
+  id: string
+  name: string
+  version?: number
+  definition: unknown
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface WorkflowStatsRecord {
+  workflowId: string
+  cleanRuns: number
+  rejectionCount: number
+  autonomy: JobAutonomy
+  promotedAt: string | null
+  demotedAt: string | null
+  updatedAt: string
+}
+
+export interface RecurringJobRecord {
+  id: string
+  name: string
+  workflow: string
+  every: string
+  nextRunAt: string | null
+  lastRunAt: string | null
+  autonomy: JobAutonomy
+  enabled: boolean
+  input: unknown
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SaveRecurringJobInput {
+  id: string
+  name: string
+  workflow: string
+  every: string
+  nextRunAt?: string | null
+  lastRunAt?: string | null
+  autonomy?: JobAutonomy
+  enabled?: boolean
+  input?: unknown
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface UpdateRecurringJobInput {
+  name?: string
+  workflow?: string
+  every?: string
+  nextRunAt?: string | null
+  lastRunAt?: string | null
+  autonomy?: JobAutonomy
+  enabled?: boolean
+  input?: unknown
+  updatedAt?: string
+}
+
 function jsonValue(value: unknown): string | null {
   if (value === undefined) return null
   const encoded = JSON.stringify(value)
@@ -154,7 +279,8 @@ function validStatus(value: string): JobStatus {
     'failed',
     'needs_approval',
     'needs_input',
-    'cancelled'
+    'cancelled',
+    'stale'
   ]
   return statuses.includes(value as JobStatus) ? (value as JobStatus) : 'failed'
 }
@@ -170,6 +296,7 @@ function validGate(value: string | null): JobGate | null {
 function mapJob(row: JobRow): JobRecord {
   return {
     id: row.id,
+    workflowRunId: row.workflow_run_id ?? null,
     planId: row.plan_id,
     workflow: row.workflow,
     stepId: row.step_id,
@@ -188,7 +315,57 @@ function mapJob(row: JobRow): JobRecord {
     finishedAt: row.finished_at,
     approvedBy: row.approved_by,
     approvedAt: row.approved_at,
-    error: row.error
+    error: row.error,
+    state: parseJson(row.state_json),
+    gatePayload: parseJson(row.gate_payload_json),
+    gateCreatedAt: row.gate_created_at,
+    gateExpiresAt: row.gate_expires_at,
+    gateDecision: row.gate_decision,
+    gateComments: row.gate_comments,
+    attempt: Number.isFinite(row.attempt) ? Math.max(0, Math.trunc(row.attempt)) : 0
+  }
+}
+
+function mapWorkflow(row: WorkflowRow): WorkflowRecord {
+  return {
+    id: row.id,
+    name: row.name,
+    version: row.version,
+    definition: parseJson(row.definition_json),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  }
+}
+
+function validAutonomyOrDefault(value: string, fallback: JobAutonomy = 'assisted'): JobAutonomy {
+  return value === 'led' || value === 'assisted' || value === 'auto' ? value : fallback
+}
+
+function mapWorkflowStats(row: WorkflowStatsRow): WorkflowStatsRecord {
+  return {
+    workflowId: row.workflow_id,
+    cleanRuns: Math.max(0, Math.trunc(row.clean_runs)),
+    rejectionCount: Math.max(0, Math.trunc(row.rejection_count)),
+    autonomy: validAutonomyOrDefault(row.autonomy),
+    promotedAt: row.promoted_at,
+    demotedAt: row.demoted_at,
+    updatedAt: row.updated_at
+  }
+}
+
+function mapRecurringJob(row: RecurringJobRow): RecurringJobRecord {
+  return {
+    id: row.id,
+    name: row.name,
+    workflow: row.workflow,
+    every: row.every,
+    nextRunAt: row.next_run_at,
+    lastRunAt: row.last_run_at,
+    autonomy: validAutonomyOrDefault(row.autonomy),
+    enabled: row.enabled === 1,
+    input: parseJson(row.input_json),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
   }
 }
 
@@ -232,6 +409,7 @@ export class JobsRepository {
     this.database.exec(`
       CREATE TABLE IF NOT EXISTS job_runs (
         id TEXT PRIMARY KEY,
+        workflow_run_id TEXT,
         plan_id TEXT,
         workflow TEXT,
         step_id TEXT,
@@ -250,7 +428,14 @@ export class JobsRepository {
         finished_at TEXT,
         approved_by TEXT,
         approved_at TEXT,
-        error TEXT
+        error TEXT,
+        state_json TEXT,
+        gate_payload_json TEXT,
+        gate_created_at TEXT,
+        gate_expires_at TEXT,
+        gate_decision TEXT,
+        gate_comments TEXT,
+        attempt INTEGER NOT NULL DEFAULT 0
       );
 
       CREATE INDEX IF NOT EXISTS idx_job_runs_started_at ON job_runs(started_at DESC);
@@ -275,6 +460,32 @@ export class JobsRepository {
         status TEXT NOT NULL DEFAULT 'draft',
         created_at TEXT NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS workflow_stats (
+        workflow_id TEXT PRIMARY KEY,
+        clean_runs INTEGER NOT NULL DEFAULT 0,
+        rejection_count INTEGER NOT NULL DEFAULT 0,
+        autonomy TEXT NOT NULL DEFAULT 'assisted',
+        promoted_at TEXT,
+        demoted_at TEXT,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS recurring_jobs (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        workflow TEXT NOT NULL,
+        every TEXT NOT NULL,
+        next_run_at TEXT,
+        last_run_at TEXT,
+        autonomy TEXT NOT NULL DEFAULT 'assisted',
+        enabled INTEGER NOT NULL DEFAULT 0,
+        input_json TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_recurring_jobs_next_run ON recurring_jobs(next_run_at);
     `)
     this.applyMigrations()
   }
@@ -285,6 +496,21 @@ export class JobsRepository {
     if (!columns.some((column) => column.name === 'review_json')) {
       this.database.exec('ALTER TABLE job_runs ADD COLUMN review_json TEXT')
     }
+    const jobColumnDefinitions: Record<string, string> = {
+      workflow_run_id: 'TEXT',
+      state_json: 'TEXT',
+      gate_payload_json: 'TEXT',
+      gate_created_at: 'TEXT',
+      gate_expires_at: 'TEXT',
+      gate_decision: 'TEXT',
+      gate_comments: 'TEXT',
+      attempt: 'INTEGER NOT NULL DEFAULT 0'
+    }
+    const jobColumnNames = new Set(columns.map((column) => String(column.name)))
+    for (const [name, definition] of Object.entries(jobColumnDefinitions)) {
+      if (!jobColumnNames.has(name)) this.database.exec(`ALTER TABLE job_runs ADD COLUMN ${name} ${definition}`)
+    }
+    this.database.exec('CREATE INDEX IF NOT EXISTS idx_job_runs_workflow_run ON job_runs(workflow_run_id)')
     const planColumns = this.database
       .prepare('PRAGMA table_info(plans)')
       .all() as Array<{ name: string }>
@@ -299,13 +525,15 @@ export class JobsRepository {
     this.database
       .prepare(
         `INSERT INTO job_runs
-          (id, plan_id, workflow, step_id, skill, runner, department, status, autonomy, gate,
+          (id, workflow_run_id, plan_id, workflow, step_id, skill, runner, department, status, autonomy, gate,
            input_json, result_json, review_json, source_count, cost_json, started_at, finished_at,
-           approved_by, approved_at, error)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+           approved_by, approved_at, error, state_json, gate_payload_json, gate_created_at,
+           gate_expires_at, gate_decision, gate_comments, attempt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         id,
+        input.workflowRunId ?? null,
         input.planId ?? null,
         input.workflow ?? null,
         input.stepId ?? null,
@@ -324,7 +552,14 @@ export class JobsRepository {
         input.finishedAt ?? null,
         input.approvedBy ?? null,
         input.approvedAt ?? null,
-        input.error ?? null
+        input.error ?? null,
+        jsonValue(input.state),
+        jsonValue(input.gatePayload),
+        input.gateCreatedAt ?? null,
+        input.gateExpiresAt ?? null,
+        input.gateDecision ?? null,
+        input.gateComments ?? null,
+        Number.isFinite(input.attempt) ? Math.max(0, Math.trunc(input.attempt!)) : 0
       )
     const job = this.getJob(id)
     if (!job) throw new Error(`Job ${id} was not created.`)
@@ -334,6 +569,7 @@ export class JobsRepository {
   updateJob(id: string, update: UpdateJobInput): JobRecord | undefined {
     const columns: Array<[string, unknown]> = []
     const values: Array<keyof UpdateJobInput> = [
+      'workflowRunId',
       'planId',
       'workflow',
       'stepId',
@@ -352,9 +588,17 @@ export class JobsRepository {
       'finishedAt',
       'approvedBy',
       'approvedAt',
-      'error'
+      'error',
+      'state',
+      'gatePayload',
+      'gateCreatedAt',
+      'gateExpiresAt',
+      'gateDecision',
+      'gateComments',
+      'attempt'
     ]
     const columnNames: Record<keyof UpdateJobInput, string> = {
+      workflowRunId: 'workflow_run_id',
       planId: 'plan_id',
       workflow: 'workflow',
       stepId: 'step_id',
@@ -373,13 +617,21 @@ export class JobsRepository {
       finishedAt: 'finished_at',
       approvedBy: 'approved_by',
       approvedAt: 'approved_at',
-      error: 'error'
+      error: 'error',
+      state: 'state_json',
+      gatePayload: 'gate_payload_json',
+      gateCreatedAt: 'gate_created_at',
+      gateExpiresAt: 'gate_expires_at',
+      gateDecision: 'gate_decision',
+      gateComments: 'gate_comments',
+      attempt: 'attempt'
     }
     for (const key of values) {
       if (update[key] === undefined) continue
       let value: unknown = update[key]
-      if (key === 'input' || key === 'result' || key === 'review' || key === 'cost') value = jsonValue(value)
+      if (key === 'input' || key === 'result' || key === 'review' || key === 'cost' || key === 'state' || key === 'gatePayload') value = jsonValue(value)
       if (key === 'sourceCount') value = Math.max(0, Math.trunc(Number(value) || 0))
+      if (key === 'attempt') value = Math.max(0, Math.trunc(Number(value) || 0))
       columns.push([columnNames[key], value])
     }
     if (columns.length === 0) return this.getJob(id)
@@ -410,6 +662,212 @@ export class JobsRepository {
       | JobRow
       | undefined
     return row ? mapJob(row) : undefined
+  }
+
+  listJobsForWorkflowRun(workflowRunId: string): JobRecord[] {
+    const rows = this.database
+      .prepare('SELECT * FROM job_runs WHERE workflow_run_id = ? ORDER BY COALESCE(started_at, \"\") ASC, id ASC')
+      .all(workflowRunId) as JobRow[]
+    return rows.map(mapJob)
+  }
+
+  listWorkflowRuns(limit = 100): JobRecord[] {
+    const safeLimit = Math.max(1, Math.min(500, Math.trunc(limit)))
+    const rows = this.database
+      .prepare("SELECT * FROM job_runs WHERE runner = 'workflow' ORDER BY COALESCE(started_at, '') DESC LIMIT ?")
+      .all(safeLimit) as JobRow[]
+    return rows.map(mapJob)
+  }
+
+  saveWorkflow(input: SaveWorkflowInput): WorkflowRecord {
+    const id = input.id.trim()
+    const name = input.name.trim()
+    if (!id) throw new Error('Workflow id is required.')
+    if (!name) throw new Error('Workflow name is required.')
+    const now = input.updatedAt ?? isoNow()
+    const createdAt = input.createdAt ?? now
+    this.database
+      .prepare(
+        `INSERT INTO workflows (id, name, version, definition_json, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET
+           name = excluded.name,
+           version = excluded.version,
+           definition_json = excluded.definition_json,
+           updated_at = excluded.updated_at`
+      )
+      .run(id, name, Math.max(1, Math.trunc(input.version ?? 1)), JSON.stringify(input.definition), createdAt, now)
+    const workflow = this.getWorkflow(id)
+    if (!workflow) throw new Error(`Workflow ${id} was not saved.`)
+    return workflow
+  }
+
+  upsertWorkflow(input: SaveWorkflowInput): WorkflowRecord {
+    return this.saveWorkflow(input)
+  }
+
+  getWorkflow(idOrName: string): WorkflowRecord | undefined {
+    const value = idOrName.trim()
+    if (!value) return undefined
+    const row = this.database
+      .prepare(
+        `SELECT id, name, version, definition_json, created_at, updated_at
+         FROM workflows WHERE id = ? OR name = ?
+         ORDER BY CASE WHEN id = ? THEN 0 ELSE 1 END LIMIT 1`
+      )
+      .get(value, value, value) as WorkflowRow | undefined
+    return row ? mapWorkflow(row) : undefined
+  }
+
+  listWorkflows(): WorkflowRecord[] {
+    const rows = this.database
+      .prepare('SELECT id, name, version, definition_json, created_at, updated_at FROM workflows ORDER BY name ASC, id ASC')
+      .all() as WorkflowRow[]
+    return rows.map(mapWorkflow)
+  }
+
+  getWorkflowStats(workflowId: string): WorkflowStatsRecord | undefined {
+    const row = this.database
+      .prepare('SELECT workflow_id, clean_runs, rejection_count, autonomy, promoted_at, demoted_at, updated_at FROM workflow_stats WHERE workflow_id = ?')
+      .get(workflowId) as WorkflowStatsRow | undefined
+    return row ? mapWorkflowStats(row) : undefined
+  }
+
+  ensureWorkflowStats(workflowId: string, autonomy: JobAutonomy = 'assisted'): WorkflowStatsRecord {
+    const id = workflowId.trim()
+    if (!id) throw new Error('Workflow id is required for stats.')
+    const now = isoNow()
+    this.database
+      .prepare(
+        `INSERT INTO workflow_stats (workflow_id, clean_runs, rejection_count, autonomy, updated_at)
+         VALUES (?, 0, 0, ?, ?)
+         ON CONFLICT(workflow_id) DO NOTHING`
+      )
+      .run(id, autonomy, now)
+    const stats = this.getWorkflowStats(id)
+    if (!stats) throw new Error(`Workflow stats for ${id} were not created.`)
+    return stats
+  }
+
+  recordWorkflowCleanRun(workflowId: string): WorkflowStatsRecord {
+    const existing = this.ensureWorkflowStats(workflowId)
+    const cleanRuns = existing.cleanRuns + 1
+    const promoted = cleanRuns >= 10 || existing.autonomy === 'auto'
+    const now = isoNow()
+    this.database
+      .prepare(
+        `UPDATE workflow_stats
+         SET clean_runs = ?, autonomy = ?, promoted_at = CASE WHEN ? = 1 AND promoted_at IS NULL THEN ? ELSE promoted_at END,
+             updated_at = ?
+         WHERE workflow_id = ?`
+      )
+      .run(cleanRuns, promoted ? 'auto' : existing.autonomy, promoted ? 1 : 0, now, now, workflowId)
+    const stats = this.getWorkflowStats(workflowId)
+    if (!stats) throw new Error(`Workflow stats for ${workflowId} were not found.`)
+    return stats
+  }
+
+  recordWorkflowRejection(workflowId: string): WorkflowStatsRecord {
+    const existing = this.ensureWorkflowStats(workflowId)
+    const now = isoNow()
+    this.database
+      .prepare(
+        `UPDATE workflow_stats
+         SET clean_runs = 0, rejection_count = ?, autonomy = 'assisted', demoted_at = ?, updated_at = ?
+         WHERE workflow_id = ?`
+      )
+      .run(existing.rejectionCount + 1, now, now, workflowId)
+    const stats = this.getWorkflowStats(workflowId)
+    if (!stats) throw new Error(`Workflow stats for ${workflowId} were not found.`)
+    return stats
+  }
+
+  listWorkflowStats(): WorkflowStatsRecord[] {
+    const rows = this.database
+      .prepare('SELECT workflow_id, clean_runs, rejection_count, autonomy, promoted_at, demoted_at, updated_at FROM workflow_stats ORDER BY workflow_id ASC')
+      .all() as WorkflowStatsRow[]
+    return rows.map(mapWorkflowStats)
+  }
+
+  saveRecurringJob(input: SaveRecurringJobInput): RecurringJobRecord {
+    const id = input.id.trim()
+    if (!id) throw new Error('Recurring job id is required.')
+    const now = input.updatedAt ?? isoNow()
+    this.database
+      .prepare(
+        `INSERT INTO recurring_jobs
+          (id, name, workflow, every, next_run_at, last_run_at, autonomy, enabled, input_json, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET
+           name = excluded.name, workflow = excluded.workflow, every = excluded.every,
+           next_run_at = excluded.next_run_at, last_run_at = excluded.last_run_at,
+           autonomy = excluded.autonomy, enabled = excluded.enabled, input_json = excluded.input_json,
+           updated_at = excluded.updated_at`
+      )
+      .run(
+        id,
+        input.name.trim(),
+        input.workflow.trim(),
+        input.every.trim(),
+        input.nextRunAt ?? null,
+        input.lastRunAt ?? null,
+        input.autonomy ?? 'assisted',
+        input.enabled ? 1 : 0,
+        jsonValue(input.input),
+        input.createdAt ?? now,
+        now
+      )
+    const recurring = this.getRecurringJob(id)
+    if (!recurring) throw new Error(`Recurring job ${id} was not saved.`)
+    return recurring
+  }
+
+  getRecurringJob(id: string): RecurringJobRecord | undefined {
+    const row = this.database
+      .prepare('SELECT id, name, workflow, every, next_run_at, last_run_at, autonomy, enabled, input_json, created_at, updated_at FROM recurring_jobs WHERE id = ?')
+      .get(id) as RecurringJobRow | undefined
+    return row ? mapRecurringJob(row) : undefined
+  }
+
+  listRecurringJobs(): RecurringJobRecord[] {
+    const rows = this.database
+      .prepare('SELECT id, name, workflow, every, next_run_at, last_run_at, autonomy, enabled, input_json, created_at, updated_at FROM recurring_jobs ORDER BY name ASC, id ASC')
+      .all() as RecurringJobRow[]
+    return rows.map(mapRecurringJob)
+  }
+
+  updateRecurringJob(id: string, update: UpdateRecurringJobInput): RecurringJobRecord | undefined {
+    const values: Array<keyof UpdateRecurringJobInput> = [
+      'name', 'workflow', 'every', 'nextRunAt', 'lastRunAt', 'autonomy', 'enabled', 'input', 'updatedAt'
+    ]
+    const columns: Record<keyof UpdateRecurringJobInput, string> = {
+      name: 'name',
+      workflow: 'workflow',
+      every: 'every',
+      nextRunAt: 'next_run_at',
+      lastRunAt: 'last_run_at',
+      autonomy: 'autonomy',
+      enabled: 'enabled',
+      input: 'input_json',
+      updatedAt: 'updated_at'
+    }
+    const assignments: string[] = []
+    const parameters: unknown[] = []
+    for (const key of values) {
+      if (update[key] === undefined) continue
+      assignments.push(`${columns[key]} = ?`)
+      parameters.push(key === 'input' ? jsonValue(update[key]) : key === 'enabled' ? (update[key] ? 1 : 0) : update[key])
+    }
+    if (assignments.length === 0) return this.getRecurringJob(id)
+    parameters.push(id)
+    const result = this.database
+      .prepare(`UPDATE recurring_jobs SET ${assignments.join(', ')} WHERE id = ?`)
+      .run(...parameters)
+    return result.changes === 0 ? undefined : this.getRecurringJob(id)
+  }
+
+  recordRecurringRun(id: string, lastRunAt: string, nextRunAt: string | null): RecurringJobRecord | undefined {
+    return this.updateRecurringJob(id, { lastRunAt, nextRunAt, updatedAt: isoNow() })
   }
 
   createPlan(input: CreatePlanInput): PlanRecord {

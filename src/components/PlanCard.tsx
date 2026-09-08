@@ -1,4 +1,4 @@
-import { Check, ChevronDown, MessageCircleQuestion, Send } from 'lucide-react'
+import { Check, ChevronDown, MessageCircleQuestion, Save, Send } from 'lucide-react'
 import { useState } from 'react'
 import type { Locale, TranslationKey } from '../i18n'
 import { t } from '../i18n'
@@ -9,6 +9,7 @@ export interface PlanCardProps {
   locale: Locale
   onAnswer?: (answers: Record<string, string>) => Promise<void>
   onApprove?: () => Promise<void>
+  onSaveAsWorkflow?: () => Promise<void>
 }
 
 function statusLabel(status: PlannerResult['status'], locale: Locale): string {
@@ -25,7 +26,7 @@ function questionNeedsAnswer(question: PlanQuestion, answers: Record<string, str
   return question.blocking && !answers[question.id]?.trim()
 }
 
-export function PlanCard({ result, locale, onAnswer, onApprove }: PlanCardProps): React.JSX.Element {
+export function PlanCard({ result, locale, onAnswer, onApprove, onSaveAsWorkflow }: PlanCardProps): React.JSX.Element {
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [working, setWorking] = useState(false)
   const label = (key: TranslationKey): string => t(key, locale)
@@ -65,6 +66,12 @@ export function PlanCard({ result, locale, onAnswer, onApprove }: PlanCardProps)
           <button className="accent-button" disabled={working} onClick={() => void approve()} type="button">
             <Check size={14} />
             {label('planApprove')}
+          </button>
+        )}
+        {result.plan.workflow === 'custom' && onSaveAsWorkflow && (
+          <button className="quiet-button" onClick={() => void onSaveAsWorkflow()} type="button">
+            <Save size={14} />
+            {label('planSaveWorkflow')}
           </button>
         )}
       </header>
