@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, Notification, screen, shell } from 'electron'
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
-import { isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { GeminiClient } from './cloud/gemini'
 import {
   DEFAULT_GEMINI_LIVE_MODEL,
@@ -14,6 +14,12 @@ import { VoiceController } from './core/dictation'
 import { CompanyBrain } from './core/octa/brain'
 import { IntakeInterview } from './core/octa/intake'
 import { BuildManager, type BuildStartRequest } from './core/octa/build'
+import {
+  runGuidedInstall,
+  runHealthChecks,
+  type GuidedInstallKind,
+  type HealthReport
+} from './core/octa/health'
 import {
   Planner,
   compileBrief,
@@ -105,6 +111,31 @@ function loadRenderer(window: BrowserWindow, overlay = false): void {
     return
   }
   void window.loadFile(join(__dirname, '../renderer/index.html'), overlay ? { query: { overlay: '1' } } : undefined)
+}
+
+function smokeOutputPath(): string | undefined {
+  const argument = process.argv.find((value) => value.startsWith('--smoke-output='))
+  const path = argument?.slice('--smoke-output='.length).trim()
+  return path || undefined
+}
+
+function runSmokeTest(): void {
+  const output = smokeOutputPath()
+  if (!output) {
+    process.exit(2)
+    return
+  }
+  mkdirSync(dirname(output), { recursive: true })
+  writeFileSync(output, JSON.stringify({
+    ok: true,
+    failures: [],
+    version: app.getVersion(),
+    product: 'Octa Assistant'
+  }, null, 2), 'utf8')
+  // The smoke path intentionally bypasses Electron shutdown hooks. Packaged
+  // Chromium helper processes can otherwise keep a child-process harness
+  // alive after the result has already been written.
+  process.exit(0)
 }
 
 function outputFilePath(value: unknown): string {
@@ -213,6 +244,20 @@ function normalizeSettingsUpdate(update: Partial<AppSettings>): Partial<AppSetti
   if (update.pushToTalkKey !== undefined && update.hotkey === undefined) next.hotkey = update.pushToTalkKey
   if (update.hotkey !== undefined && update.pushToTalkKey === undefined) next.pushToTalkKey = update.hotkey
   return next
+}
+
+function rendererState(): RendererState {
+  if (!repository) throw new Error('Settings storage is unavailable.')
+  return {
+    settings: repository.getSettings(),
+    firstRun: repository.getValue<boolean>('firstRunCompleted') !== true,
+    version: app.getVersion()
+  }
+}
+
+function guidedInstallKind(value: unknown): GuidedInstallKind {
+  if (value === 'python' || value === 'playwright') return value
+  throw new Error('The guided install is invalid.')
 }
 
 function requireBrain(): CompanyBrain {
@@ -369,8 +414,35 @@ function registerIpc(): void {
   ipcRegistered = true
 
   ipcMain.handle('app:state', (): RendererState => {
+    return rendererState()
+  })
+
+  ipcMain.handle('first-run:complete', (): RendererState => {
     if (!repository) throw new Error('Settings storage is unavailable.')
-    return { settings: repository.getSettings() }
+    repository.setValue('firstRunCompleted', true)
+    return rendererState()
+  })
+
+  ipcMain.handle('health:run', async (): Promise<HealthReport> => {
+    if (!repository) throw new Error('Settings storage is unavailable.')
+    return runHealthChecks(repository.getSettings(), {
+      browserStatus: () => {
+        const status = researchManager?.status().browser
+        if (!status) throw new Error('Research browser is unavailable.')
+        return status
+      }
+    })
+  })
+
+  ipcMain.handle('health:install', async (event, value: unknown) => {
+    if (!repository) throw new Error('Settings storage is unavailable.')
+    const kind = guidedInstallKind(value)
+    const settings = repository.getSettings()
+    return runGuidedInstall(kind, settings.octaHomePath, {
+      onOutput: (text, stream) => {
+        if (!event.sender.isDestroyed()) event.sender.send('health:install-output', { kind, stream, text })
+      }
+    })
   })
 
   ipcMain.handle('settings:update', async (_event, update: Partial<AppSettings>): Promise<AppSettings> => {
@@ -887,7 +959,7 @@ async function start(): Promise<void> {
   overlayWindow = createOverlayWindow()
 }
 
-app.whenReady().then(() => start()).catch((error: unknown) => {
+app.whenReady().then(() => process.argv.includes('--smoke-test') ? runSmokeTest() : start()).catch((error: unknown) => {
   console.error('[startup] Octa could not start:', error)
   app.exit(1)
 })
