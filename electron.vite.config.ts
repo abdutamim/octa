@@ -22,6 +22,11 @@ export default defineConfig({
       rollupOptions: {
         input: {
           preload: resolve('electron/preload.ts')
+        },
+        // Sandboxed renderers can only load CommonJS preloads; with "type": "module" electron-vite would emit ESM.
+        output: {
+          format: 'cjs',
+          entryFileNames: '[name].cjs'
         }
       }
     }
