@@ -18,6 +18,7 @@ import { contractDocument, invoiceDocument, proposalDocument } from './core/docu
 import { brandedDocument, PdfRenderer } from './core/pdf'
 import { TimeTracker } from './core/time-tracking'
 import { matchTaskTrigger, splitTitleAndNotes } from './core/task-trigger'
+import { checkForUpdate, type UpdateCheckResult } from './core/octa/update'
 import {
   runGuidedInstall,
   runHealthChecks,
@@ -581,6 +582,20 @@ function savedDocumentPath(record: DocumentRecord): string {
   return join(repository?.getSettings().octaHomePath ?? DEFAULT_OCTA_HOME, 'documents', record.kind, `${safeReference}.pdf`)
 }
 
+function externalUpdateUrl(value: unknown): string {
+  if (typeof value !== 'string' || !value.trim()) throw new Error('An update download link is required.')
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    throw new Error('The update download link is invalid.')
+  }
+  if (url.protocol !== 'https:' || url.hostname.toLowerCase() !== 'github.com') {
+    throw new Error('Update links must point to GitHub over HTTPS.')
+  }
+  return url.toString()
+}
+
 function registerIpc(): void {
   if (ipcRegistered) return
   ipcRegistered = true
@@ -588,6 +603,16 @@ function registerIpc(): void {
   ipcMain.handle('app:state', (): RendererState => {
     return rendererState()
   })
+
+  ipcMain.handle('app:update:check', async (): Promise<UpdateCheckResult> => {
+    if (!repository) throw new Error('Settings storage is unavailable.')
+    const settings = repository.getSettings()
+    return checkForUpdate({ currentVersion: app.getVersion(), repository: settings.updateRepository })
+  })
+
+  ipcMain.handle('app:update:open', (_event, value: unknown): Promise<void> =>
+    shell.openExternal(externalUpdateUrl(value))
+  )
 
   ipcMain.handle('first-run:complete', (): RendererState => {
     if (!repository) throw new Error('Settings storage is unavailable.')

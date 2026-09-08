@@ -1,115 +1,71 @@
-# Octa Assistant setup (Windows draft)
+# Octa Assistant — second Windows machine
 
-Octa is a Windows-only Electron desktop app. The first repository milestone is
-the Settings shell and its local SQLite foundation; later specs add the job,
-research, voice, and workflow layers.
+Octa stores keys in the local SQLite settings table, not in `.env` or the
+repository. Runtime data stays in `C:\Octa` unless you choose another folder.
 
-## Prerequisites
+## العربية — إعداد جهاز Bedo Mousa
 
-- Windows 10 or 11.
-- Node.js 22.x and npm 10.x.
-- Claude Code installed and signed in. The planner and Claude-backed skills use
-  the local `claude` CLI; no Claude API key is stored by Octa.
-- Codex CLI installed and signed in. The scout and coding pipeline use the
-  local `codex` CLI; no OpenAI API key is stored by Octa.
-- `uv` and Python 3.12 installed outside virtualized AppData for the later
-  document/media skills. A suggested location is:
+1. **ثبّت الأساسيات.** نزّل مُثبّت `Octa-Assistant-Setup-0.1.0.exe` من
+   `https://github.com/abdutamim/octa/releases/latest` وشغّله. ثبّت Node.js 22 وGit و`uv` وClaude Code وCodex CLI
+   من المصادر الرسمية، ثم افتح Octa. ثبّت Python 3.12 وChromium من زري
+   التثبيت الموجّهين داخل فحص الصحة؛ `ffmpeg` مضمّن. Photoshop اختياري.
+2. **سجّل الدخول للأدوات.** في PowerShell شغّل `claude auth login --claudeai`،
+   أكمل تسجيل الدخول في المتصفح، ثم تحقق بـ`claude --version`. شغّل
+   `codex login` وأكمل المتصفح ثم `codex login status`؛ إذا تعذر فتح المتصفح
+   استخدم `codex login --device-auth`. لا تحتاج إلى Claude API key أو
+   OpenAI API key.
+3. **أدخل المفاتيح في معالج Octa.** أنشئ مفتاح Gemini من
+   `https://aistudio.google.com/app/apikey` والصقه في **Gemini AI Studio key**.
+   اختياريًا: فعّل Vertex AI في Google Cloud، أنشئ Service Account ونزّل JSON،
+   ثم اختر Vertex وأدخل Project ID ومسار JSON فقط. أنشئ مفتاح Brave الاختياري
+   من `https://api.search.brave.com/app/keys`. ثبّت تطبيق ntfy، أنشئ topic
+   خاصًا، وأدخل اسمه (و`https://ntfy.sh` أو خادمك)؛ عامل الـtopic ككلمة مرور.
+4. **اضبط المجلدات.** اترك Octa home على `C:\Octa`. أنشئ/افتح Vault جديدًا
+   في Obsidian، مثل `C:\Users\Bedo Mousa\Documents\Octa-Vault`، واختره في
+   **Vault path**. لا تضع الـVault أو المفاتيح في Git.
+5. **متصفح البحث.** في صفحة تسجيلات الدخول افتح Facebook أو X أو Reddit عند
+   الحاجة، سجّل الدخول بنفسك، ثم اضغط **I finished login**. المتصفح دائم
+   للقراءة فقط ولا ينشر أو يرسل رسائل.
+6. **Photoshop والصحة.** أدخل المسار الكامل لـ`Photoshop.exe` إن كان مثبتًا؛
+   وإلا اتركه فارغًا ليستخدم Octa بديل PSD. أصلح الصفوف الحمراء واضغط الفحص
+   مرة أخرى حتى يصبح جدول الصحة أخضر، ثم أنهِ المعالج.
+7. **أول intake.** افتح **Brain → Start intake** وأجب عن الأسئلة العشرين عن
+   خدمات Bedo والتسويق العقاري والعملاء والأسلوب والأسعار. بعد الحفظ راجع
+   `knowledge/company.md` و`icp.md` و`voice.md` و`pricing.md` داخل الـVault.
 
-  ```powershell
-  uv python install --install-dir C:\Octa\python 3.12
-  $env:UV_PYTHON_INSTALL_DIR = 'C:\Octa\python'
-  $env:UV_CACHE_DIR = 'C:\Octa\uv-cache'
-  ```
+## English — Bedo Mousa setup
 
-- Playwright Chromium for later browser and rendering skills:
+1. **Install the basics.** Download `Octa-Assistant-Setup-0.1.0.exe` from
+   `https://github.com/abdutamim/octa/releases/latest` and run it. Install Node.js 22, Git, `uv`, Claude Code, and
+   Codex CLI from their official sources, then open Octa. Use the health page’s
+   guided buttons to install Python 3.12 and Chromium; `ffmpeg` is bundled.
+   Photoshop is optional.
+2. **Sign in to the CLIs.** In PowerShell run `claude auth login --claudeai`,
+   finish the browser flow, and verify with `claude --version`. Run
+   `codex login`, finish the browser flow, then verify with `codex login status`;
+   use `codex login --device-auth` if the browser cannot open. No Claude API
+   key or OpenAI API key is needed.
+3. **Enter keys in Octa’s wizard.** Create a Gemini key at
+   `https://aistudio.google.com/app/apikey` and paste it into **Gemini AI Studio
+   key**. Optional Vertex: enable Vertex AI in Google Cloud, create a service
+   account, download its JSON, choose Vertex, and enter the project ID plus the
+   JSON path only. Optional Brave: create a key at
+   `https://api.search.brave.com/app/keys`. Install ntfy, create a private topic,
+   and enter its name plus `https://ntfy.sh` (or your server); treat the topic as
+   a password.
+4. **Choose folders.** Keep Octa home at `C:\Octa`. Create/open an Obsidian
+   vault such as `C:\Users\Bedo Mousa\Documents\Octa-Vault` and select it as
+   **Vault path**. Never put the vault or keys in Git.
+5. **Research browser.** Open Facebook, X, or Reddit from the login step only
+   when needed, sign in yourself, and click **I finished login**. The persistent
+   profile is read-only and never posts or sends messages.
+6. **Photoshop and health.** Enter the full `Photoshop.exe` path if installed;
+   otherwise leave it blank and use the PSD fallback. Fix red rows and rerun the
+   check until the final health table is green, then finish the wizard.
+7. **First intake.** Open **Brain → Start intake** and answer the 20 questions
+   about Bedo’s services, real-estate marketing, clients, voice, and pricing.
+   Review `knowledge/company.md`, `icp.md`, `voice.md`, and `pricing.md` in the
+   vault after saving.
 
-  ```powershell
-  $env:PLAYWRIGHT_BROWSERS_PATH = 'C:\Octa\playwright'
-  npx playwright install chromium
-  ```
-
-- Photoshop is optional. If installed, enter its full `Photoshop.exe` path in
-  Octa Settings when the creative workflow specs are enabled.
-
-Install Claude Code and Codex using their current official Windows installers or
-package instructions, then verify both with `claude --help` and `codex --help`.
-
-## Clone and verify
-
-From the repository directory:
-
-```powershell
-npm install
-npm run typecheck
-npm test
-npm run build
-npm run dev
-```
-
-The app creates `C:\Octa\octa.db` and opens directly on Settings. All API keys
-are entered through the UI and persisted in the `app_settings` SQLite table.
-The `.env.example` file is setup documentation only and is never loaded at
-runtime.
-
-## First settings pass
-
-1. Add the Gemini API key, or select Vertex AI and enter the project ID plus
-   service-account JSON path.
-2. Optionally add Groq, ntfy, Brave Search, vault, and Photoshop values.
-3. Choose the language and theme, save, and use **Test AI connection**.
-
-The default Octa home is `C:\Octa`. The current database remains at that home;
-the configurable home value is the location later job runners will use.
-
-## Voice setup (spec 007)
-
-Octa uses the Gemini Live WebSocket only after a wake-word hit or push-to-talk
-activation. Before activation, microphone PCM is passed to the local detector in
-the main process and is never sent to a cloud endpoint. Add the Gemini AI Studio
-key in Settings for Live model discovery, Live audio, and the Gemini TTS/STT
-fallback. At startup Octa lists the available models, selects the newest model
-whose id contains `live` or `native-audio`, and stores it in SQLite. Entering a
-model id in **Manual Live model override** takes precedence over discovery.
-
-### Obtain the offline Arabic wake-word model
-
-The detector is openWakeWord-compatible ONNX, which supports shipping a custom
-Arabic phrase model without sending microphone audio to a service. The model
-bundle has three files in one directory:
-
-```text
-C:\Octa\models\octa.onnx
-C:\Octa\models\melspectrogram.onnx
-C:\Octa\models\embedding_model.onnx
-```
-
-1. Use the openWakeWord custom-model notebook/training utility to create one
-   classifier with positive phrase variants for both `أوكتا` and `يا أوكتا`.
-   Include clean recordings in the target Egyptian-Arabic pronunciation and
-   varied negative speech/noise. Export the classifier as `octa.onnx`.
-2. Download the matching openWakeWord `melspectrogram.onnx` and
-   `embedding_model.onnx` feature models from the project release assets, or
-   export the same models using the project’s conversion notebook. Do not put
-   the model files in git; they are machine-specific assets under `C:\Octa`.
-3. Set the model path in Settings to the classifier file and choose a sensitivity
-   after testing. The loader expects the two shared feature models beside it.
-
-Training references:
-
-- https://github.com/dscripka/openWakeWord#training-new-models
-- https://github.com/dscripka/openWakeWord/tree/main/examples
-- https://github.com/dscripka/openWakeWord/releases
-
-The Node.js app uses `onnxruntime-node` with CPU execution and the development
-and rebuild scripts include it alongside `better-sqlite3` for Electron’s ABI.
-If no model or feature files are present, wake-word detection fails closed while
-push-to-talk remains available.
-
-### Push-to-talk and read-back approvals
-
-The default global shortcut is `CommandOrControl+Alt+Space`; it can be changed
-in Settings, or the copied native mouse trigger can be selected. Wake word and
-push-to-talk are independent and may both remain enabled. Planner questions and
-job results are spoken. A voice approval (`approve` / `موافق`) is accepted only
-for the exact payload most recently read back and only for 60 seconds; the
-approval is emitted through `workflows:gate:approve` with `channel: 'voice'`.
+If the repository is moved or forked, change the GitHub `owner/repo` value in
+Settings so the in-app update check follows the new public releases.
