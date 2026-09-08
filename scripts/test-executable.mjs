@@ -19,7 +19,7 @@ const release = process.env.OCTA_RELEASE_DIR
   ? resolve(process.env.OCTA_RELEASE_DIR)
   : join(root, 'release')
 const unpacked = join(release, 'win-unpacked')
-const executable = join(unpacked, 'Octa Assistant.exe')
+const executable = join(unpacked, 'Octa.exe')
 const smokeOutput = join(release, 'executable-smoke.json')
 
 async function headerOf(path, length = 2) {

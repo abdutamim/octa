@@ -282,8 +282,8 @@ export function MapPage({ locale }: { locale: Locale }): React.JSX.Element {
           >
             <defs>
               <radialGradient id="map-center-gradient" cx="50%" cy="35%" r="70%">
-                <stop offset="0%" stopColor="#a63a62" />
-                <stop offset="100%" stopColor="#4c1537" />
+                <stop offset="0%" stopColor="#c8b2f2" />
+                <stop offset="100%" stopColor="#7049a6" />
               </radialGradient>
             </defs>
 

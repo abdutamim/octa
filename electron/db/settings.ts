@@ -99,6 +99,9 @@ export class SettingsRepository {
         value TEXT NOT NULL
       );
     `)
+    this.database
+      .prepare(`INSERT OR IGNORE INTO app_settings (key, value) VALUES ('firstRunCompleted', 'false')`)
+      .run()
   }
 
   getSettings(): AppSettings {

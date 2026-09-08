@@ -19,6 +19,7 @@ describe('SQLite app settings', () => {
   it('returns the safe defaults for a new database', () => {
     repository = new SettingsRepository(':memory:')
     expect(repository.getSettings()).toEqual(DEFAULT_SETTINGS)
+    expect(repository.getValue<boolean>('firstRunCompleted')).toBe(false)
   })
 
   it('creates and reopens a file-backed database in its parent directory', () => {
