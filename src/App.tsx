@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { AppSettings } from '../electron/types'
+import type { AppSettings, AppUpdate } from '../electron/types'
 import { DEFAULT_SETTINGS } from '../electron/types'
 import { applyLocale, type Locale } from './i18n'
 import { t } from './i18n'
@@ -18,6 +18,39 @@ import { VoiceBar } from './components/VoiceBar'
 import { VoiceAudioPlayback } from './components/VoiceAudioPlayback'
 import { VoiceInputBridge } from './components/VoiceInputBridge'
 
+function UpdateBanner({
+  update,
+  locale,
+  onOpen
+}: {
+  update: AppUpdate
+  locale: Locale
+  onOpen: (url: string) => Promise<void>
+}): React.JSX.Element | null {
+  if (update.status !== 'available' || !update.downloadUrl || !update.latestVersion) return null
+  const version = update.latestVersion.replace(/^v/i, '')
+  return (
+    <aside className="update-banner" role="status">
+      <div className="update-banner-copy">
+        <strong>{t('updateAvailable', locale).replace('{version}', version)}</strong>
+        <span>{t('updateBannerDetail', locale)}</span>
+      </div>
+      <a
+        className="update-banner-link"
+        href={update.downloadUrl}
+        onClick={(event) => {
+          event.preventDefault()
+          void onOpen(update.downloadUrl!)
+        }}
+        rel="noreferrer"
+        target="_blank"
+      >
+        {t('updateDownload', locale)}
+      </a>
+    </aside>
+  )
+}
+
 export function App(): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [page, setPage] = useState<Page>('octa')
@@ -25,6 +58,7 @@ export function App(): React.JSX.Element {
   const [firstRun, setFirstRun] = useState(true)
   const [showFirstRun, setShowFirstRun] = useState(false)
   const [version, setVersion] = useState('0.1.0')
+  const [update, setUpdate] = useState<AppUpdate | null>(null)
   const locale: Locale = settings.locale
 
   useEffect(() => {
@@ -50,6 +84,18 @@ export function App(): React.JSX.Element {
   }, [])
 
   useEffect(() => window.octa.onSettingsChanged(setSettings), [])
+
+  useEffect(() => {
+    let active = true
+    void window.octa.update.check().then((result) => {
+      if (active) setUpdate(result)
+    }).catch(() => {
+      // An unavailable network must not block the desktop app.
+    })
+    return () => {
+      active = false
+    }
+  }, [])
 
   const updateSettings = async (update: Partial<AppSettings>): Promise<AppSettings> => {
     const next = await window.octa.settings.update(update)
@@ -107,6 +153,7 @@ export function App(): React.JSX.Element {
       <div className="workspace">
         <Sidebar page={page} locale={locale} onChange={setPage} onToggleLocale={toggleLocale} />
         <section className="content">
+          {update && <UpdateBanner update={update} locale={locale} onOpen={(url) => window.octa.update.open(url)} />}
           <VoiceBar locale={locale} />
           {page === 'octa' && <OctaPage locale={locale} />}
           {page === 'settings' && (

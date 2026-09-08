@@ -182,6 +182,19 @@ export interface AiTestResult {
   latencyMs: number
 }
 
+export type UpdateStatus = 'available' | 'current' | 'error' | 'unconfigured'
+
+export interface AppUpdate {
+  status: UpdateStatus
+  currentVersion: string
+  repository: string
+  checkedAt: string
+  latestVersion?: string
+  releaseUrl?: string
+  downloadUrl?: string
+  error?: string
+}
+
 /** Settings that belong to the Octa foundation and are safe to expose to the renderer. */
 export interface AppSettings {
   geminiApiKey: string
@@ -193,6 +206,7 @@ export interface AppSettings {
   ntfyTopic: string
   ntfyServer: string
   octaHomePath: string
+  updateRepository: string
   skillsLibraryPath: string
   vaultPath: string
   photoshopPath: string
@@ -225,6 +239,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   ntfyTopic: '',
   ntfyServer: 'https://ntfy.sh',
   octaHomePath: 'C:\\Octa',
+  updateRepository: 'abdutamim/octa',
   skillsLibraryPath: '',
   vaultPath: '',
   photoshopPath: '',
