@@ -27,7 +27,7 @@ import { SettingsRepository } from './db/settings'
 import { JobsRepository } from './db/jobs'
 import { JobRunner, type JobSpec } from './core/jobs/runner'
 import { ConversationRepository } from './core/voice/conversation'
-import { WorkflowGateRegistry, type WorkflowGateApproveRequest } from './core/voice/workflow-gate'
+import { WorkflowGateRegistry } from './core/voice/workflow-gate'
 import { createWakeWordDetector } from './core/wake-word'
 import { GlobalTriggerManager } from './input/trigger'
 import { SkillRegistry, type SkillListOptions } from './core/skills/registry'
@@ -49,6 +49,14 @@ import type {
   VoiceTranscriptEvent
 } from './types'
 import { voiceAudioEvent } from './core/dictation'
+import {
+  RecurringScheduler,
+  WorkflowRunner,
+  seedRecurringJobs,
+  type WorkflowGateActionRequest,
+  type WorkflowStartRequest,
+  type WorkflowStartResponse
+} from './core/octa/workflows'
 
 export const DEFAULT_OCTA_HOME = 'C:\\Octa'
 
@@ -78,6 +86,8 @@ let voiceController: VoiceController | undefined
 let triggerManager: GlobalTriggerManager | undefined
 let voiceAudioOutput: PcmAudioOutput | undefined
 let buildManager: BuildManager | undefined
+let workflows: WorkflowRunner | undefined
+let recurringScheduler: RecurringScheduler | undefined
 let ipcRegistered = false
 
 function broadcast(channel: string, payload: unknown): void {
@@ -198,22 +208,6 @@ function emitVoiceAudio(event: VoiceAudioEvent): void {
   broadcast('voice:audio', event)
 }
 
-function workflowGateRequest(value: unknown): WorkflowGateApproveRequest {
-  if (!value || typeof value !== 'object') throw new Error('A workflow gate approval is required.')
-  const request = value as Partial<WorkflowGateApproveRequest>
-  if (typeof request.gateId !== 'string' || !request.gateId.trim()) {
-    throw new Error('A workflow gate id is required.')
-  }
-  if (request.channel !== 'in-app' && request.channel !== 'ntfy' && request.channel !== 'voice') {
-    throw new Error('The workflow approval channel is invalid.')
-  }
-  return {
-    gateId: request.gateId.trim(),
-    payload: request.payload,
-    channel: request.channel
-  }
-}
-
 function normalizeSettingsUpdate(update: Partial<AppSettings>): Partial<AppSettings> {
   const next = { ...update }
   if (update.pushToTalkKey !== undefined && update.hotkey === undefined) next.hotkey = update.pushToTalkKey
@@ -262,6 +256,49 @@ function buildStartRequest(value: unknown): BuildStartRequest {
     language: input.language === 'ar-EG' || input.language === 'en' || input.language === 'mixed' ? input.language : undefined,
     register: typeof input.register === 'boolean' ? input.register : undefined,
     registrationKind: input.registrationKind === 'skill' || input.registrationKind === 'project' ? input.registrationKind : undefined
+  }
+}
+
+function requireWorkflows(): WorkflowRunner {
+  if (!workflows) throw new Error('Workflow runner is unavailable.')
+  return workflows
+}
+
+function workflowStartRequest(value: unknown): WorkflowStartRequest {
+  if (!value || typeof value !== 'object') throw new Error('A workflow request is required.')
+  const request = value as Partial<WorkflowStartRequest>
+  if (typeof request.workflow !== 'string' || !request.workflow.trim()) throw new Error('A workflow name is required.')
+  if (request.brief === undefined) throw new Error('A workflow brief is required.')
+  return {
+    workflow: request.workflow.trim(),
+    brief: request.brief,
+    planId: typeof request.planId === 'string' ? request.planId : request.planId === null ? null : undefined,
+    language: typeof request.language === 'string' ? request.language : undefined,
+    autonomy: request.autonomy === 'led' || request.autonomy === 'assisted' || request.autonomy === 'auto' ? request.autonomy : undefined,
+    timeBudgetMs: typeof request.timeBudgetMs === 'number' ? request.timeBudgetMs : undefined,
+    inputTokenBudget: typeof request.inputTokenBudget === 'number' ? request.inputTokenBudget : undefined
+  }
+}
+
+function workflowRunId(value: unknown): string {
+  const candidate = typeof value === 'object' && value !== null && 'runId' in value
+    ? (value as { runId?: unknown }).runId
+    : value
+  if (typeof candidate !== 'string' || !candidate.trim()) throw new Error('A workflow run id is required.')
+  return candidate.trim()
+}
+
+function workflowGateRequest(value: unknown): WorkflowGateActionRequest {
+  if (!value || typeof value !== 'object') throw new Error('A workflow gate request is required.')
+  const request = value as Partial<WorkflowGateActionRequest>
+  if (typeof request.runId !== 'string' || !request.runId.trim()) throw new Error('A workflow run id is required.')
+  return {
+    runId: request.runId.trim(),
+    stepId: typeof request.stepId === 'string' ? request.stepId.trim() : undefined,
+    payload: typeof request.payload === 'string' ? request.payload : undefined,
+    approvedBy: typeof request.approvedBy === 'string' ? request.approvedBy : undefined,
+    comment: typeof request.comment === 'string' ? request.comment : undefined,
+    reason: typeof request.reason === 'string' ? request.reason : undefined
   }
 }
 
@@ -419,10 +456,6 @@ function registerIpc(): void {
   ipcMain.handle('voice:approve', async (_event, transcript: unknown) => {
     if (!voiceController) throw new Error('Voice is unavailable.')
     return voiceController.approveTranscript(typeof transcript === 'string' ? transcript : '')
-  })
-  ipcMain.handle('workflows:gate:approve', (_event, value: unknown) => {
-    if (!workflowGates) throw new Error('Workflow gates are unavailable.')
-    return workflowGates.approve(workflowGateRequest(value))
   })
 
   ipcMain.handle('ai:test', async (): Promise<AiTestResult> => {
@@ -594,6 +627,46 @@ function registerIpc(): void {
       status: job.status
     })
     return job ?? null
+  })
+
+  ipcMain.handle('workflows:list', () => requireWorkflows().list())
+
+  ipcMain.handle('workflows:get', (_event, value: string) => {
+    if (typeof value !== 'string' || !value.trim()) throw new Error('A workflow or run id is required.')
+    return requireWorkflows().get(value.trim())
+  })
+
+  ipcMain.handle('workflows:start', (_event, value: unknown): WorkflowStartResponse => {
+    const request = workflowStartRequest(value)
+    const handle = requireWorkflows().start(request)
+    return { runId: handle.runId, workflow: request.workflow, folder: handle.folder }
+  })
+
+  ipcMain.handle('workflows:resume', (_event, value: unknown): WorkflowStartResponse => {
+    const runId = workflowRunId(value)
+    const handle = requireWorkflows().resume(runId)
+    const run = requireWorkflows().getRun(runId)
+    return { runId: handle.runId, workflow: run?.workflow ?? '', folder: handle.folder }
+  })
+
+  ipcMain.handle('workflows:gate:approve', (_event, value: unknown) =>
+    requireWorkflows().approveGate(workflowGateRequest(value))
+  )
+
+  ipcMain.handle('workflows:gate:reject', (_event, value: unknown) =>
+    requireWorkflows().rejectGate(workflowGateRequest(value))
+  )
+
+  ipcMain.handle('workflows:gate:comment', (_event, value: unknown) =>
+    requireWorkflows().commentGate(workflowGateRequest(value))
+  )
+
+  ipcMain.handle('workflows:save', (_event, value: unknown) => {
+    if (!value || typeof value !== 'object') throw new Error('A workflow name and plan are required.')
+    const request = value as { name?: unknown; plan?: unknown; definition?: unknown }
+    if (typeof request.name !== 'string' || !request.name.trim()) throw new Error('A workflow name is required.')
+    const source = request.definition ?? request.plan
+    return requireWorkflows().saveAsWorkflow(request.name, source)
   })
 
   ipcMain.handle('research:start', (_event, value: unknown): ResearchStartResponse => {
@@ -789,6 +862,26 @@ async function start(): Promise<void> {
     planner,
     onEvent: (event) => broadcast('build:events', event)
   })
+  workflows = new WorkflowRunner({
+    jobs: jobsRepository,
+    jobRunner,
+    homePath: repository.getSettings().octaHomePath,
+    getSettings: () => {
+      if (!repository) throw new Error('Settings storage is unavailable.')
+      return repository.getSettings()
+    },
+    notifier,
+    onEvent: (event) => broadcast(event.type, event)
+  })
+  workflows.seedLaunchWorkflows()
+  if (jobsRepository.listRecurringJobs().length === 0) seedRecurringJobs(jobsRepository)
+  recurringScheduler = new RecurringScheduler({
+    jobs: jobsRepository,
+    workflows,
+    onEvent: (message) => console.warn(`[recurring] ${message}`)
+  })
+  recurringScheduler.start()
+  void workflows.resumePending()
   registerIpc()
   attachMainWindow(createWindow())
   overlayWindow = createOverlayWindow()
@@ -814,6 +907,10 @@ app.on('before-quit', () => {
   voiceAudioOutput = undefined
   if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.close()
   overlayWindow = undefined
+  recurringScheduler?.stop()
+  recurringScheduler = undefined
+  void workflows?.close()
+  workflows = undefined
   void researchManager?.close()
   researchManager = undefined
   brain?.close()

@@ -17,6 +17,15 @@ import type {
 } from './core/octa/research'
 import type { BuildEvent, BuildState } from './core/octa/build'
 import type {
+  WorkflowDefinition,
+  WorkflowEvent,
+  WorkflowGateActionRequest,
+  WorkflowListItem,
+  WorkflowRunRecord,
+  WorkflowStartRequest,
+  WorkflowStartResponse
+} from './core/octa/workflows'
+import type {
   AiTestResult,
   AppSettings,
   JobEvent,
@@ -88,6 +97,33 @@ const api = {
       const wrapped = (_event: Electron.IpcRendererEvent, jobEvent: JobEvent): void => listener(jobEvent)
       ipcRenderer.on('jobs:events', wrapped)
       return () => ipcRenderer.removeListener('jobs:events', wrapped)
+    }
+  },
+  workflows: {
+    list: (): Promise<WorkflowListItem[]> => ipcRenderer.invoke('workflows:list'),
+    get: (idOrName: string): Promise<WorkflowDefinition | WorkflowRunRecord | null> =>
+      ipcRenderer.invoke('workflows:get', idOrName),
+    start: (request: WorkflowStartRequest): Promise<WorkflowStartResponse> =>
+      ipcRenderer.invoke('workflows:start', request),
+    resume: (runId: string): Promise<WorkflowStartResponse> =>
+      ipcRenderer.invoke('workflows:resume', runId),
+    approve: (request: WorkflowGateActionRequest): Promise<WorkflowRunRecord> =>
+      ipcRenderer.invoke('workflows:gate:approve', request),
+    reject: (request: WorkflowGateActionRequest): Promise<WorkflowRunRecord> =>
+      ipcRenderer.invoke('workflows:gate:reject', request),
+    comment: (request: WorkflowGateActionRequest): Promise<WorkflowRunRecord> =>
+      ipcRenderer.invoke('workflows:gate:comment', request),
+    save: (name: string, source: unknown): Promise<WorkflowDefinition> =>
+      ipcRenderer.invoke('workflows:save', { name, plan: source }),
+    onStep: (listener: (event: Extract<WorkflowEvent, { type: 'workflow:step' }>) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, workflowEvent: Extract<WorkflowEvent, { type: 'workflow:step' }>): void => listener(workflowEvent)
+      ipcRenderer.on('workflow:step', wrapped)
+      return () => ipcRenderer.removeListener('workflow:step', wrapped)
+    },
+    onGate: (listener: (event: Extract<WorkflowEvent, { type: 'workflow:gate' }>) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, workflowEvent: Extract<WorkflowEvent, { type: 'workflow:gate' }>): void => listener(workflowEvent)
+      ipcRenderer.on('workflow:gate', wrapped)
+      return () => ipcRenderer.removeListener('workflow:gate', wrapped)
     }
   },
   research: {

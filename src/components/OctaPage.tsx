@@ -70,7 +70,7 @@ export interface OctaPageProps {
 }
 
 type PageState = 'idle' | 'questions' | 'ready' | 'running' | 'gate' | 'done' | 'failed'
-type StepStatus = 'pending' | 'running' | 'ok' | 'needs_approval' | 'needs_input' | 'failed' | 'cancelled'
+type StepStatus = 'pending' | 'running' | 'ok' | 'needs_approval' | 'needs_input' | 'failed' | 'cancelled' | 'stale'
 
 interface ViewerState {
   output: OctaOutput
@@ -249,7 +249,8 @@ function stepStatusKey(status: StepStatus): TranslationKey {
     needs_approval: 'stepStatusNeedsApproval',
     needs_input: 'stepStatusNeedsInput',
     failed: 'stepStatusFailed',
-    cancelled: 'stepStatusCancelled'
+    cancelled: 'stepStatusCancelled',
+    stale: 'stepStatusStale'
   } as const)[status]
 }
 
@@ -260,7 +261,8 @@ function jobStatusKey(status: JobStatus): TranslationKey {
     failed: 'jobStatusFailed',
     needs_approval: 'jobStatusNeedsApproval',
     needs_input: 'jobStatusNeedsInput',
-    cancelled: 'jobStatusCancelled'
+    cancelled: 'jobStatusCancelled',
+    stale: 'jobStatusStale'
   } as const)[status]
 }
 

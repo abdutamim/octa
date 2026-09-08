@@ -111,6 +111,14 @@ function job(status: JobStatus, overrides: Partial<JobRecord> = {}): JobRecord {
     approvedBy: null,
     approvedAt: null,
     error: null,
+    workflowRunId: null,
+    state: null,
+    gatePayload: null,
+    gateCreatedAt: null,
+    gateExpiresAt: null,
+    gateDecision: null,
+    gateComments: null,
+    attempt: 1,
     ...overrides
   }
 }

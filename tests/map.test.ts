@@ -49,7 +49,15 @@ function testJob(
     finishedAt: status === 'running' ? null : startedAt,
     approvedBy: null,
     approvedAt: null,
-    error: null
+    error: null,
+    workflowRunId: null,
+    state: null,
+    gatePayload: null,
+    gateCreatedAt: null,
+    gateExpiresAt: null,
+    gateDecision: null,
+    gateComments: null,
+    attempt: 1,
   }
 }
 

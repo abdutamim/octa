@@ -1,0 +1,117 @@
+{
+  "id": "W1",
+  "name": "review-website",
+  "version": 1,
+  "description": "CRO, SEO, performance, UI, copy, and competitor review for a public website.",
+  "autonomy": "assisted",
+  "acceptance": [
+    "The report exists in the conversation language.",
+    "Every score has a rationale and every fix has an effort estimate.",
+    "The review completes within 20 minutes when no competitors are supplied."
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "runner": "gemini-inline",
+      "prompt": "Confirm the website review goal, audience, language, and what better means.",
+      "input": { "url": "{{brief.url}}", "goal": "{{brief.goal}}" },
+      "needs": [],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["The review brief is explicit."]
+    },
+    {
+      "id": "s2",
+      "runner": "codex-scout",
+      "prompt": "Crawl the public website and collect page, copy, technology, and analytics evidence.",
+      "input": { "url": "{{brief.url}}" },
+      "needs": ["s1"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["Public-site evidence is collected."],
+      "todo": true
+    },
+    {
+      "id": "s3",
+      "runner": "claude-skill",
+      "skill": "cro",
+      "input": { "url": "{{brief.url}}", "evidence": "{{steps.s2.out}}" },
+      "needs": ["s2"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["CRO findings cover the home page and top three pages."]
+    },
+    {
+      "id": "s4",
+      "runner": "claude-skill",
+      "skill": "seo-audit",
+      "input": { "url": "{{brief.url}}", "evidence": "{{steps.s2.out}}" },
+      "needs": ["s2"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["SEO, schema, and AI-search findings are recorded."]
+    },
+    {
+      "id": "s5",
+      "runner": "claude-skill",
+      "skill": "web-perf",
+      "input": { "url": "{{brief.url}}" },
+      "needs": ["s2"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["Performance findings cover the home page and two additional pages."]
+    },
+    {
+      "id": "s6",
+      "runner": "claude-skill",
+      "skill": "ui-forge",
+      "input": { "url": "{{brief.url}}", "evidence": "{{steps.s2.out}}" },
+      "needs": ["s2"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["UI critique covers register, type, color, and spacing."]
+    },
+    {
+      "id": "s7",
+      "runner": "claude-skill",
+      "skill": "copy-editing",
+      "input": { "url": "{{brief.url}}", "language": "{{brief.language}}" },
+      "needs": ["s2"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["Hero and CTA copy receives all seven editing sweeps."]
+    },
+    {
+      "id": "s8",
+      "runner": "codex-scout",
+      "prompt": "Compare the website with five competitors when competitor URLs are available.",
+      "input": { "competitors": "{{brief.competitors}}" },
+      "needs": ["s2"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["Competitor evidence reaches the research depth gate."],
+      "todo": true
+    },
+    {
+      "id": "s9",
+      "runner": "claude-skill",
+      "prompt": "Merge all website findings into out/review.md with a scorecard, prioritized top-ten fixes, effort estimates, copy rewrites, and mockup notes. Apply stop-slop.",
+      "input": { "cro": "{{steps.s3.out}}", "seo": "{{steps.s4.out}}", "performance": "{{steps.s5.out}}", "ui": "{{steps.s6.out}}", "copy": "{{steps.s7.out}}", "competitors": "{{steps.s8.out}}" },
+      "needs": ["s3", "s4", "s5", "s6", "s7", "s8"],
+      "gate": "review",
+      "autonomy": "assisted",
+      "acceptance": ["The report exists in the conversation language.", "Every score has a rationale.", "Every fix has an effort estimate."]
+    },
+    {
+      "id": "s10",
+      "runner": "gemini-inline",
+      "prompt": "Read the accepted top five fixes back by voice and create tasks.",
+      "input": { "report": "{{steps.s9.out}}" },
+      "needs": ["s9"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["The accepted fixes are represented as tasks."],
+      "todo": true
+    }
+  ]
+}

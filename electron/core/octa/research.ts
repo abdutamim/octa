@@ -704,6 +704,7 @@ export interface RunResearchOptions extends ResearchPromptOptions {
   homePath?: string
   octaHome?: string
   jobId?: string
+  workflowRunId?: string
   stepId?: string
   runner?: ResearchRunner
   jobRunner?: ResearchRunner
@@ -903,6 +904,7 @@ export function runResearch(task: string, options: RunResearchOptions = {}): Res
   const runner: ResearchRunner = options.runner ?? options.jobRunner ?? getJobRunner()
   const jobSpec: JobSpec = {
     id,
+    workflowRunId: options.workflowRunId,
     runner: 'codex-scout',
     input: {
       task: trimmedTask,

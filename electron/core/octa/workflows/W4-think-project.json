@@ -1,0 +1,78 @@
+{
+  "id": "W4",
+  "name": "think-project",
+  "version": 1,
+  "description": "A structured thinking session that turns a decision into a memo and next actions.",
+  "autonomy": "assisted",
+  "acceptance": [
+    "The memo is in the conversation language.",
+    "The memo compares at least three options.",
+    "The recommendation states explicit assumptions.",
+    "Tasks are created only after go."
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "runner": "codex-exec",
+      "prompt": "This is a decision-clarification step, not a recommendation step. Write out/clarification.md in the conversation language with the exact headings Decision type and Definition of done. Under Decision type, explicitly classify the brief as a decision, design, or open exploration. Under Definition of done, state measurable conditions that would make the Astro-versus-Next decision ready to implement. Do not choose a framework yet.",
+      "input": { "topic": "{{brief.text}}" },
+      "needs": [],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["The decision type and definition of done are explicit."]
+    },
+    {
+      "id": "s2",
+      "runner": "codex-scout",
+      "prompt": "Research the facts that matter to this decision using the multilingual research protocol.",
+      "input": { "task": "{{brief.text}}", "clarification": "{{steps.s1.out}}" },
+      "needs": ["s1"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["The background research passes the research depth gate."],
+      "research": true
+    },
+    {
+      "id": "s3",
+      "runner": "codex-exec",
+      "skill": "lateral",
+      "prompt": "Use the right thinking technique for the decision and write out/session.md.",
+      "input": { "topic": "{{brief.text}}", "clarification": "{{steps.s1.out}}", "evidence": "{{steps.s2.out}}" },
+      "needs": ["s2"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["A suitable technique is selected and the session explores the decision." ]
+    },
+    {
+      "id": "s4",
+      "runner": "codex-exec",
+      "skill": "fact-checker",
+      "input": { "topic": "{{brief.text}}", "session": "{{steps.s3.out}}", "evidence": "{{steps.s2.out}}" },
+      "needs": ["s3"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["Claims used by the session are checked against the evidence." ]
+    },
+    {
+      "id": "s5",
+      "runner": "codex-exec",
+      "prompt": "Write out/memo.md in the conversation language. Include at least three options, a recommendation, explicit assumptions, risks, the next three actions, and what would change the decision. Apply stop-slop.",
+      "input": { "topic": "{{brief.text}}", "session": "{{steps.s3.out}}", "checks": "{{steps.s4.out}}" },
+      "needs": ["s3", "s4"],
+      "gate": "review",
+      "autonomy": "assisted",
+      "acceptance": ["The memo contains at least three options.", "The recommendation has explicit assumptions.", "The memo names risks and the next three actions." ]
+    },
+    {
+      "id": "s6",
+      "runner": "gemini-inline",
+      "prompt": "Read the memo back by voice; only after an explicit go create tasks and append a dated decision to knowledge/decisions.md.",
+      "input": { "memo": "{{steps.s5.out}}" },
+      "needs": ["s5"],
+      "gate": "approve",
+      "autonomy": "assisted",
+      "acceptance": ["Tasks and the knowledge edit are prepared only after go."],
+      "todo": true
+    }
+  ]
+}
