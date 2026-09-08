@@ -1,8 +1,8 @@
-import { Brain, Cloud, GitBranch, Hammer, Languages, Library, ListTodo, Settings2, Sparkles, Workflow } from 'lucide-react'
+import { Brain, Cloud, GitBranch, Hammer, HeartPulse, Languages, Library, ListTodo, Settings2, Sparkles, Workflow } from 'lucide-react'
 import type { Locale, TranslationKey } from '../i18n'
 import { t } from '../i18n'
 
-export type Page = 'octa' | 'jobs' | 'workflows' | 'skills' | 'brain' | 'map' | 'builds' | 'settings'
+export type Page = 'octa' | 'jobs' | 'workflows' | 'skills' | 'brain' | 'map' | 'builds' | 'health' | 'settings'
 
 export function Sidebar({
   page,
@@ -91,6 +91,15 @@ export function Sidebar({
         >
           <Hammer size={18} aria-hidden="true" />
           <span>{label('builds')}</span>
+        </button>
+        <button
+          aria-current={page === 'health' ? 'page' : undefined}
+          className={`nav-item ${page === 'health' ? 'active' : ''}`}
+          onClick={() => onChange('health')}
+          type="button"
+        >
+          <HeartPulse size={18} aria-hidden="true" />
+          <span>{label('health')}</span>
         </button>
         <button
           aria-current={page === 'settings' ? 'page' : undefined}

@@ -4,6 +4,8 @@ import { DEFAULT_SETTINGS } from '../electron/types'
 import { applyLocale, type Locale } from './i18n'
 import { t } from './i18n'
 import { SettingsPage } from './components/SettingsPage'
+import { FirstRun } from './components/FirstRun'
+import { HealthPage } from './components/HealthPage'
 import { BrainPage } from './components/BrainPage'
 import { JobsPage } from './components/JobsPage'
 import { MapPage } from './components/MapPage'
@@ -20,6 +22,9 @@ export function App(): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [page, setPage] = useState<Page>('octa')
   const [loading, setLoading] = useState(true)
+  const [firstRun, setFirstRun] = useState(true)
+  const [showFirstRun, setShowFirstRun] = useState(false)
+  const [version, setVersion] = useState('0.1.0')
   const locale: Locale = settings.locale
 
   useEffect(() => {
@@ -32,6 +37,9 @@ export function App(): React.JSX.Element {
     void window.octa.state().then((state) => {
       if (!active) return
       setSettings(state.settings)
+      setFirstRun(state.firstRun)
+      setShowFirstRun(state.firstRun)
+      setVersion(state.version)
       setLoading(false)
     }).catch(() => {
       if (active) setLoading(false)
@@ -53,6 +61,17 @@ export function App(): React.JSX.Element {
     void updateSettings({ locale: locale === 'ar' ? 'en' : 'ar' })
   }
 
+  const runHealth = (): Promise<import('../electron/core/octa/health').HealthReport> => window.octa.health.run()
+  const installHealthDependency = (kind: import('../electron/core/octa/health').GuidedInstallKind): Promise<import('../electron/core/octa/health').GuidedInstallResult> => window.octa.health.install(kind)
+  const onHealthInstallOutput = (listener: Parameters<typeof window.octa.health.onInstallOutput>[0]): (() => void) => window.octa.health.onInstallOutput(listener)
+
+  const completeFirstRun = async (): Promise<void> => {
+    const state = await window.octa.firstRun.complete()
+    setSettings(state.settings)
+    setFirstRun(state.firstRun)
+    setShowFirstRun(false)
+  }
+
   if (loading) {
     return (
       <div className="app-loading">
@@ -62,6 +81,22 @@ export function App(): React.JSX.Element {
           <i />
         </span>
       </div>
+    )
+  }
+
+  if (showFirstRun) {
+    return (
+      <FirstRun
+        locale={locale}
+        onCancel={() => setShowFirstRun(false)}
+        onComplete={completeFirstRun}
+        onInstall={installHealthDependency}
+        onInstallOutput={onHealthInstallOutput}
+        onRunHealth={runHealth}
+        onUpdate={updateSettings}
+        required={firstRun}
+        settings={settings}
+      />
     )
   }
 
@@ -81,6 +116,18 @@ export function App(): React.JSX.Element {
               onUpdate={updateSettings}
               onAiTest={() => window.octa.ai.test()}
               onNotifyTest={() => window.octa.notify.test()}
+              onOpenFirstRun={() => setShowFirstRun(true)}
+              version={version}
+            />
+          )}
+          {page === 'health' && (
+            <HealthPage
+              locale={locale}
+              onInstall={installHealthDependency}
+              onInstallOutput={onHealthInstallOutput}
+              onOpenSetup={() => setShowFirstRun(true)}
+              onRun={runHealth}
+              settings={settings}
             />
           )}
           {page === 'brain' && <BrainPage locale={locale} />}

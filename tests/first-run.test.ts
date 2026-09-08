@@ -27,7 +27,7 @@ describe('first-run wizard state machine', () => {
     expect(firstRunReducer(health, { type: 'reset' })).toEqual(INITIAL_FIRST_RUN_STATE)
   })
 
-  it('allows returning to completed steps but never jumps over an unfinished step from the reducer', () => {
+  it('supports explicit navigation back to completed steps and forward to a selected step', () => {
     const state = firstRunReducer(firstRunReducer(INITIAL_FIRST_RUN_STATE, { type: 'next' }), { type: 'next' })
     expect(firstRunReducer(state, { type: 'go-to', step: 'credentials' }).step).toBe('credentials')
     expect(firstRunReducer(state, { type: 'go-to', step: 'health' }).step).toBe('health')
