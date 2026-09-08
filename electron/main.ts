@@ -13,6 +13,7 @@ import { GeminiVoiceFallback } from './cloud/gemini-tts'
 import { VoiceController } from './core/dictation'
 import { CompanyBrain } from './core/octa/brain'
 import { IntakeInterview } from './core/octa/intake'
+import { BuildManager, type BuildStartRequest } from './core/octa/build'
 import {
   Planner,
   compileBrief,
@@ -76,6 +77,7 @@ let workflowGates: WorkflowGateRegistry | undefined
 let voiceController: VoiceController | undefined
 let triggerManager: GlobalTriggerManager | undefined
 let voiceAudioOutput: PcmAudioOutput | undefined
+let buildManager: BuildManager | undefined
 let ipcRegistered = false
 
 function broadcast(channel: string, payload: unknown): void {
@@ -237,6 +239,30 @@ function requireSkillsRegistry(): SkillRegistry {
 function requirePlanner(): Planner {
   if (!planner) throw new Error('Planner is unavailable.')
   return planner
+}
+
+function requireBuildManager(): BuildManager {
+  if (!buildManager) throw new Error('Build pipeline is unavailable.')
+  return buildManager
+}
+
+function buildStartRequest(value: unknown): BuildStartRequest {
+  if (!value || typeof value !== 'object') throw new Error('A build request is required.')
+  const input = value as Partial<BuildStartRequest>
+  const request = typeof input.request === 'string' ? input.request : typeof input.brief === 'string' ? input.brief : ''
+  if (!request.trim()) throw new Error('A build request is required.')
+  return {
+    id: typeof input.id === 'string' ? input.id : undefined,
+    request,
+    projectPath: typeof input.projectPath === 'string' ? input.projectPath : undefined,
+    mode: input.mode === 'direct' || input.mode === 'isolated' ? input.mode : undefined,
+    direct: typeof input.direct === 'boolean' ? input.direct : undefined,
+    targetBranch: typeof input.targetBranch === 'string' ? input.targetBranch : undefined,
+    complexity: input.complexity === 'small' || input.complexity === 'medium' || input.complexity === 'large' ? input.complexity : undefined,
+    language: input.language === 'ar-EG' || input.language === 'en' || input.language === 'mixed' ? input.language : undefined,
+    register: typeof input.register === 'boolean' ? input.register : undefined,
+    registrationKind: input.registrationKind === 'skill' || input.registrationKind === 'project' ? input.registrationKind : undefined
+  }
 }
 
 async function configureBrain(settings: AppSettings): Promise<void> {
@@ -491,6 +517,49 @@ function registerIpc(): void {
     requirePlanner().get(planId)
   )
 
+  ipcMain.handle('build:start', (_event, value: unknown) =>
+    requireBuildManager().start(buildStartRequest(value))
+  )
+
+  ipcMain.handle('build:status', (_event, value?: unknown) => {
+    const id = typeof value === 'string'
+      ? value
+      : value && typeof value === 'object' && 'id' in value && typeof (value as { id?: unknown }).id === 'string'
+        ? (value as { id: string }).id
+        : undefined
+    return requireBuildManager().status(id)
+  })
+
+  ipcMain.handle('build:resume', (_event, value: string | { id: string }) =>
+    requireBuildManager().resume(typeof value === 'string' ? value : value.id)
+  )
+
+  ipcMain.handle('build:merge', (_event, value: string | { id: string; strategy?: 'merge' | 'pr'; targetPath?: string }) => {
+    const request = typeof value === 'string' ? { id: value } : value
+    return requireBuildManager().merge(request.id, { strategy: request.strategy, targetPath: request.targetPath })
+  })
+
+  ipcMain.handle('build:discard', (_event, value: string | { id: string }) =>
+    requireBuildManager().discard(typeof value === 'string' ? value : value.id)
+  )
+
+  ipcMain.handle('build:review', (_event, value: string | { id: string }) =>
+    requireBuildManager().review(typeof value === 'string' ? value : value.id)
+  )
+
+  ipcMain.handle('build:analyze', (_event, value?: unknown) => {
+    const input = value && typeof value === 'object' ? value as Record<string, unknown> : {}
+    return requireBuildManager().analyze({
+      id: typeof input.id === 'string' ? input.id : undefined,
+      projectPath: typeof input.projectPath === 'string' ? input.projectPath : undefined,
+      brief: typeof input.brief === 'string' ? input.brief : undefined,
+      competitorBrief: typeof input.competitorBrief === 'string' ? input.competitorBrief : undefined,
+      ideationPasses: Array.isArray(input.ideationPasses)
+        ? input.ideationPasses.filter((item): item is 'code-quality' | 'security' | 'performance' | 'ux' | 'documentation' => ['code-quality', 'security', 'performance', 'ux', 'documentation'].includes(String(item)))
+        : undefined
+    })
+  })
+
   ipcMain.handle('jobs:start', (_event, spec: JobSpec): JobStartResponse => {
     if (!jobRunner) throw new Error('Job runner is unavailable.')
     const handle = jobRunner.startJob(spec)
@@ -711,6 +780,15 @@ async function start(): Promise<void> {
       ).catch((error: unknown) => console.error('[voice] planner read-back failed:', error))
     }
   })
+  buildManager = new BuildManager({
+    homePath: repository.getSettings().octaHomePath,
+    projectPath: process.cwd(),
+    skillsLibraryPath: repository.getSettings().skillsLibraryPath || skillsRegistry.libraryPath,
+    registry: skillsRegistry,
+    research: researchManager,
+    planner,
+    onEvent: (event) => broadcast('build:events', event)
+  })
   registerIpc()
   attachMainWindow(createWindow())
   overlayWindow = createOverlayWindow()
@@ -743,6 +821,7 @@ app.on('before-quit', () => {
   intake = undefined
   planner?.close()
   planner = undefined
+  buildManager = undefined
   repository?.checkpoint()
   jobsRepository?.checkpoint()
   repository?.close()
