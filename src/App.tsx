@@ -19,6 +19,7 @@ import { Sidebar, type Page } from './components/Sidebar'
 import { VoiceBar } from './components/VoiceBar'
 import { VoiceAudioPlayback } from './components/VoiceAudioPlayback'
 import { VoiceInputBridge } from './components/VoiceInputBridge'
+import { OctaMark } from './components/OctaMark'
 
 function UpdateBanner({
   update,
@@ -123,11 +124,7 @@ export function App(): React.JSX.Element {
   if (loading) {
     return (
       <div className="app-loading">
-        <span className="brand-mark" aria-label={t('brandName', locale)}>
-          <i />
-          <i />
-          <i />
-        </span>
+        <OctaMark className="brand-mark" alt={t('brandName', locale)} />
       </div>
     )
   }
@@ -149,7 +146,7 @@ export function App(): React.JSX.Element {
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell octa-shell">
       <VoiceAudioPlayback />
       <VoiceInputBridge enabled={settings.wakeWordEnabled || settings.pushToTalkEnabled} />
       <div className="workspace">
@@ -157,7 +154,7 @@ export function App(): React.JSX.Element {
         <section className="content">
           {update && <UpdateBanner update={update} locale={locale} onOpen={(url) => window.octa.update.open(url)} />}
           <VoiceBar locale={locale} />
-          {page === 'octa' && <OctaPage locale={locale} />}
+          {page === 'octa' && <OctaPage locale={locale} onOpenSetup={() => setShowFirstRun(true)} />}
           {page === 'settings' && (
             <SettingsPage
               settings={settings}

@@ -24,6 +24,7 @@ import type { AppSettings } from '../../electron/types'
 import type { Locale, TranslationKey } from '../i18n'
 import { t } from '../i18n'
 import { HealthPage, type HealthInstallOutput } from './HealthPage'
+import { OctaMark } from './OctaMark'
 
 export const FIRST_RUN_STEPS = ['language', 'credentials', 'paths', 'health', 'research', 'photoshop', 'done'] as const
 export type FirstRunStep = (typeof FIRST_RUN_STEPS)[number]
@@ -380,7 +381,7 @@ export function FirstRun({
     <main className="first-run-shell">
       <section className="first-run-panel">
         <aside className="first-run-rail">
-          <div className="first-run-brand"><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span><div><strong>{label('brandName')}</strong><span>{label('firstRunEyebrow')}</span></div></div>
+          <div className="first-run-brand"><OctaMark className="brand-mark" /><div><strong>{label('brandName')}</strong><span>{label('firstRunEyebrow')}</span></div></div>
           <div className="first-run-rail-copy"><span>{label('firstRunWelcome')}</span><p>{label('firstRunIntro')}</p></div>
           <ol className="first-run-steps">
             {FIRST_RUN_STEPS.map((step, index) => (

@@ -2,6 +2,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
 import type { JobEvent, JobRecord, JobStatus } from '../electron/types'
+import type { PlanRecord } from '../electron/db/jobs'
 import type { PlannerResult } from '../electron/core/octa/planner'
 import type { SourceLedgerEntry } from '../electron/core/octa/sources'
 import { OctaPage, type OctaPageApi, type OctaPanelState } from '../src/components/OctaPage'
@@ -130,6 +131,16 @@ function renderPage(state: Partial<OctaPanelState> = {}, locale: 'en' | 'ar' = '
 describe('OctaPage states', () => {
   it('renders the idle conversation, empty plan slot, live slot, and empty steps', () => {
     const html = renderPage()
+    expect(html).toContain("Hi, I&#x27;m Octa")
+    expect(html).toContain('Octa needs setup')
+    expect(html).toContain('Review a website')
+    expect(html).toContain('Build a website')
+    expect(html).toContain('Market a project')
+    expect(html).toContain('Think through a project')
+    expect(html).toContain('Handle an invoice')
+    expect(html).toContain('Research a question')
+    expect(html).toContain('No jobs yet. Your first run will appear here.')
+    expect(html).toContain('No saved plans yet. Octa will keep the next one here.')
     expect(html).toContain('Bring the next thing into focus')
     expect(html).toContain('Nothing is queued yet')
     expect(html).toContain('VoiceBar will appear here')
@@ -143,6 +154,30 @@ describe('OctaPage states', () => {
     expect(html).toContain('Who should this reach?')
     expect(html).toContain('Fable draft: clarify audience before execution.')
     expect(html).toContain('Send answers')
+  })
+
+  it('shows only the five newest jobs and keeps recent plans visible on the home surface', () => {
+    const jobs = Array.from({ length: 6 }, (_, index) => job('ok', {
+      id: `job-${index}`,
+      workflow: `workflow-${index}`
+    }))
+    const recentPlan: PlanRecord = {
+      id: 'plan-recent',
+      conversationId: null,
+      briefMd: 'A recent brief',
+      plan: { summary: 'Recent plan summary' },
+      round: 1,
+      questionRound: 0,
+      status: 'approved',
+      createdAt: '2026-09-08T08:03:00.000Z'
+    }
+    const html = renderPage({ jobs, recentPlans: [recentPlan] })
+    expect(html).toContain('workflow-0')
+    expect(html).toContain('workflow-4')
+    expect(html).not.toContain('workflow-5')
+    expect(html).toContain('Recent plan summary')
+    expect(html).not.toContain('No jobs yet. Your first run will appear here.')
+    expect(html).not.toContain('No saved plans yet. Octa will keep the next one here.')
   })
 
   it('renders running steps and live job events', () => {
