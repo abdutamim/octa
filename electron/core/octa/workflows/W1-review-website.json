@@ -28,8 +28,7 @@
       "needs": ["s1"],
       "gate": "none",
       "autonomy": "assisted",
-      "acceptance": ["Public-site evidence is collected."],
-      "todo": true
+      "acceptance": ["Public-site evidence is collected."]
     },
     {
       "id": "s3",
@@ -89,8 +88,7 @@
       "needs": ["s2"],
       "gate": "none",
       "autonomy": "assisted",
-      "acceptance": ["Competitor evidence reaches the research depth gate."],
-      "todo": true
+      "acceptance": ["Competitor evidence reaches the research depth gate."]
     },
     {
       "id": "s9",
@@ -110,8 +108,7 @@
       "needs": ["s9"],
       "gate": "none",
       "autonomy": "assisted",
-      "acceptance": ["The accepted fixes are represented as tasks."],
-      "todo": true
+      "acceptance": ["The accepted fixes are represented as tasks."]
     }
   ]
 }

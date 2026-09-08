@@ -27,12 +27,22 @@ import type {
 } from './core/octa/workflows'
 import type {
   AiTestResult,
+  ClientRecord,
+  DocumentBrand,
+  DocumentKind,
+  DocumentRecord,
+  InvoiceCurrency,
+  InvoiceRecord,
+  NewTask,
   AppSettings,
   JobEvent,
   JobRecord,
   JobStartRequest,
   JobStartResponse,
   RendererState,
+  TaskFilter,
+  TaskRecord,
+  TimeReport,
   VoiceAudioEvent,
   VoiceState,
   VoiceTranscriptEvent
@@ -68,6 +78,59 @@ const api = {
   skills: {
     list: (options?: SkillListOptions): Promise<Skill[]> => ipcRenderer.invoke('skills:list', options),
     get: (name: string): Promise<Skill | null> => ipcRenderer.invoke('skills:get', name)
+  },
+  tasks: {
+    list: (filter: TaskFilter = {}): Promise<TaskRecord[]> => ipcRenderer.invoke('tasks:list', filter),
+    create: (input: NewTask): Promise<TaskRecord> => ipcRenderer.invoke('tasks:create', input),
+    update: (id: string, patch: Partial<NewTask>): Promise<TaskRecord> => ipcRenderer.invoke('tasks:update', id, patch),
+    remove: (id: string): Promise<boolean> => ipcRenderer.invoke('tasks:remove', id),
+    start: (id: string): Promise<TaskRecord> => ipcRenderer.invoke('tasks:start', id),
+    stop: (id: string): Promise<TaskRecord | undefined> => ipcRenderer.invoke('tasks:stop', id),
+    running: (): Promise<TaskRecord | undefined> => ipcRenderer.invoke('tasks:running'),
+    projects: (): Promise<string[]> => ipcRenderer.invoke('tasks:projects')
+  },
+  time: {
+    report: (day: string): Promise<TimeReport> => ipcRenderer.invoke('time:report', day),
+    launch: (): Promise<boolean> => ipcRenderer.invoke('time:launch')
+  },
+  billing: {
+    clients: (query = ''): Promise<ClientRecord[]> => ipcRenderer.invoke('billing:clients', query),
+    saveClient: (client: { name: string; email?: string; phone?: string; vaultNote?: string | null }): Promise<ClientRecord> =>
+      ipcRenderer.invoke('billing:saveClient', client),
+    invoices: (): Promise<InvoiceRecord[]> => ipcRenderer.invoke('billing:invoices'),
+    createInvoice: (invoice: {
+      clientId: string
+      currency: InvoiceCurrency
+      issuedAt: number
+      dueAt: number
+      notes?: string
+      paymentLink?: string
+      projectNote?: string | null
+      items: Array<{ description: string; qty: number; unitPrice: number }>
+    }): Promise<InvoiceRecord> => ipcRenderer.invoke('billing:createInvoice', invoice),
+    setStatus: (id: string, status: 'draft' | 'sent' | 'paid'): Promise<InvoiceRecord[]> =>
+      ipcRenderer.invoke('billing:setStatus', id, status),
+    deleteInvoice: (id: string): Promise<InvoiceRecord[]> => ipcRenderer.invoke('billing:deleteInvoice', id),
+    deleteClient: (id: string): Promise<ClientRecord[]> => ipcRenderer.invoke('billing:deleteClient', id),
+    pdf: (id: string): Promise<string> => ipcRenderer.invoke('billing:pdf', id),
+    openPdf: (path: string): Promise<string> => ipcRenderer.invoke('billing:openPdf', path)
+  },
+  brands: {
+    list: (): Promise<DocumentBrand[]> => ipcRenderer.invoke('brands:list'),
+    save: (brand: DocumentBrand): Promise<DocumentBrand[]> => ipcRenderer.invoke('brands:save', brand),
+    remove: (id: string): Promise<DocumentBrand[]> => ipcRenderer.invoke('brands:remove', id),
+    pickSignature: (): Promise<string | null> => ipcRenderer.invoke('brands:pickSignature')
+  },
+  documents: {
+    list: (filter: { clientId?: string; kind?: DocumentKind } = {}): Promise<DocumentRecord[]> =>
+      ipcRenderer.invoke('documents:list', filter),
+    get: (id: string): Promise<DocumentRecord | null> => ipcRenderer.invoke('documents:get', id),
+    nextReference: (kind: DocumentKind): Promise<string> => ipcRenderer.invoke('documents:nextReference', kind),
+    save: (record: DocumentRecord): Promise<DocumentRecord> => ipcRenderer.invoke('documents:save', record),
+    remove: (id: string): Promise<boolean> => ipcRenderer.invoke('documents:remove', id),
+    preview: (record: DocumentRecord): Promise<string> => ipcRenderer.invoke('documents:preview', record),
+    exportPdf: (record: DocumentRecord): Promise<string> => ipcRenderer.invoke('documents:export', record),
+    openPdf: (path: string): Promise<string> => ipcRenderer.invoke('documents:openPdf', path)
   },
   planner: {
     plan: (request: PlannerPlanRequest): Promise<PlannerResult> => ipcRenderer.invoke('planner:plan', request),
@@ -212,6 +275,11 @@ const api = {
     const wrapped = (_event: Electron.IpcRendererEvent, settings: AppSettings): void => listener(settings)
     ipcRenderer.on('settings:changed', wrapped)
     return () => ipcRenderer.removeListener('settings:changed', wrapped)
+  },
+  onTasksChanged: (listener: () => void): (() => void) => {
+    const wrapped = (): void => listener()
+    ipcRenderer.on('tasks:changed', wrapped)
+    return () => ipcRenderer.removeListener('tasks:changed', wrapped)
   }
 }
 

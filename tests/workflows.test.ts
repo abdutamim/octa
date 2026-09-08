@@ -88,7 +88,7 @@ describe('workflow definitions and interpolation', () => {
     expect(jobs).toHaveLength(DEFAULT_RECURRING_JOBS.length)
     expect(jobs.every((job) => job.autonomy === 'assisted')).toBe(true)
     expect(jobs.find((job) => job.id === 'daily-brief')?.enabled).toBe(true)
-    expect(jobs.filter((job) => job.id !== 'daily-brief').every((job) => !job.enabled)).toBe(true)
+    expect(jobs.every((job) => job.enabled)).toBe(true)
   })
 
   it('interpolates brief and prior step output while preserving exact values', () => {

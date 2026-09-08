@@ -11,6 +11,8 @@ import { SkillsPage } from './components/SkillsPage'
 import { OctaPage } from './components/OctaPage'
 import { WorkflowsPage } from './components/WorkflowsPage'
 import { BuildsPage } from './components/BuildsPage'
+import { TasksPage } from './components/TasksPage'
+import { ClientsPage } from './components/ClientsPage'
 import { Sidebar, type Page } from './components/Sidebar'
 import { VoiceBar } from './components/VoiceBar'
 import { VoiceAudioPlayback } from './components/VoiceAudioPlayback'
@@ -86,10 +88,11 @@ export function App(): React.JSX.Element {
           {page === 'brain' && <BrainPage locale={locale} />}
           {page === 'map' && <MapPage locale={locale} />}
           {page === 'jobs' && <JobsPage locale={locale} />}
+          {page === 'tasks' && <TasksPage onBack={() => setPage('octa')} />}
+          {page === 'clients' && <ClientsPage onBack={() => setPage('octa')} />}
           {page === 'workflows' && <WorkflowsPage locale={locale} />}
           {page === 'skills' && <SkillsPage locale={locale} />}
           {page === 'builds' && <BuildsPage locale={locale} />}
-          {page === 'workflows' && <WorkflowsPage locale={locale} />}
         </section>
       </div>
     </div>
