@@ -539,5 +539,7 @@ export const en = {
   workflowTodo: 'Todo — skipped until its owning spec lands.',
   workflowStarted: 'Workflow {id} started.',
   workflowGateExpires: 'Expires {date}',
-  workflowRunStatus: 'Run status'
+  workflowRunStatus: 'Run status',
+  tasksNav: 'Tasks',
+  clientsNav: 'Clients'
 } as const

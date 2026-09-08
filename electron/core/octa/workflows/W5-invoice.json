@@ -4,11 +4,11 @@
   "version": 1,
   "description": "Resolve, generate, approve, send, and follow up on a client invoice.",
   "autonomy": "assisted",
-  "acceptance": ["Invoice numbers reconcile with time tracking.", "The PDF uses the client brand.", "No invoice is sent without approval."],
+  "acceptance": ["Invoice numbers reconcile with time tracking.", "The PDF uses the client brand.", "No invoice is sent without approval.", "Follow-ups appear in tasks."],
   "steps": [
-    { "id": "s1", "runner": "gemini-inline", "prompt": "Resolve the client, period, scope, hours, and line items by voice.", "input": { "client": "{{brief.client}}", "period": "{{brief.period}}" }, "needs": [], "gate": "none", "autonomy": "assisted", "acceptance": ["Client, period, scope, and line items are confirmed."], "todo": true },
-    { "id": "s2", "runner": "gemini-inline", "prompt": "Create the branded invoice PDF with invoiceDocument, or the requested spreadsheet.", "input": { "items": "{{steps.s1.out}}", "client": "{{brief.client}}" }, "needs": ["s1"], "gate": "approve", "autonomy": "assisted", "acceptance": ["The invoice PDF matches the client brand and reconciles with time tracking."], "todo": true },
-    { "id": "s3", "runner": "gemini-inline", "prompt": "Prepare the configured email or WhatsApp message; do not send until the payload is approved.", "input": { "invoice": "{{steps.s2.out}}" }, "needs": ["s2"], "gate": "approve", "autonomy": "assisted", "acceptance": ["The exact send payload is shown before sending."], "todo": true },
-    { "id": "s4", "runner": "gemini-inline", "prompt": "Schedule +7, +14, and +21 day follow-ups using overdue invoice data and client-language reminder copy.", "input": { "invoice": "{{steps.s2.out}}", "send": "{{steps.s3.out}}" }, "needs": ["s2", "s3"], "gate": "none", "autonomy": "assisted", "acceptance": ["Follow-ups appear in tasks."], "todo": true }
+    { "id": "s1", "runner": "gemini-inline", "prompt": "Resolve the client, period, scope, hours, and line items by voice.", "input": { "client": "{{brief.client}}", "period": "{{brief.period}}" }, "needs": [], "gate": "none", "autonomy": "assisted", "acceptance": ["Client, period, scope, and line items are confirmed."] },
+    { "id": "s2", "runner": "gemini-inline", "prompt": "Create the branded invoice PDF with invoiceDocument, or the requested spreadsheet.", "input": { "items": "{{steps.s1.out}}", "client": "{{brief.client}}" }, "needs": ["s1"], "gate": "approve", "autonomy": "assisted", "acceptance": ["The invoice PDF matches the client brand and reconciles with time tracking."] },
+    { "id": "s3", "runner": "gemini-inline", "prompt": "Prepare the configured email or WhatsApp message; do not send until the payload is approved.", "input": { "invoice": "{{steps.s2.out}}" }, "needs": ["s2"], "gate": "approve", "autonomy": "assisted", "acceptance": ["The exact send payload is shown before sending."] },
+    { "id": "s4", "runner": "gemini-inline", "prompt": "Schedule +7, +14, and +21 day follow-ups using overdue invoice data and client-language reminder copy.", "input": { "invoice": "{{steps.s2.out}}", "send": "{{steps.s3.out}}" }, "needs": ["s2", "s3"], "gate": "none", "autonomy": "assisted", "acceptance": ["Follow-ups appear in tasks."] }
   ]
 }

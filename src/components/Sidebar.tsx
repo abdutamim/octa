@@ -1,8 +1,8 @@
-import { Brain, Cloud, GitBranch, Hammer, HeartPulse, Languages, Library, ListTodo, Settings2, Sparkles, Workflow } from 'lucide-react'
+import { Brain, Cloud, GitBranch, Hammer, HeartPulse, Languages, Library, ListTodo, Settings2, Sparkles, Users, Workflow } from 'lucide-react'
 import type { Locale, TranslationKey } from '../i18n'
 import { t } from '../i18n'
 
-export type Page = 'octa' | 'jobs' | 'workflows' | 'skills' | 'brain' | 'map' | 'builds' | 'health' | 'settings'
+export type Page = 'octa' | 'jobs' | 'tasks' | 'clients' | 'workflows' | 'skills' | 'brain' | 'map' | 'builds' | 'health' | 'settings'
 
 export function Sidebar({
   page,
@@ -48,6 +48,24 @@ export function Sidebar({
         >
           <ListTodo size={18} aria-hidden="true" />
           <span>{label('jobs')}</span>
+        </button>
+        <button
+          aria-current={page === 'tasks' ? 'page' : undefined}
+          className={`nav-item ${page === 'tasks' ? 'active' : ''}`}
+          onClick={() => onChange('tasks')}
+          type="button"
+        >
+          <ListTodo size={18} aria-hidden="true" />
+          <span>{label('tasksNav')}</span>
+        </button>
+        <button
+          aria-current={page === 'clients' ? 'page' : undefined}
+          className={`nav-item ${page === 'clients' ? 'active' : ''}`}
+          onClick={() => onChange('clients')}
+          type="button"
+        >
+          <Users size={18} aria-hidden="true" />
+          <span>{label('clientsNav')}</span>
         </button>
         <button
           aria-current={page === 'workflows' ? 'page' : undefined}

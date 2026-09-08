@@ -71,8 +71,7 @@
       "needs": ["s5"],
       "gate": "approve",
       "autonomy": "assisted",
-      "acceptance": ["Tasks and the knowledge edit are prepared only after go."],
-      "todo": true
+      "acceptance": ["Tasks and the knowledge edit are prepared only after go."]
     }
   ]
 }

@@ -540,4 +540,6 @@ export const ar = {
   workflowStarted: 'Workflow {id} started. / بدأ المسار {id}.',
   workflowGateExpires: 'Expires {date} / تنتهي {date}',
   workflowRunStatus: 'Run status / حالة التشغيل',
+  tasksNav: 'Tasks / المهام',
+  clientsNav: 'Clients / العملاء',
 } as const
