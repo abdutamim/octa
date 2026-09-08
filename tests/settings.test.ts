@@ -66,6 +66,37 @@ describe('SQLite app settings', () => {
     })
   })
 
+  it('persists the voice model, wake-word, and trigger settings', () => {
+    repository = new SettingsRepository(':memory:')
+    const next = repository.setSettings({
+      geminiLiveModelOverride: 'gemini-live-custom',
+      wakeWordModelPath: 'D:\\Octa\\models\\octa.onnx',
+      wakeWordSensitivity: 0.72,
+      pushToTalkEnabled: false,
+      pushToTalkKey: 'CommandOrControl+Shift+V',
+      triggerType: 'keyboard',
+      wakeGreeting: 'Ready?'
+    })
+    expect(next).toMatchObject({
+      geminiLiveModelOverride: 'gemini-live-custom',
+      wakeWordModelPath: 'D:\\Octa\\models\\octa.onnx',
+      wakeWordSensitivity: 0.72,
+      pushToTalkEnabled: false,
+      pushToTalkKey: 'CommandOrControl+Shift+V',
+      hotkey: 'CommandOrControl+Shift+V',
+      wakeGreeting: 'Ready?'
+    })
+  })
+
+  it('migrates the copied trigger hotkey into the PTT setting', () => {
+    repository = new SettingsRepository(':memory:')
+    repository.setSettings({ hotkey: 'CommandOrControl+Shift+M' })
+    expect(repository.getSettings()).toMatchObject({
+      hotkey: 'CommandOrControl+Shift+M',
+      pushToTalkKey: 'CommandOrControl+Shift+M'
+    })
+  })
+
   it('rejects unsafe ntfy URLs and ignores unknown keys', () => {
     repository = new SettingsRepository(':memory:')
     repository.setSettings({ ntfyServer: 'file:///private', ntfyTopic: 'x'.repeat(400) })

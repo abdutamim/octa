@@ -9,6 +9,9 @@ import { JobsPage } from './components/JobsPage'
 import { MapPage } from './components/MapPage'
 import { SkillsPage } from './components/SkillsPage'
 import { Sidebar, type Page } from './components/Sidebar'
+import { VoiceBar } from './components/VoiceBar'
+import { VoiceAudioPlayback } from './components/VoiceAudioPlayback'
+import { VoiceInputBridge } from './components/VoiceInputBridge'
 
 export function App(): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
@@ -61,9 +64,12 @@ export function App(): React.JSX.Element {
 
   return (
     <div className="app-shell">
+      <VoiceAudioPlayback />
+      <VoiceInputBridge enabled={settings.wakeWordEnabled || settings.pushToTalkEnabled} />
       <div className="workspace">
         <Sidebar page={page} locale={locale} onChange={setPage} onToggleLocale={toggleLocale} />
         <section className="content">
+          <VoiceBar locale={locale} />
           {page === 'settings' && (
             <SettingsPage
               settings={settings}
