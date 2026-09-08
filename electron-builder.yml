@@ -1,0 +1,37 @@
+appId: com.octa.assistant
+productName: Octa Assistant
+copyright: Copyright 2026 Octa contributors
+directories:
+  output: release
+files:
+  - out/**/*
+  - package.json
+  - "!node_modules/uiohook-napi/prebuilds/darwin-*/**"
+  - "!node_modules/uiohook-napi/prebuilds/linux-*/**"
+  - "!node_modules/uiohook-napi/prebuilds/win32-arm64/**"
+asar: true
+asarUnpack:
+  - node_modules/better-sqlite3/**/*
+  - node_modules/uiohook-napi/**/*
+  - node_modules/onnxruntime-node/**/*
+  - node_modules/ffmpeg-static/**/*
+npmRebuild: false
+win:
+  icon: installer/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: Octa-Assistant-Setup-${version}.${ext}
+  requestedExecutionLevel: asInvoker
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Octa Assistant
+  deleteAppDataOnUninstall: false
+  include: installer/installer.nsh
+  installerIcon: installer/icon.ico
+  uninstallerIcon: installer/icon.ico
+compression: normal

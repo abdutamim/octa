@@ -233,6 +233,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
 
 export interface RendererState {
   settings: AppSettings
+  firstRun: boolean
+  version: string
 }
 
 export interface VaultHit {

@@ -17,6 +17,12 @@ import type {
 } from './core/octa/research'
 import type { BuildEvent, BuildState } from './core/octa/build'
 import type {
+  GuidedInstallKind,
+  GuidedInstallResult,
+  HealthOutputStream,
+  HealthReport
+} from './core/octa/health'
+import type {
   AiTestResult,
   AppSettings,
   JobEvent,
@@ -35,6 +41,19 @@ const api = {
   settings: {
     update: (update: Partial<AppSettings>): Promise<AppSettings> =>
       ipcRenderer.invoke('settings:update', update)
+  },
+  firstRun: {
+    complete: (): Promise<RendererState> => ipcRenderer.invoke('first-run:complete')
+  },
+  health: {
+    run: (): Promise<HealthReport> => ipcRenderer.invoke('health:run'),
+    install: (kind: GuidedInstallKind): Promise<GuidedInstallResult> =>
+      ipcRenderer.invoke('health:install', kind),
+    onInstallOutput: (listener: (event: { kind: GuidedInstallKind; stream: HealthOutputStream; text: string }) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, output: { kind: GuidedInstallKind; stream: HealthOutputStream; text: string }): void => listener(output)
+      ipcRenderer.on('health:install-output', wrapped)
+      return () => ipcRenderer.removeListener('health:install-output', wrapped)
+    }
   },
   ai: {
     test: (): Promise<AiTestResult> => ipcRenderer.invoke('ai:test')
