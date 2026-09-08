@@ -1,0 +1,55 @@
+{
+  "id": "W6",
+  "name": "research",
+  "version": 1,
+  "description": "Frame a question, gather multilingual evidence, produce a report, and save a knowledge proposal.",
+  "autonomy": "assisted",
+  "acceptance": [
+    "The evidence pack contains at least 100 distinct URLs across at least 40 domains.",
+    "The evidence pack contains at least two material languages with at least ten sources each.",
+    "The report is written in the conversation language and every claim cites the ledger."
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "runner": "codex-exec",
+      "prompt": "Frame the research question, decision, definition of done, and multilingual query plan. Write out/frame.md.",
+      "input": { "topic": "{{brief.text}}" },
+      "needs": [],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["The research question and language plan are explicit."]
+    },
+    {
+      "id": "s2",
+      "runner": "codex-scout",
+      "input": { "task": "{{brief.text}}", "frame": "{{steps.s1.out}}" },
+      "needs": ["s1"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["At least 100 distinct URLs and 40 domains pass the research depth gate.", "Every material language has at least ten sources."],
+      "research": true,
+      "timeBudgetMs": 2700000
+    },
+    {
+      "id": "s3",
+      "runner": "codex-exec",
+      "prompt": "Read the evidence report, check its source ledger, and write a concise answer-first summary to out/summary.md in the conversation language.",
+      "input": { "report": "{{steps.s2.out.reportPath}}", "evidence": "{{steps.s2.out}}" },
+      "needs": ["s2"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["The summary cites the evidence ledger and matches the conversation language."]
+    },
+    {
+      "id": "s4",
+      "runner": "codex-exec",
+      "prompt": "Write out/knowledge-proposal.md with the research answer, source path, and where it belongs under knowledge/personas, knowledge/competitors, or knowledge/projects. Do not edit the vault directly.",
+      "input": { "topic": "{{brief.text}}", "summary": "{{steps.s3.out}}", "report": "{{steps.s2.out.reportPath}}" },
+      "needs": ["s3"],
+      "gate": "none",
+      "autonomy": "assisted",
+      "acceptance": ["A knowledge proposal points to the evidence and target knowledge folder."]
+    }
+  ]
+}

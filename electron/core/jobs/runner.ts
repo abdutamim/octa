@@ -43,7 +43,7 @@ const RATE_LIMIT_RETRY_DELAYS_MS = {
   codex: 15 * 60_000
 } as const
 
-const JOB_RESULT_STATUSES = ['ok', 'failed', 'needs_approval', 'needs_input', 'cancelled'] as const
+const JOB_RESULT_STATUSES = ['ok', 'failed', 'needs_approval', 'needs_input', 'cancelled', 'stale'] as const
 type FinalJobStatus = (typeof JOB_RESULT_STATUSES)[number]
 
 export interface JobSpec extends JobStartRequest {
@@ -709,6 +709,13 @@ function renderBrief(spec: JobSpec): string {
   return `# Octa job brief\n\n${brief}${input}\n`
 }
 
+function renderStepInstructions(spec: JobSpec): string {
+  const brief = spec.brief?.trim()
+  const prompt = spec.prompt?.trim()
+  if (!brief || !prompt || brief === prompt) return ''
+  return `\n\n## Step instructions\n\n${prompt}\n`
+}
+
 function renderKnowledge(knowledgePath?: string): string {
   if (!knowledgePath || !existsSync(knowledgePath)) return ''
   const files = ['company.md', 'voice.md', 'icp.md', 'pricing.md']
@@ -748,7 +755,7 @@ function renderPrompt(
     ? `\n\n# Inlined SKILL.md (${skill.entry.name})\n\n${skill.skillMarkdown}`
     : ''
   const retry = retryError ? `\n\n## Previous attempt error\n\n${retryError}\nFix the error and retry the same job.` : ''
-  return `<octa>\nYou are running inside Octa Assistant. Reply in ${language}.\nCompany brain follows; treat it as ground truth and never contradict it.${renderKnowledge(spec.knowledgePath)}\nSkill to execute: ${spec.skill ?? 'the assigned job'}. Write deliverables to ./out. Do not send, publish, or pay; write what you would send to ./out and set status needs_approval. When information is missing, do not invent it: return status needs_input with questions[]. Finish by writing result.json matching the schema in ./contract.json.\nJob folder: ${folder}\n</octa>\n\n${renderBrief(spec)}${skillText}${retry}${renderReviewFeedback(review)}\n`
+  return `<octa>\nYou are running inside Octa Assistant. Reply in ${language}.\nCompany brain follows; treat it as ground truth and never contradict it.${renderKnowledge(spec.knowledgePath)}\nSkill to execute: ${spec.skill ?? 'the assigned job'}. Write deliverables to ./out. Do not send, publish, or pay; write what you would send to ./out and set status needs_approval. When information is missing, do not invent it: return status needs_input with questions[]. Finish by writing result.json matching the schema in ./contract.json.\nJob folder: ${folder}\n</octa>\n\n${renderBrief(spec)}${renderStepInstructions(spec)}${skillText}${retry}${renderReviewFeedback(review)}\n`
 }
 
 function writeJobFiles(folder: string, spec: JobSpec): void {
@@ -1139,6 +1146,7 @@ export class JobRunner {
     }
     this.jobs?.createJob({
       id,
+      workflowRunId: spec.workflowRunId,
       planId: spec.planId,
       workflow: spec.workflow,
       stepId: spec.stepId,
@@ -1268,6 +1276,7 @@ export class JobRunner {
           && !active.cancelled
           && !active.timedOut
           && !active.overBudget
+          && !active.spec.skipReview
           && !outcome.error
           && outcome.exitCode === 0
         if (shouldReview) {

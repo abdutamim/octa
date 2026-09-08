@@ -10,10 +10,10 @@ Return `pass` only when every acceptance criterion is met. If any criterion is n
 {"criterion":"the exact acceptance line","detail":"what failed and where","severity":"low|medium|high|critical"}
 ```
 
-Never rewrite the deliverable as part of review. Only when a correction is trivial, unambiguous, and safe may you write the corrected file; in that case set `fixed_output_path` to the corrected output path. Do not use that field when no file was written.
+Never rewrite the deliverable as part of review. Only when a correction is trivial, unambiguous, and safe may you write the corrected file; in that case set `fixed_output_path` to the corrected output path. When no file was written, set `fixed_output_path` to null.
 
 Return only JSON matching `review.schema.json`:
 
 ```json
-{"verdict":"pass|revise","issues":[{"criterion":"...","detail":"...","severity":"..."}],"fixed_output_path":"..."}
+{"verdict":"pass|revise","issues":[{"criterion":"...","detail":"...","severity":"..."}],"fixed_output_path":"..."|null}
 ```

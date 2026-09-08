@@ -89,6 +89,7 @@ export function App(): React.JSX.Element {
           {page === 'workflows' && <WorkflowsPage locale={locale} />}
           {page === 'skills' && <SkillsPage locale={locale} />}
           {page === 'builds' && <BuildsPage locale={locale} />}
+          {page === 'workflows' && <WorkflowsPage locale={locale} />}
         </section>
       </div>
     </div>

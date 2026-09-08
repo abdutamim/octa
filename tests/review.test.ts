@@ -62,7 +62,11 @@ describe('Sol reviewer step', () => {
     )
 
     expect(review).toEqual({ verdict: 'pass', issues: [] })
-    expect(existsSync(join(temporaryDirectory, 'review.schema.json'))).toBe(true)
+    const schemaPath = join(temporaryDirectory, 'review.schema.json')
+    expect(existsSync(schemaPath)).toBe(true)
+    const schema = JSON.parse(readFileSync(schemaPath, 'utf8')) as { required: string[]; properties: { fixed_output_path: { type: string[] } } }
+    expect(schema.required).toContain('fixed_output_path')
+    expect(schema.properties.fixed_output_path.type).toEqual(['string', 'null'])
   })
 })
 
