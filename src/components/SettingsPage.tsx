@@ -4,6 +4,7 @@ import {
   Check,
   Cloud,
   FolderOpen,
+  Github,
   Globe2,
   HeartPulse,
   KeyRound,
@@ -370,6 +371,15 @@ export function SettingsPage({
             </SettingField>
             <SettingField icon={<Wrench size={18} />} label={label('photoshopPath')} detail={label('photoshopPathDetail')}>
               <input aria-label={label('photoshopPath')} onChange={(event) => setValue('photoshopPath', event.target.value)} placeholder={label('photoshopPathPlaceholder')} spellCheck={false} value={draft.photoshopPath} />
+            </SettingField>
+          </div>
+        </section>
+
+        <section className="settings-section">
+          <SectionHeading icon={<Github size={19} />} title={label('updatesSection')} detail={label('updatesSectionDetail')} />
+          <div className="settings-fields">
+            <SettingField icon={<Github size={18} />} label={label('updateRepository')} detail={label('updateRepositoryDetail')}>
+              <input aria-label={label('updateRepository')} onChange={(event) => setValue('updateRepository', event.target.value)} placeholder={label('updateRepositoryPlaceholder')} spellCheck={false} value={draft.updateRepository} />
             </SettingField>
           </div>
         </section>

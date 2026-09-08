@@ -177,6 +177,12 @@ input, select { user-select: text; }
 
 .settings-heading-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 9px; }
 .settings-version { color: var(--faint); font-family: "Cascadia Mono", Consolas, monospace; font-size: 9px; }
+.update-banner { display: flex; align-items: center; justify-content: space-between; gap: 14px; max-width: 1080px; margin: 0 auto 14px; padding: 12px 15px; border: 1px solid rgba(224, 185, 108, 0.28); border-radius: 13px; background: linear-gradient(135deg, rgba(224, 185, 108, 0.12), rgba(127, 31, 69, 0.16)); }
+.update-banner-copy { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.update-banner-copy strong { color: var(--cream); font-size: 11px; }
+.update-banner-copy span { color: var(--muted); font-size: 9px; line-height: 1.45; }
+.update-banner-link { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; min-height: 31px; padding: 0 12px; border: 1px solid rgba(224, 185, 108, 0.38); border-radius: 9px; color: #fff3e1; background: rgba(127, 31, 69, 0.68); font-size: 9px; font-weight: 800; text-decoration: none; }
+.update-banner-link:hover { filter: brightness(1.12); }
 
 /* Health is deliberately a readable diagnostic list: one source of truth,
    one row per dependency, and the recovery action beside the failure. */
@@ -243,6 +249,13 @@ input, select { user-select: text; }
 .first-run-form, .first-run-research { display: flex; min-width: 0; flex-direction: column; gap: 13px; }
 .first-run-form-intro { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 3px; color: var(--burgundy-light); }
 .first-run-form-intro p { max-width: 620px; margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.first-run-done-note { margin-bottom: 2px; }
+.first-run-language-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.first-run-language-option { display: flex; min-height: 105px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 7px; padding: 16px; border: 1px solid var(--line); border-radius: 13px; color: var(--cream-soft); background: rgba(127, 31, 69, 0.08); text-align: start; }
+.first-run-language-option:hover, .first-run-language-option.selected { border-color: rgba(200, 91, 128, 0.52); background: rgba(127, 31, 69, 0.24); }
+.first-run-language-option strong { color: var(--ink); font-size: 13px; }
+.first-run-language-option span { color: var(--muted); font-size: 10px; }
+.first-run-language-option svg { margin-top: 2px; color: var(--success); }
 .first-run-field { display: grid; grid-template-columns: minmax(145px, 0.7fr) minmax(190px, 1fr); align-items: center; gap: 3px 15px; padding: 10px 0; border-bottom: 1px solid rgba(240, 223, 188, 0.055); }
 .first-run-field-label { color: var(--cream-soft); font-size: 10px; font-weight: 700; }
 .first-run-field-label b { color: var(--danger); }
@@ -280,12 +293,14 @@ input, select { user-select: text; }
   .health-page > .page-heading { align-items: flex-start; }
   .health-context, .health-summary, .health-row { padding-inline: 16px; }
   .health-row-copy small { white-space: normal; }
+  .update-banner { align-items: stretch; flex-direction: column; }
+  .update-banner-link { width: 100%; }
   .first-run-shell { display: block; padding: 12px; }
   .first-run-panel { display: flex; min-height: calc(100vh - 24px); flex-direction: column; border-radius: 16px; }
   .first-run-rail { padding: 18px; border-inline-end: 0; border-bottom: 1px solid var(--line); }
   .first-run-rail-copy { margin: 18px 0; }
   .first-run-rail-copy > span { font-size: 20px; }
-  .first-run-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  .first-run-steps { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
   .first-run-steps li button { justify-content: center; padding: 7px 3px; }
   .first-run-steps li button > span { width: 20px; height: 20px; flex-basis: 20px; }
   .first-run-steps li button { font-size: 0; }

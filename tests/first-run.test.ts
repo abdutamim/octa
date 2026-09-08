@@ -12,24 +12,30 @@ import {
 } from '../src/components/FirstRun'
 
 describe('first-run wizard state machine', () => {
-  it('advances through credentials, paths, research, and health without overshooting', () => {
-    expect(FIRST_RUN_STEPS).toEqual(['credentials', 'paths', 'research', 'health'])
-    expect(nextFirstRunStep('credentials')).toBe('paths')
-    expect(nextFirstRunStep('health')).toBe('health')
-    expect(previousFirstRunStep('credentials')).toBe('credentials')
-    expect(previousFirstRunStep('health')).toBe('research')
+  it('keeps the final setup order and does not overshoot the done page', () => {
+    expect(FIRST_RUN_STEPS).toEqual(['language', 'credentials', 'paths', 'health', 'research', 'photoshop', 'done'])
+    expect(nextFirstRunStep('language')).toBe('credentials')
+    expect(nextFirstRunStep('health')).toBe('research')
+    expect(nextFirstRunStep('photoshop')).toBe('done')
+    expect(nextFirstRunStep('done')).toBe('done')
+    expect(previousFirstRunStep('language')).toBe('language')
+    expect(previousFirstRunStep('health')).toBe('paths')
+    expect(previousFirstRunStep('done')).toBe('photoshop')
 
-    const paths = firstRunReducer(INITIAL_FIRST_RUN_STATE, { type: 'next' })
-    const research = firstRunReducer(paths, { type: 'next' })
-    const health = firstRunReducer(research, { type: 'next' })
-    expect(health).toEqual({ step: 'health', completed: false })
-    expect(firstRunReducer(health, { type: 'complete' })).toEqual({ step: 'health', completed: true })
+    const credentials = firstRunReducer(INITIAL_FIRST_RUN_STATE, { type: 'next' })
+    const paths = firstRunReducer(credentials, { type: 'next' })
+    const health = firstRunReducer(paths, { type: 'next' })
+    const research = firstRunReducer(health, { type: 'next' })
+    const photoshop = firstRunReducer(research, { type: 'next' })
+    const done = firstRunReducer(photoshop, { type: 'next' })
+    expect(done).toEqual({ step: 'done', completed: false })
+    expect(firstRunReducer(done, { type: 'complete' })).toEqual({ step: 'done', completed: true })
     expect(firstRunReducer(health, { type: 'reset' })).toEqual(INITIAL_FIRST_RUN_STATE)
   })
 
   it('supports explicit navigation back to completed steps and forward to a selected step', () => {
     const state = firstRunReducer(firstRunReducer(INITIAL_FIRST_RUN_STATE, { type: 'next' }), { type: 'next' })
-    expect(firstRunReducer(state, { type: 'go-to', step: 'credentials' }).step).toBe('credentials')
+    expect(firstRunReducer(state, { type: 'go-to', step: 'language' }).step).toBe('language')
     expect(firstRunReducer(state, { type: 'go-to', step: 'health' }).step).toBe('health')
   })
 
@@ -41,11 +47,11 @@ describe('first-run wizard state machine', () => {
       onRunHealth: vi.fn(async () => ({ ok: true, checkedAt: new Date(0).toISOString(), checks: [] })),
       onUpdate: vi.fn(async () => DEFAULT_SETTINGS),
       required: true,
-      settings: DEFAULT_SETTINGS
+      settings: { ...DEFAULT_SETTINGS, locale: 'en' }
     }))
     expect(html).toContain('Welcome to Octa')
-    expect(html).toContain('Gemini API key')
-    expect(html).toContain('Step 1 of 4')
+    expect(html).toContain('Language')
+    expect(html).toContain('Step 1 of 7')
     expect(html).toContain('Save and continue')
     expect(html).toContain('Skip for now')
   })

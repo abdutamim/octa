@@ -1,0 +1,65 @@
+title = "Octa secret scanning"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "octa-google-ai-studio-key"
+description = "Google AI Studio API key"
+regex = '''\bAIza[0-9A-Za-z_-]{20,}\b'''
+keywords = ["AIza"]
+
+[[rules]]
+id = "octa-brave-search-key"
+description = "Brave Search API key"
+regex = '''\bBSA[0-9A-Za-z_-]{20,}\b'''
+keywords = ["BSA"]
+
+[[rules]]
+id = "octa-groq-key"
+description = "Groq API key"
+regex = '''\bgsk_[0-9A-Za-z_-]{20,}\b'''
+keywords = ["gsk_"]
+
+[[rules]]
+id = "octa-openai-key"
+description = "OpenAI API key"
+regex = '''\bsk-(?:proj-)?[0-9A-Za-z_-]{20,}\b'''
+keywords = ["sk-"]
+
+[[rules]]
+id = "octa-anthropic-key"
+description = "Anthropic API key"
+regex = '''\bsk-ant-[0-9A-Za-z_-]{20,}\b'''
+keywords = ["sk-ant-"]
+
+[[rules]]
+id = "octa-github-token"
+description = "GitHub access token"
+regex = '''\b(?:ghp|gho|ghu|ghs|ghr)_[0-9A-Za-z_]{20,}\b|\bgithub_pat_[0-9A-Za-z_]{20,}\b'''
+keywords = ["ghp_", "github_pat_"]
+
+[[rules]]
+id = "octa-private-key"
+description = "Private key material"
+regex = '''-----BEGIN [A-Z0-9 ]+ PRIVATE KEY-----'''
+keywords = ["PRIVATE KEY"]
+
+[[rules]]
+id = "octa-configured-secret"
+description = "A non-empty Octa credential assignment"
+regex = '''(?im)\b(?:GEMINI_API_KEY|GROQ_API_KEY|BRAVE_SEARCH_API_KEY|NTFY_TOPIC|VERTEX_SERVICE_ACCOUNT_JSON)\b\s*[:=]\s*["']?[^\s#"']{16,}'''
+keywords = ["GEMINI_API_KEY", "GROQ_API_KEY", "BRAVE_SEARCH_API_KEY", "NTFY_TOPIC"]
+
+[allowlist]
+description = "Ignore explicit placeholders used in documentation examples"
+regexTarget = "line"
+regexes = [
+  '''(?i)Authorization:\s*Bearer\s+YOUR_API_TOKEN''',
+  '''(?i)API_KEY"?\s*:\s*"\[[A-Z_]+\]"''',
+  '''(?i)apiKey\s*=\s*\[[A-Z_]+\]''',
+  '''(?i)API_KEY"?\s*:\s*"[a-z]{2}_[a-z]{4}_[a-z]{3}\d{3}"''',
+  '''(?i)apiKey\s*=\s*['"]?[a-z]{2}_[a-z]{4}_[a-z]{3}\d{3}''',
+  '''(?i)API_KEY"?\s*:\s*"[a-z]{2}-[a-z]{4}-[a-z]{3}\d{3}\.\.\."'''
+]
+stopwords = ["REDACTED", "<API_TOKEN>", "YOUR_SEARCH_API_KEY"]

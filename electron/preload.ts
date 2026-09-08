@@ -43,10 +43,15 @@ import type {
   VoiceState,
   VoiceTranscriptEvent
 } from './types'
+import type { UpdateCheckResult } from './core/octa/update'
 import type { ApprovalResult } from './core/voice/readback'
 
 const api = {
   state: (): Promise<RendererState> => ipcRenderer.invoke('app:state'),
+  update: {
+    check: (): Promise<UpdateCheckResult> => ipcRenderer.invoke('app:update:check'),
+    open: (url: string): Promise<void> => ipcRenderer.invoke('app:update:open', url)
+  },
   settings: {
     update: (update: Partial<AppSettings>): Promise<AppSettings> =>
       ipcRenderer.invoke('settings:update', update)
