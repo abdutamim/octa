@@ -2,6 +2,31 @@ export type ThemeMode = 'dark' | 'light'
 export type Locale = 'ar' | 'en'
 export type AiProvider = 'gemini' | 'vertex'
 export type TranscriptionLanguage = 'auto' | 'ar' | 'en'
+export type TriggerType = 'keyboard' | 'mouse'
+export type MouseTriggerButton = 3 | 4 | 5
+export type VoiceLanguage = 'ar-EG' | 'en' | 'mixed'
+export type VoicePhase = 'idle' | 'listening' | 'thinking' | 'speaking' | 'error'
+
+export interface VoiceState {
+  phase: VoicePhase
+  source: 'wake-word' | 'push-to-talk' | null
+  transcript: string
+  language: VoiceLanguage | null
+  model: string | null
+  error?: string
+}
+
+export interface VoiceTranscriptEvent {
+  text: string
+  final: boolean
+  source: 'user' | 'assistant'
+  languageHint?: string
+}
+
+export interface VoiceAudioEvent {
+  data: string
+  mimeType: string
+}
 
 export type JobRunnerName =
   | 'claude-plan'
@@ -161,6 +186,20 @@ export interface AppSettings {
   braveSearchApiKey: string
   theme: ThemeMode
   locale: Locale
+  /** The most recently selected native-audio model returned by the model list. */
+  geminiLiveModel: string
+  /** A non-empty value wins over automatic model selection. */
+  geminiLiveModelOverride: string
+  wakeWordEnabled: boolean
+  wakeWordModelPath: string
+  wakeWordSensitivity: number
+  pushToTalkEnabled: boolean
+  pushToTalkKey: string
+  /** Compatibility alias used by the copied global trigger module. */
+  hotkey: string
+  triggerType: TriggerType
+  mouseButton: MouseTriggerButton
+  wakeGreeting: string
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -178,7 +217,18 @@ export const DEFAULT_SETTINGS: AppSettings = {
   photoshopPath: '',
   braveSearchApiKey: '',
   theme: 'dark',
-  locale: 'ar'
+  locale: 'ar',
+  geminiLiveModel: '',
+  geminiLiveModelOverride: '',
+  wakeWordEnabled: true,
+  wakeWordModelPath: 'C:\\Octa\\models\\octa.onnx',
+  wakeWordSensitivity: 0.55,
+  pushToTalkEnabled: true,
+  pushToTalkKey: 'CommandOrControl+Alt+Space',
+  hotkey: 'CommandOrControl+Alt+Space',
+  triggerType: 'keyboard',
+  mouseButton: 4,
+  wakeGreeting: 'إيه يا عميل، عايز إيه؟'
 }
 
 export interface RendererState {

@@ -22,8 +22,12 @@ import type {
   JobRecord,
   JobStartRequest,
   JobStartResponse,
-  RendererState
+  RendererState,
+  VoiceAudioEvent,
+  VoiceState,
+  VoiceTranscriptEvent
 } from './types'
+import type { ApprovalResult } from './core/voice/readback'
 
 const api = {
   state: (): Promise<RendererState> => ipcRenderer.invoke('app:state'),
@@ -100,6 +104,44 @@ const api = {
       const wrapped = (_event: Electron.IpcRendererEvent, browserEvent: BrowserChallengeEvent): void => listener(browserEvent)
       ipcRenderer.on('browser:challenge', wrapped)
       return () => ipcRenderer.removeListener('browser:challenge', wrapped)
+    }
+  },
+  voice: {
+    state: (): Promise<VoiceState> => ipcRenderer.invoke('voice:state'),
+    toggle: (): Promise<VoiceState> => ipcRenderer.invoke('voice:toggle'),
+    pushToTalk: (): Promise<VoiceState> => ipcRenderer.invoke('voice:push-to-talk'),
+    stop: (): Promise<VoiceState> => ipcRenderer.invoke('voice:stop'),
+    interrupt: (): Promise<VoiceState> => ipcRenderer.invoke('voice:interrupt'),
+    pcm: (pcm: ArrayBuffer): void => ipcRenderer.send('voice:pcm', pcm),
+    microphoneError: (message: string): void => ipcRenderer.send('voice:microphone-error', message),
+    readBack: (payload: unknown, text: string, gateId?: string): Promise<void> =>
+      ipcRenderer.invoke('voice:readback', { payload, text, gateId }),
+    approve: (transcript: string): Promise<ApprovalResult> =>
+      ipcRenderer.invoke('voice:approve', transcript),
+    onState: (listener: (state: VoiceState) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, state: VoiceState): void => listener(state)
+      ipcRenderer.on('voice:state', wrapped)
+      return () => ipcRenderer.removeListener('voice:state', wrapped)
+    },
+    onTranscript: (listener: (event: VoiceTranscriptEvent) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, transcript: VoiceTranscriptEvent): void => listener(transcript)
+      ipcRenderer.on('voice:transcript', wrapped)
+      return () => ipcRenderer.removeListener('voice:transcript', wrapped)
+    },
+    onAudio: (listener: (event: VoiceAudioEvent) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, audio: VoiceAudioEvent): void => listener(audio)
+      ipcRenderer.on('voice:audio', wrapped)
+      return () => ipcRenderer.removeListener('voice:audio', wrapped)
+    },
+    onAudioStop: (listener: () => void): (() => void) => {
+      const wrapped = (): void => listener()
+      ipcRenderer.on('voice:audio-stop', wrapped)
+      return () => ipcRenderer.removeListener('voice:audio-stop', wrapped)
+    },
+    onMessage: (listener: (message: string) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, message: string): void => listener(message)
+      ipcRenderer.on('voice:message', wrapped)
+      return () => ipcRenderer.removeListener('voice:message', wrapped)
     }
   },
   window: {
