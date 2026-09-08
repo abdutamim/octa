@@ -7,6 +7,7 @@ import {
   FolderCog,
   Globe2,
   KeyRound,
+  Languages,
   LogIn,
   RefreshCw,
   ShieldCheck,
@@ -24,7 +25,7 @@ import type { Locale, TranslationKey } from '../i18n'
 import { t } from '../i18n'
 import { HealthPage, type HealthInstallOutput } from './HealthPage'
 
-export const FIRST_RUN_STEPS = ['credentials', 'paths', 'research', 'health'] as const
+export const FIRST_RUN_STEPS = ['language', 'credentials', 'paths', 'health', 'research', 'photoshop', 'done'] as const
 export type FirstRunStep = (typeof FIRST_RUN_STEPS)[number]
 
 export interface FirstRunState {
@@ -39,7 +40,7 @@ export type FirstRunAction =
   | { type: 'complete' }
   | { type: 'reset' }
 
-export const INITIAL_FIRST_RUN_STATE: FirstRunState = { step: 'credentials', completed: false }
+export const INITIAL_FIRST_RUN_STATE: FirstRunState = { step: 'language', completed: false }
 
 export function nextFirstRunStep(step: FirstRunStep): FirstRunStep {
   const index = FIRST_RUN_STEPS.indexOf(step)
@@ -89,10 +90,13 @@ function siteLabelKey(site: ResearchLoginSite): TranslationKey {
 }
 
 const STEP_LABELS: Record<FirstRunStep, TranslationKey> = {
+  language: 'firstRunLanguage',
   credentials: 'firstRunCredentials',
   paths: 'firstRunPaths',
+  health: 'firstRunHealth',
   research: 'firstRunResearch',
-  health: 'firstRunHealth'
+  photoshop: 'firstRunPhotoshop',
+  done: 'firstRunDone'
 }
 
 function Field({
@@ -149,9 +153,16 @@ export function FirstRun({
   const [loginPending, setLoginPending] = useState<ResearchLoginSite | null>(null)
   const [researchError, setResearchError] = useState('')
 
-  const label = (key: TranslationKey): string => t(key, locale)
+  const wizardLocale = draft.locale || locale
+  const label = (key: TranslationKey): string => t(key, wizardLocale)
 
   useEffect(() => setDraft(settings), [settings])
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    document.documentElement.lang = wizardLocale
+    document.documentElement.dir = wizardLocale === 'ar' ? 'rtl' : 'ltr'
+  }, [wizardLocale])
 
   const updateDraft = <K extends keyof AppSettings>(key: K, value: AppSettings[K]): void => {
     setDraft((current) => ({ ...current, [key]: value }))
@@ -174,7 +185,7 @@ export function FirstRun({
   }
 
   const goNext = async (): Promise<void> => {
-    if (state.step === 'credentials' || state.step === 'paths') {
+    if (state.step === 'language' || state.step === 'credentials' || state.step === 'paths' || state.step === 'photoshop') {
       if (!await saveDraft()) return
     }
     dispatch({ type: 'next' })
@@ -278,8 +289,34 @@ export function FirstRun({
       <div className="first-run-form-intro"><FolderCog size={18} aria-hidden="true" /><p>{label('firstRunPathsDetail')}</p></div>
       <Field label={label('octaHomePath')} detail={label('octaHomePathDetail')} placeholder={label('octaHomePathPlaceholder')} required value={draft.octaHomePath} onChange={(value) => updateDraft('octaHomePath', value)} />
       <Field label={label('vaultPath')} detail={label('vaultPathDetail')} placeholder={label('vaultPathPlaceholder')} required value={draft.vaultPath} onChange={(value) => updateDraft('vaultPath', value)} />
-      <Field label={label('photoshopPath')} detail={label('photoshopPathDetail')} placeholder={label('photoshopPathPlaceholder')} value={draft.photoshopPath} onChange={(value) => updateDraft('photoshopPath', value)} />
       <Field label={label('wakeWordModelPath')} detail={label('wakeWordModelPathDetail')} value={draft.wakeWordModelPath} onChange={(value) => updateDraft('wakeWordModelPath', value)} />
+    </div>
+  )
+
+  const renderLanguage = (): React.JSX.Element => (
+    <div className="first-run-form">
+      <div className="first-run-form-intro"><Languages size={18} aria-hidden="true" /><p>{label('firstRunLanguageDetail')}</p></div>
+      <div aria-label={label('locale')} className="first-run-language-options" role="group">
+        {(['ar', 'en'] as const).map((choice) => (
+          <button
+            className={`first-run-language-option ${draft.locale === choice ? 'selected' : ''}`}
+            key={choice}
+            onClick={() => updateDraft('locale', choice)}
+            type="button"
+          >
+            <strong>{t(choice === 'ar' ? 'arabic' : 'english', 'ar')}</strong>
+            <span>{t(choice === 'ar' ? 'arabic' : 'english', 'en')}</span>
+            {draft.locale === choice && <Check size={15} aria-hidden="true" />}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+
+  const renderPhotoshop = (): React.JSX.Element => (
+    <div className="first-run-form">
+      <div className="first-run-form-intro"><FolderCog size={18} aria-hidden="true" /><p>{label('firstRunPhotoshopDetail')}</p></div>
+      <Field label={label('photoshopPath')} detail={label('photoshopPathDetail')} placeholder={label('photoshopPathPlaceholder')} value={draft.photoshopPath} onChange={(value) => updateDraft('photoshopPath', value)} />
       <div className="first-run-note"><ShieldCheck size={15} aria-hidden="true" /><span>{label('firstRunPhotoshopFallback')}</span></div>
     </div>
   )
@@ -309,25 +346,35 @@ export function FirstRun({
     </div>
   )
 
-  const content = state.step === 'credentials'
-    ? renderCredentials()
-    : state.step === 'paths'
+  const renderHealth = (done: boolean): React.JSX.Element => (
+    <>
+      {done && <div className="first-run-form-intro first-run-done-note"><ShieldCheck size={18} aria-hidden="true" /><p>{label('firstRunDoneDetail')}</p></div>}
+      <HealthPage
+        compact
+        key={state.step}
+        locale={wizardLocale}
+        onInstall={onInstall}
+        onInstallOutput={onInstallOutput}
+        onRun={onRunHealth}
+        settings={draft}
+      />
+    </>
+  )
+
+  const content = state.step === 'language'
+    ? renderLanguage()
+    : state.step === 'credentials'
+      ? renderCredentials()
+      : state.step === 'paths'
       ? renderPaths()
       : state.step === 'research'
         ? renderResearch()
-        : (
-          <HealthPage
-            compact
-            locale={locale}
-            onInstall={onInstall}
-            onInstallOutput={onInstallOutput}
-            onRun={onRunHealth}
-            settings={draft}
-          />
-        )
+      : state.step === 'photoshop'
+          ? renderPhotoshop()
+          : renderHealth(state.step === 'done')
 
   const stepIndex = FIRST_RUN_STEPS.indexOf(state.step)
-  const isHealth = state.step === 'health'
+  const isDone = state.step === 'done'
 
   return (
     <main className="first-run-shell">
@@ -358,7 +405,7 @@ export function FirstRun({
             <button className="quiet-button" disabled={saving || finishing} onClick={() => void skip()} type="button">{required ? label('firstRunSkip') : label('firstRunClose')}</button>
             <div className="first-run-nav">
               {stepIndex > 0 && <button className="quiet-button" disabled={saving || finishing} onClick={() => dispatch({ type: 'back' })} type="button"><ChevronLeft size={14} aria-hidden="true" />{label('firstRunBack')}</button>}
-              {isHealth ? (
+              {isDone ? (
                 <button className="accent-button" disabled={saving || finishing} onClick={() => void finish()} type="button"><ShieldCheck size={14} aria-hidden="true" />{finishing ? label('firstRunFinishing') : label('firstRunFinish')}</button>
               ) : (
                 <button className="accent-button" disabled={saving || finishing} onClick={() => void goNext()} type="button">{saving ? label('saving') : label('firstRunContinue')}<ChevronRight size={14} aria-hidden="true" /></button>
