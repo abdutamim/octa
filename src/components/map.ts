@@ -21,11 +21,11 @@ export type MapDepartment = (typeof MAP_DEPARTMENTS)[number]
 export type MapSkillStatus = 'never' | 'ok' | 'failed' | 'needs_approval' | 'running'
 
 export const MAP_STATUS_COLORS: Readonly<Record<MapSkillStatus, string>> = {
-  never: '#655462',
-  ok: '#87bd91',
-  failed: '#d67382',
-  needs_approval: '#c18fd0',
-  running: '#e0b96c'
+  never: '#746b7f',
+  ok: '#4ebe96',
+  failed: '#ff5c5c',
+  needs_approval: '#9d78d2',
+  running: '#479ffa'
 }
 
 const VISIBLE_VERDICTS = new Set(['core', 'keep', 'client'])

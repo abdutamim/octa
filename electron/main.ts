@@ -93,6 +93,7 @@ export function resolveOctaHome(environment: NodeJS.ProcessEnv = process.env): s
 const octaHome = resolveOctaHome()
 mkdirSync(octaHome, { recursive: true })
 app.setPath('userData', octaHome)
+app.setName('Octa')
 
 let mainWindow: BrowserWindow | undefined
 let overlayWindow: BrowserWindow | undefined
@@ -154,7 +155,7 @@ function runSmokeTest(): void {
     ok: true,
     failures: [],
     version: app.getVersion(),
-    product: 'Octa Assistant'
+    product: 'Octa'
   }, null, 2), 'utf8')
   // The smoke path intentionally bypasses Electron shutdown hooks. Packaged
   // Chromium helper processes can otherwise keep a child-process harness
@@ -180,8 +181,9 @@ function createWindow(): BrowserWindow {
     height: 780,
     minWidth: 900,
     minHeight: 620,
-    title: 'Octa Assistant',
-    backgroundColor: '#110a10',
+    title: 'Octa',
+    icon: join(app.getAppPath(), 'installer', 'icon.ico'),
+    backgroundColor: '#0d0913',
     webPreferences: {
       preload: join(__dirname, '../preload/preload.mjs'),
       contextIsolation: true,
@@ -742,7 +744,7 @@ function registerIpc(): void {
 
   ipcMain.handle('notify:test', () =>
     notifier?.send({
-      title: 'Octa Assistant / أوكتا',
+      title: 'Octa / أوكتا',
       body: 'Notifications are connected / الإشعارات متصلة',
       tags: ['octa']
     }) ?? false
@@ -1022,6 +1024,11 @@ function registerIpc(): void {
   ipcMain.handle('jobs:list', (_event, options?: { status?: string; limit?: number }): JobRecord[] => {
     if (!jobsRepository) throw new Error('Job storage is unavailable.')
     return jobsRepository.listJobs(options)
+  })
+
+  ipcMain.handle('plans:list', (_event, limit?: number) => {
+    if (!jobsRepository) throw new Error('Plan storage is unavailable.')
+    return jobsRepository.listPlans(typeof limit === 'number' ? limit : 5)
   })
 
   ipcMain.handle('jobs:get', (_event, id: string): JobRecord | null => {

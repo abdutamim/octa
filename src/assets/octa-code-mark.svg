@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Octa Code</title>
+  <desc id="desc">A geometric lavender octopus mark</desc>
+  <rect x="2" y="2" width="60" height="60" rx="18" fill="#241832"/>
+  <path d="M16 35C10 39 10 47 6 49M22 38C17 43 19 51 14 55M27 39C24 45 27 51 23 57M31 39C30 46 33 50 31 57M35 39C36 46 33 50 35 57M40 39C44 45 41 51 45 57M45 38C50 43 47 51 52 55M50 35C56 39 54 47 59 49" fill="none" stroke="#C8B2F2" stroke-width="5.5" stroke-linecap="round"/>
+  <path d="M13 29C13 17.4 21.5 9 32 9s19 8.4 19 20v5.5c0 5.2-4.3 9.5-9.5 9.5h-19C17.3 44 13 39.7 13 34.5V29Z" fill="#C8B2F2"/>
+  <rect x="21" y="24" width="7" height="7" rx="2.5" fill="#241832"/>
+  <rect x="36" y="24" width="7" height="7" rx="2.5" fill="#241832"/>
+  <path d="m27 37 3-3m7 3-3-3" fill="none" stroke="#70509F" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
