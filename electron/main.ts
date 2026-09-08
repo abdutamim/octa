@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Notification, screen, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Notification, screen, shell } from 'electron'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
@@ -14,6 +14,10 @@ import { VoiceController } from './core/dictation'
 import { CompanyBrain } from './core/octa/brain'
 import { IntakeInterview } from './core/octa/intake'
 import { BuildManager, type BuildStartRequest } from './core/octa/build'
+import { contractDocument, invoiceDocument, proposalDocument } from './core/documents'
+import { brandedDocument, PdfRenderer } from './core/pdf'
+import { TimeTracker } from './core/time-tracking'
+import { matchTaskTrigger, splitTitleAndNotes } from './core/task-trigger'
 import {
   runGuidedInstall,
   runHealthChecks,
@@ -31,6 +35,10 @@ import { Notifier } from './core/notify'
 import { requireAiAuth, resolveAiAuth } from './cloud/vertex'
 import { SettingsRepository } from './db/settings'
 import { JobsRepository } from './db/jobs'
+import { DocumentRepository } from './db/documents'
+import { OperationsRepository } from './db/operations'
+import { SocialQueueRepository } from './db/social-queue'
+import { TaskRepository } from './db/tasks'
 import { JobRunner, type JobSpec } from './core/jobs/runner'
 import { ConversationRepository } from './core/voice/conversation'
 import { WorkflowGateRegistry } from './core/voice/workflow-gate'
@@ -47,9 +55,18 @@ import {
 import type {
   AiTestResult,
   AppSettings,
+  ClientRecord,
+  DocumentBrand,
+  DocumentKind,
+  DocumentRecord,
+  InvoiceCurrency,
+  InvoiceRecord,
   JobRecord,
   JobStartResponse,
+  NewTask,
   RendererState,
+  TaskFilter,
+  TaskRecord,
   VoiceAudioEvent,
   VoiceState,
   VoiceTranscriptEvent
@@ -63,6 +80,7 @@ import {
   type WorkflowStartRequest,
   type WorkflowStartResponse
 } from './core/octa/workflows'
+import { createLaunchWorkflowHandlers } from './core/octa/launch-handlers'
 
 export const DEFAULT_OCTA_HOME = 'C:\\Octa'
 
@@ -79,6 +97,11 @@ let mainWindow: BrowserWindow | undefined
 let overlayWindow: BrowserWindow | undefined
 let repository: SettingsRepository | undefined
 let jobsRepository: JobsRepository | undefined
+let tasksRepository: TaskRepository | undefined
+let operationsRepository: OperationsRepository | undefined
+let documentsRepository: DocumentRepository | undefined
+let socialQueueRepository: SocialQueueRepository | undefined
+let timeTracker: TimeTracker | undefined
 let jobRunner: JobRunner | undefined
 let skillsRegistry: SkillRegistry | undefined
 let researchManager: ResearchManager | undefined
@@ -233,6 +256,18 @@ function emitVoiceState(state: VoiceState): void {
 
 function emitVoiceTranscript(event: VoiceTranscriptEvent): void {
   broadcast('voice:transcript', event)
+  if (!event.final || event.source !== 'user' || !tasksRepository) return
+  const match = matchTaskTrigger(event.text)
+  if (!match) return
+  const task = splitTitleAndNotes(match.text)
+  if (!task.title) return
+  try {
+    tasksRepository.create({ title: task.title, notes: task.notes, source: 'voice' })
+    broadcast('tasks:changed', undefined)
+    broadcast('voice:message', 'Task added / تمت إضافة المهمة')
+  } catch (error) {
+    console.error('[tasks] voice trigger failed:', error)
+  }
 }
 
 function emitVoiceAudio(event: VoiceAudioEvent): void {
@@ -283,6 +318,26 @@ function requirePlanner(): Planner {
 function requireBuildManager(): BuildManager {
   if (!buildManager) throw new Error('Build pipeline is unavailable.')
   return buildManager
+}
+
+function requireTasks(): TaskRepository {
+  if (!tasksRepository) throw new Error('Task storage is unavailable.')
+  return tasksRepository
+}
+
+function requireOperations(): OperationsRepository {
+  if (!operationsRepository) throw new Error('Operations storage is unavailable.')
+  return operationsRepository
+}
+
+function requireDocuments(): DocumentRepository {
+  if (!documentsRepository) throw new Error('Document storage is unavailable.')
+  return documentsRepository
+}
+
+function requireTimeTracker(): TimeTracker {
+  if (!timeTracker) throw new Error('Time tracking is unavailable.')
+  return timeTracker
 }
 
 function buildStartRequest(value: unknown): BuildStartRequest {
@@ -407,6 +462,123 @@ function researchStartRequest(value: unknown): ResearchStartRequest {
     languagePlan: request.languagePlan,
     jobId: typeof request.jobId === 'string' ? request.jobId : undefined
   }
+}
+
+function objectValue(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
+
+function stringField(fields: Record<string, unknown>, key: string, fallback = ''): string {
+  return typeof fields[key] === 'string' ? fields[key] as string : fallback
+}
+
+function numberField(fields: Record<string, unknown>, key: string, fallback = 0): number {
+  return typeof fields[key] === 'number' && Number.isFinite(fields[key]) ? fields[key] as number : fallback
+}
+
+function listField(fields: Record<string, unknown>, key: string): Array<Record<string, unknown>> {
+  return Array.isArray(fields[key])
+    ? fields[key].filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null && !Array.isArray(item))
+    : []
+}
+
+async function documentHtml(record: DocumentRecord, editable: boolean): Promise<string> {
+  const documents = requireDocuments()
+  const brand = documents.getBrand(record.brandId) ?? documents.defaultBrand()
+  const fields = record.fields
+  const context = { brand, options: { editable }, overrides: record.overrides }
+
+  if (record.kind === 'invoice') {
+    const invoiceId = typeof fields.invoiceId === 'string' ? fields.invoiceId : ''
+    const stored = invoiceId ? requireOperations().getInvoice(invoiceId) : undefined
+    const rawItems = Array.isArray(fields.items) ? fields.items : []
+    const items = rawItems.flatMap((item): Array<{ description: string; qty: number; unitPrice: number }> => {
+      const value = objectValue(item)
+      const description = typeof value.description === 'string' ? value.description : ''
+      const qty = typeof value.qty === 'number' ? value.qty : 1
+      const unitPrice = typeof value.unitPrice === 'number' ? value.unitPrice : 0
+      return description ? [{ description, qty, unitPrice }] : []
+    })
+    const invoice = stored ?? {
+      id: invoiceId || record.id,
+      clientId: record.clientId ?? '',
+      clientName: record.clientName,
+      number: record.reference,
+      currency: (stringField(fields, 'currency', 'EGP') === 'USD' ? 'USD' : 'EGP') as InvoiceCurrency,
+      issuedAt: numberField(fields, 'issuedAt', Date.now()),
+      dueAt: numberField(fields, 'dueAt', Date.now()),
+      status: 'draft' as const,
+      storedStatus: 'draft' as const,
+      notes: stringField(fields, 'notes'),
+      paymentLink: stringField(fields, 'paymentLink'),
+      projectNote: null,
+      items,
+      total: items.reduce((sum, item) => sum + item.qty * item.unitPrice, 0),
+      notionPageId: null
+    } satisfies InvoiceRecord
+    return invoiceDocument(invoice, context)
+  }
+
+  if (record.kind === 'contract') {
+    const phases = listField(fields, 'phases').map((phase) => ({
+      title: typeof phase.title === 'string' ? phase.title : '',
+      detail: typeof phase.detail === 'string' ? phase.detail : ''
+    }))
+    return contractDocument({
+      reference: record.reference,
+      clientName: record.clientName,
+      clientDetails: stringField(fields, 'clientDetails'),
+      projectName: stringField(fields, 'projectName'),
+      subject: stringField(fields, 'subject'),
+      scopeIn: stringField(fields, 'scopeIn'),
+      scopeOut: stringField(fields, 'scopeOut'),
+      phases,
+      amountMinor: numberField(fields, 'amountMinor'),
+      currency: stringField(fields, 'currency', 'EGP'),
+      paymentTerms: stringField(fields, 'paymentTerms'),
+      revisions: stringField(fields, 'revisions'),
+      deliverables: stringField(fields, 'deliverables'),
+      startAt: numberField(fields, 'startAt', Date.now()),
+      durationDays: numberField(fields, 'durationDays', 30)
+    }, context)
+  }
+
+  const objectives = listField(fields, 'objectives').map((item) => ({
+    title: typeof item.title === 'string' ? item.title : '',
+    detail: typeof item.detail === 'string' ? item.detail : ''
+  }))
+  const scope = listField(fields, 'scope').map((item) => ({
+    title: typeof item.title === 'string' ? item.title : '',
+    items: typeof item.items === 'string' ? item.items : ''
+  }))
+  const plan = listField(fields, 'plan').map((item) => ({
+    title: typeof item.title === 'string' ? item.title : '',
+    detail: typeof item.detail === 'string' ? item.detail : ''
+  }))
+  return proposalDocument({
+    reference: record.reference,
+    clientName: record.clientName,
+    title: stringField(fields, 'title', record.title),
+    titleAccent: stringField(fields, 'titleAccent'),
+    understanding: stringField(fields, 'understanding'),
+    objectives,
+    scope,
+    plan,
+    clientNeeds: stringField(fields, 'clientNeeds'),
+    includes: stringField(fields, 'includes'),
+    excludes: stringField(fields, 'excludes'),
+    amountMinor: numberField(fields, 'amountMinor'),
+    currency: stringField(fields, 'currency', 'EGP'),
+    durationDays: numberField(fields, 'durationDays', 30),
+    nextStep: stringField(fields, 'nextStep')
+  }, context)
+}
+
+function savedDocumentPath(record: DocumentRecord): string {
+  const safeReference = (record.reference || record.id || 'document').replace(/[^a-zA-Z0-9._-]+/g, '-')
+  return join(repository?.getSettings().octaHomePath ?? DEFAULT_OCTA_HOME, 'documents', record.kind, `${safeReference}.pdf`)
 }
 
 function registerIpc(): void {
@@ -665,6 +837,151 @@ function registerIpc(): void {
     })
   })
 
+  ipcMain.handle('tasks:list', (_event, filter?: TaskFilter): TaskRecord[] =>
+    requireTasks().list(filter ?? {})
+  )
+  ipcMain.handle('tasks:create', (_event, input: NewTask): TaskRecord => {
+    const task = requireTasks().create(input)
+    broadcast('tasks:changed', undefined)
+    return task
+  })
+  ipcMain.handle('tasks:update', (_event, id: string, patch: Partial<NewTask>): TaskRecord => {
+    const task = requireTasks().update(id, patch)
+    broadcast('tasks:changed', undefined)
+    return task
+  })
+  ipcMain.handle('tasks:remove', (_event, id: string): boolean => {
+    const removed = requireTasks().remove(id)
+    if (removed) broadcast('tasks:changed', undefined)
+    return removed
+  })
+  ipcMain.handle('tasks:start', (_event, id: string): TaskRecord => {
+    const task = requireTasks().start(id)
+    broadcast('tasks:changed', undefined)
+    return task
+  })
+  ipcMain.handle('tasks:stop', (_event, id: string): TaskRecord | undefined => {
+    const task = requireTasks().stop(id)
+    broadcast('tasks:changed', undefined)
+    return task
+  })
+  ipcMain.handle('tasks:running', (): TaskRecord | undefined => requireTasks().running())
+  ipcMain.handle('tasks:projects', (): string[] => requireTasks().projects())
+
+  ipcMain.handle('time:report', (_event, day: string) => requireTimeTracker().report(day))
+  ipcMain.handle('time:launch', (): boolean => requireTimeTracker().launch())
+
+  ipcMain.handle('billing:clients', (_event, query?: string): ClientRecord[] =>
+    requireOperations().listClients(typeof query === 'string' ? query : '')
+  )
+  ipcMain.handle('billing:saveClient', (_event, input: { name: string; email?: string; phone?: string; vaultNote?: string | null }): ClientRecord => {
+    const client = requireOperations().saveClient(input)
+    broadcast('billing:changed', undefined)
+    return client
+  })
+  ipcMain.handle('billing:invoices', (): InvoiceRecord[] => requireOperations().listInvoices())
+  ipcMain.handle('billing:createInvoice', (_event, input: {
+    clientId: string
+    currency: InvoiceCurrency
+    issuedAt: number
+    dueAt: number
+    notes?: string
+    paymentLink?: string
+    projectNote?: string | null
+    items: Array<{ description: string; qty: number; unitPrice: number }>
+  }): InvoiceRecord => {
+    const invoice = requireOperations().createInvoice(input)
+    broadcast('billing:changed', undefined)
+    return invoice
+  })
+  ipcMain.handle('billing:setStatus', (_event, id: string, status: 'draft' | 'sent' | 'paid'): InvoiceRecord[] => {
+    requireOperations().setInvoiceStatus(id, status)
+    broadcast('billing:changed', undefined)
+    return requireOperations().listInvoices()
+  })
+  ipcMain.handle('billing:deleteInvoice', (_event, id: string): InvoiceRecord[] => {
+    requireOperations().deleteInvoice(id)
+    broadcast('billing:changed', undefined)
+    return requireOperations().listInvoices()
+  })
+  ipcMain.handle('billing:deleteClient', (_event, id: string): ClientRecord[] => {
+    requireOperations().deleteClient(id)
+    broadcast('billing:changed', undefined)
+    return requireOperations().listClients()
+  })
+  ipcMain.handle('billing:pdf', async (_event, id: string): Promise<string> => {
+    const invoice = requireOperations().getInvoice(id)
+    if (!invoice) throw new Error('Invoice not found.')
+    const documents = requireDocuments()
+    const brand = documents.defaultBrand()
+    const html = await invoiceDocument(invoice, { brand })
+    const record: DocumentRecord = {
+      id: '',
+      kind: 'invoice',
+      clientId: invoice.clientId,
+      clientName: invoice.clientName,
+      brandId: brand.id,
+      reference: invoice.number,
+      title: `Invoice ${invoice.number}`,
+      fields: { invoiceId: invoice.id, currency: invoice.currency, items: invoice.items },
+      overrides: {},
+      createdAt: 0,
+      updatedAt: 0,
+      pdfPath: null
+    }
+    const path = savedDocumentPath(record)
+    await new PdfRenderer().render(html, path)
+    documents.save({ ...record, pdfPath: path })
+    broadcast('billing:changed', undefined)
+    return path
+  })
+  ipcMain.handle('billing:openPdf', (_event, path: string): Promise<string> =>
+    shell.openPath(outputFilePath(path))
+  )
+
+  ipcMain.handle('brands:list', (): DocumentBrand[] => requireDocuments().listBrands())
+  ipcMain.handle('brands:save', (_event, brand: DocumentBrand): DocumentBrand[] => {
+    requireDocuments().saveBrand(brand)
+    return requireDocuments().listBrands()
+  })
+  ipcMain.handle('brands:remove', (_event, id: string): DocumentBrand[] => {
+    requireDocuments().removeBrand(id)
+    return requireDocuments().listBrands()
+  })
+  ipcMain.handle('brands:pickSignature', async (): Promise<string | null> => {
+    const selected = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp'] }]
+    })
+    return selected.canceled ? null : selected.filePaths[0] ?? null
+  })
+
+  ipcMain.handle('documents:list', (_event, filter?: { clientId?: string; kind?: DocumentKind }): DocumentRecord[] =>
+    requireDocuments().list(filter ?? {})
+  )
+  ipcMain.handle('documents:get', (_event, id: string): DocumentRecord | null =>
+    requireDocuments().get(id) ?? null
+  )
+  ipcMain.handle('documents:nextReference', (_event, kind: DocumentKind): string =>
+    requireDocuments().nextReference(kind)
+  )
+  ipcMain.handle('documents:save', (_event, record: DocumentRecord): DocumentRecord =>
+    requireDocuments().save(record)
+  )
+  ipcMain.handle('documents:remove', (_event, id: string): boolean => requireDocuments().remove(id))
+  ipcMain.handle('documents:preview', (_event, record: DocumentRecord): Promise<string> => documentHtml(record, true))
+  ipcMain.handle('documents:export', async (_event, record: DocumentRecord): Promise<string> => {
+    const stored = requireDocuments().save(record)
+    const html = await documentHtml(stored, false)
+    const path = savedDocumentPath(stored)
+    await new PdfRenderer().render(html, path)
+    requireDocuments().save({ ...stored, pdfPath: path })
+    return path
+  })
+  ipcMain.handle('documents:openPdf', (_event, path: string): Promise<string> =>
+    shell.openPath(outputFilePath(path))
+  )
+
   ipcMain.handle('jobs:start', (_event, spec: JobSpec): JobStartResponse => {
     if (!jobRunner) throw new Error('Job runner is unavailable.')
     const handle = jobRunner.startJob(spec)
@@ -793,6 +1110,12 @@ function registerIpc(): void {
 async function start(): Promise<void> {
   repository = new SettingsRepository(join(octaHome, 'octa.db'))
   jobsRepository = new JobsRepository(join(octaHome, 'octa.db'))
+  const databasePath = join(octaHome, 'octa.db')
+  tasksRepository = new TaskRepository(databasePath)
+  operationsRepository = new OperationsRepository(databasePath)
+  documentsRepository = new DocumentRepository(databasePath)
+  socialQueueRepository = new SocialQueueRepository(databasePath)
+  timeTracker = new TimeTracker()
   skillsRegistry = new SkillRegistry({
     getSettings: () => {
       if (!repository) throw new Error('Settings storage is unavailable.')
@@ -934,6 +1257,53 @@ async function start(): Promise<void> {
     planner,
     onEvent: (event) => broadcast('build:events', event)
   })
+  const launchHandlers = createLaunchWorkflowHandlers({
+    homePath: repository.getSettings().octaHomePath,
+    brandFontPath: app.isPackaged
+      ? join(process.resourcesPath, 'documents', 'PingAR-LT-Thin.otf')
+      : join(app.getAppPath(), 'assets', 'documents', 'PingAR-LT-Thin.otf'),
+    getSettings: () => {
+      if (!repository) throw new Error('Settings storage is unavailable.')
+      return repository.getSettings()
+    },
+    settings: repository,
+    buildManager,
+    tasks: tasksRepository,
+    operations: operationsRepository,
+    documents: documentsRepository,
+    jobs: jobsRepository,
+    timeTracker,
+    socialQueue: socialQueueRepository,
+    socialHandoffPath: join(repository.getSettings().octaHomePath, 'integrations', 'tamim-os-queue.json'),
+    skillRunner: async ({ name, input, request }) => {
+      if (!jobRunner) throw new Error('Job runner is unavailable.')
+      const handle = jobRunner.startJob({
+        id: `${request.jobId}-${name}`,
+        runner: 'claude-skill',
+        skill: name,
+        input,
+        prompt: `Run ${name} for workflow ${request.workflow.id}.`,
+        workflowRunId: request.jobId,
+        workflow: request.workflow.id,
+        stepId: request.step.id,
+        autonomy: 'assisted',
+        language: request.language,
+        homePath: repository?.getSettings().octaHomePath,
+        skillsLibraryPath: repository?.getSettings().skillsLibraryPath || undefined,
+        skipReview: true
+      })
+      const result = await handle.promise
+      return {
+        status: result.status,
+        output: result,
+        result,
+        outputs: result.outputs,
+        folder: handle.folder,
+        jobId: handle.id,
+        notes: result.notes
+      }
+    }
+  })
   workflows = new WorkflowRunner({
     jobs: jobsRepository,
     jobRunner,
@@ -943,10 +1313,42 @@ async function start(): Promise<void> {
       return repository.getSettings()
     },
     notifier,
+    research: async (request) => {
+      const manager = researchManager
+      if (!manager) throw new Error('Research engine is unavailable.')
+      const input = typeof request.input === 'object' && request.input !== null
+        ? request.input as { task?: unknown }
+        : {}
+      const task = typeof input.task === 'string' && input.task.trim()
+        ? input.task
+        : request.step.prompt?.trim() || String(request.brief ?? '')
+      const handle = manager.start(task, {
+        jobId: request.jobId,
+        workflowRunId: request.runId,
+        stepId: request.step.id,
+        conversationLanguage: request.language,
+        budgetMs: request.timeBudgetMs,
+        preset: request.step.id === 's3' ? 'competitor' : request.step.id === 's2' ? 'persona' : undefined
+      })
+      const result = await handle.promise
+      return {
+        status: result.status === 'ok' ? 'ok' : result.status === 'cancelled' ? 'cancelled' : 'failed',
+        output: result,
+        result: result.agent,
+        outputs: result.reportPath
+          ? [{ path: relative(handle.folder, result.reportPath), type: 'markdown', title: 'Research report' }]
+          : [],
+        folder: handle.folder,
+        jobId: handle.id,
+        notes: result.gate.failures.join(' ')
+      }
+    },
+    stepHandler: launchHandlers.stepHandler,
+    afterGateApproval: launchHandlers.afterGateApproval,
     onEvent: (event) => broadcast(event.type, event)
   })
   workflows.seedLaunchWorkflows()
-  if (jobsRepository.listRecurringJobs().length === 0) seedRecurringJobs(jobsRepository)
+  seedRecurringJobs(jobsRepository)
   recurringScheduler = new RecurringScheduler({
     jobs: jobsRepository,
     workflows,
@@ -993,11 +1395,20 @@ app.on('before-quit', () => {
   buildManager = undefined
   repository?.checkpoint()
   jobsRepository?.checkpoint()
+  tasksRepository?.close()
+  operationsRepository?.close()
+  documentsRepository?.close()
+  socialQueueRepository?.close()
   repository?.close()
   jobsRepository?.close()
   skillsRegistry?.close()
   repository = undefined
   jobsRepository = undefined
+  tasksRepository = undefined
+  operationsRepository = undefined
+  documentsRepository = undefined
+  socialQueueRepository = undefined
+  timeTracker = undefined
   jobRunner = undefined
   skillsRegistry = undefined
   conversations = undefined

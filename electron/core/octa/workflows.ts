@@ -40,6 +40,12 @@ import {
   type WorkflowRecord,
   type WorkflowStatsRecord
 } from '../../db/jobs'
+import {
+  runWorkflowAcceptance,
+  type WorkflowAcceptanceContext,
+  type WorkflowAcceptanceResult,
+  type WorkflowAcceptanceRunner
+} from './acceptance'
 import type { NotifyAction, NotifyOptions, Notifier } from '../notify'
 import type {
   AppSettings,
@@ -174,6 +180,23 @@ export type WorkflowStepRunner =
 
 export type WorkflowResearchRunner = (request: WorkflowStepRunRequest) => Promise<WorkflowStepExecution | unknown> | WorkflowStepExecution | unknown
 
+/** Specialized launch handlers return undefined when the generic job runner should take over. */
+export type WorkflowStepHandler = (request: WorkflowStepRunRequest) => Promise<WorkflowStepExecution | unknown | undefined> | WorkflowStepExecution | unknown | undefined
+
+export interface WorkflowGateApprovalRequest {
+  runId: string
+  workflowId: string
+  workflow: string
+  stepId: string
+  folder: string
+  brief: unknown
+  state: WorkflowStepState
+  approvedAt: string
+  approvedBy: string
+}
+
+export type WorkflowGateApprovalHandler = (request: WorkflowGateApprovalRequest) => Promise<void> | void
+
 export interface WorkflowGateState {
   gate: Exclude<WorkflowGate, 'none'>
   status: 'pending' | 'approved' | 'rejected' | 'commented' | 'expired'
@@ -218,6 +241,7 @@ export interface WorkflowRunRecord {
   currentGate?: WorkflowGateState & { stepId: string }
   createdAt: string
   updatedAt: string
+  acceptance?: WorkflowAcceptanceResult
   error?: string
 }
 
@@ -304,6 +328,8 @@ export interface WorkflowRunnerOptions {
   /** Fake or embedded executor. Useful for tests and future specialized runners. */
   runner?: WorkflowStepRunner
   stepRunner?: WorkflowStepRunner
+  /** Specialized W1-W5 handlers. Returning undefined delegates to the normal job runner. */
+  stepHandler?: WorkflowStepHandler
   /** Fake or embedded Sol reviewer. */
   review?: ReviewStepRunner
   reviewStep?: ReviewStepRunner
@@ -312,6 +338,10 @@ export interface WorkflowRunnerOptions {
   /** Hook reserved for Gemini Live (spec 007) read-backs. */
   voiceGate?: (gate: WorkflowGateEvent) => void | Promise<void>
   research?: WorkflowResearchRunner
+  /** Runs the code-level workflow acceptance checks after the final step. */
+  acceptance?: WorkflowAcceptanceRunner
+  /** Performs approval-only side effects after the exact gate payload is approved. */
+  afterGateApproval?: WorkflowGateApprovalHandler
   homePath?: string
   getSettings?: () => AppSettings
   now?: () => Date
@@ -335,6 +365,7 @@ interface StoredWorkflowState {
   hadRejection: boolean
   hadReviewComments: boolean
   statsRecorded: boolean
+  acceptance?: WorkflowAcceptanceResult
   error?: string
 }
 
@@ -721,6 +752,9 @@ function stateFromRecord(definition: WorkflowDefinition, record: { state: unknow
       hadRejection: raw.hadRejection === true,
       hadReviewComments: raw.hadReviewComments === true,
       statsRecorded: raw.statsRecorded === true,
+      ...(isRecord(raw.acceptance) && typeof raw.acceptance.passed === 'boolean' && Array.isArray(raw.acceptance.checks)
+        ? { acceptance: raw.acceptance as unknown as WorkflowAcceptanceResult }
+        : {}),
       ...(typeof raw.error === 'string' ? { error: raw.error } : {})
     }
   }
@@ -756,10 +790,13 @@ export class WorkflowRunner {
   private readonly jobs?: JobsRepository
   private readonly jobRunner?: Pick<JobRunner, 'startJob'>
   private readonly stepRunner?: WorkflowStepRunner
+  private readonly stepHandler?: WorkflowStepHandler
   private readonly reviewRunner?: ReviewStepRunner
   private readonly notifier?: Pick<Notifier, 'send'>
   private readonly voiceGate?: (gate: WorkflowGateEvent) => void | Promise<void>
   private readonly researchRunner?: WorkflowResearchRunner
+  private readonly acceptanceRunner: WorkflowAcceptanceRunner
+  private readonly afterGateApproval?: WorkflowGateApprovalHandler
   private readonly homePath: string
   private readonly getSettings: () => AppSettings
   private readonly now: () => Date
@@ -773,10 +810,13 @@ export class WorkflowRunner {
   constructor(options: WorkflowRunnerOptions = {}) {
     this.jobs = options.jobs
     this.stepRunner = options.stepRunner ?? options.runner
+    this.stepHandler = options.stepHandler
     this.reviewRunner = options.reviewStep ?? options.review
     this.notifier = options.notifier ?? options.notify
     this.voiceGate = options.voiceGate
     this.researchRunner = options.research
+    this.acceptanceRunner = options.acceptance ?? runWorkflowAcceptance
+    this.afterGateApproval = options.afterGateApproval
     this.homePath = resolve(options.homePath ?? options.getSettings?.().octaHomePath ?? process.env.OCTA_HOME?.trim() ?? 'C:\\Octa')
     this.getSettings = options.getSettings ?? (() => ({
       octaHomePath: this.homePath,
@@ -1109,6 +1149,7 @@ export class WorkflowRunner {
       ...(gate ? { currentGate: gate } : {}),
       createdAt: context.state.createdAt,
       updatedAt: context.state.updatedAt,
+      ...(context.state.acceptance ? { acceptance: context.state.acceptance } : {}),
       ...(context.state.error ? { error: context.state.error } : {})
     }
   }
@@ -1215,7 +1256,8 @@ export class WorkflowRunner {
           job_id: context.state.steps[step.id].jobId,
           output: context.state.steps[step.id].output,
           error: context.state.steps[step.id].error
-        }))
+        })),
+        ...(context.state.acceptance ? { acceptance: context.state.acceptance } : {})
       },
       gate: gate ? gate.gate : 'none',
       gatePayload: gate ? gate.payload : null,
@@ -1274,6 +1316,31 @@ export class WorkflowRunner {
       }
       const allDone = context.definition.steps.every((step) => TERMINAL_STEP_STATUSES.has(context.state.steps[step.id].status))
       if (allDone && !currentGate(context.state)) {
+        if (!context.state.acceptance) {
+          const finishedAt = this.now().toISOString()
+          const acceptanceContext: WorkflowAcceptanceContext = {
+            workflowId: context.definition.id,
+            workflow: context.definition.name,
+            brief: context.state.brief,
+            folder: context.folder,
+            steps: context.definition.steps.map((step) => ({ ...context.state.steps[step.id] })),
+            acceptance: context.definition.acceptance,
+            language: context.language,
+            startedAt: context.state.createdAt,
+            finishedAt
+          }
+          context.state.acceptance = await this.acceptanceRunner(acceptanceContext)
+          if (!context.state.acceptance.passed) {
+            context.state.status = 'failed'
+            context.state.error = context.state.acceptance.checks
+              .filter((item) => !item.passed)
+              .map((item) => `${item.criterion}: ${item.detail}`)
+              .join(' ') || 'Workflow acceptance checks failed.'
+            this.persist(context)
+            this.signal(context)
+            continue
+          }
+        }
         context.state.status = 'ok'
         this.persist(context)
         this.recordStatsIfNeeded(context)
@@ -1425,6 +1492,10 @@ export class WorkflowRunner {
   }
 
   private async runExecutor(context: ActiveWorkflow, request: WorkflowStepRunRequest): Promise<WorkflowStepExecution | unknown> {
+    if (this.stepHandler) {
+      const handled = await this.stepHandler(request)
+      if (handled !== undefined) return handled
+    }
     if (this.stepRunner) {
       return this.stepRunner.length >= 2
         ? (this.stepRunner as (step: WorkflowStepDefinition, input: unknown) => Promise<WorkflowStepExecution | unknown> | WorkflowStepExecution | unknown)(request.step, request.input)
@@ -1434,7 +1505,7 @@ export class WorkflowRunner {
       if (this.researchRunner) return this.researchRunner(request)
       return this.runNativeResearch(context, request)
     }
-    if (request.step.runner === 'octa-code') throw new Error(`Runner octa-code is not merged for step ${request.step.id}. Mark the step todo until spec 010.`)
+    if (request.step.runner === 'octa-code') throw new Error(`Runner octa-code could not start for step ${request.step.id}.`)
     const jobRunner = this.jobRunner ?? getJobRunner()
     const spec: JobSpec = {
       id: request.jobId,
@@ -1622,6 +1693,20 @@ export class WorkflowRunner {
     state.finishedAt = gate.approvedAt
     context.state.status = 'running'
     this.persist(context)
+    if (this.afterGateApproval) {
+      await this.afterGateApproval({
+        runId: context.runId,
+        workflowId: context.definition.id,
+        workflow: context.definition.name,
+        stepId: step.id,
+        folder: context.folder,
+        brief: context.state.brief,
+        state,
+        approvedAt: gate.approvedAt,
+        approvedBy: gate.approvedBy
+      })
+      this.persist(context)
+    }
     this.emitGate(context, step, gate, 'approved', 'Gate approved. / تمت الموافقة على البوابة.')
     this.emitStep(context, step, 'completed')
     this.signal(context)
@@ -1770,11 +1855,11 @@ export interface RecurringSeedDefinition {
 
 export const DEFAULT_RECURRING_JOBS: readonly RecurringSeedDefinition[] = [
   { id: 'daily-brief', name: 'Daily brief', workflow: 'daily-brief', every: 'daily 08:00', autonomy: 'assisted', enabled: true, input: { placeholder: true } },
-  { id: 'prospect-list-refresh', name: 'Prospect list refresh', workflow: 'custom', every: 'weekly', autonomy: 'assisted', enabled: false },
-  { id: 'competitor-watch', name: 'Competitor watch per active client', workflow: 'research', every: 'monthly', autonomy: 'assisted', enabled: false },
-  { id: 'seo-performance-check', name: 'SEO + performance check per live client site', workflow: 'review-website', every: 'monthly', autonomy: 'assisted', enabled: false },
-  { id: 'content-batch', name: 'Content batch for next week', workflow: 'market-project', every: 'weekly', autonomy: 'assisted', enabled: false },
-  { id: 'brain-consolidation', name: 'Brain consolidation', workflow: 'custom', every: 'monthly', autonomy: 'assisted', enabled: false }
+  { id: 'prospect-list-refresh', name: 'Prospect list refresh', workflow: 'custom', every: 'weekly', autonomy: 'assisted', enabled: true, input: { placeholder: true } },
+  { id: 'competitor-watch', name: 'Competitor watch per active client', workflow: 'research', every: 'monthly', autonomy: 'assisted', enabled: true },
+  { id: 'seo-performance-check', name: 'SEO + performance check per live client site', workflow: 'review-website', every: 'monthly', autonomy: 'assisted', enabled: true },
+  { id: 'content-batch', name: 'Content batch for next week', workflow: 'market-project', every: 'weekly', autonomy: 'assisted', enabled: true },
+  { id: 'brain-consolidation', name: 'Brain consolidation', workflow: 'custom', every: 'monthly', autonomy: 'assisted', enabled: true, input: { placeholder: true } }
 ]
 
 function localDateAt(date: Date, hour: number, minute: number): Date {
@@ -1784,6 +1869,7 @@ function localDateAt(date: Date, hour: number, minute: number): Date {
 /** Compute the next occurrence for the small cadence vocabulary used by the launch seeds. */
 export function nextRecurringRun(every: string, from: Date = new Date()): Date {
   const value = every.trim().toLowerCase()
+  if (value === 'once') return new Date(from.getTime())
   const daily = /^daily(?:\s+(\d{1,2}):(\d{2}))?$/.exec(value)
   if (daily) {
     const hour = Math.min(23, Number(daily[1] ?? 8))
@@ -1805,10 +1891,12 @@ export function nextRecurringRun(every: string, from: Date = new Date()): Date {
 export function seedRecurringJobs(jobs: JobsRepository, now: () => Date = () => new Date()): RecurringJobRecord[] {
   const current = now()
   return DEFAULT_RECURRING_JOBS.map((seed) => {
+    const existing = jobs.getRecurringJob(seed.id)
     const input: SaveRecurringJobInput = {
       ...seed,
-      nextRunAt: nextRecurringRun(seed.every, current).toISOString(),
-      input: seed.input
+      nextRunAt: existing?.nextRunAt ?? nextRecurringRun(seed.every, current).toISOString(),
+      lastRunAt: existing?.lastRunAt ?? null,
+      input: seed.input ?? existing?.input
     }
     return jobs.saveRecurringJob(input)
   })
@@ -1859,12 +1947,18 @@ export class RecurringScheduler {
     const due = this.jobs.listRecurringJobs().filter((job) => job.enabled && job.nextRunAt && Date.parse(job.nextRunAt) <= now.getTime())
     const started: RecurringJobRecord[] = []
     for (const job of due) {
-      const next = nextRecurringRun(job.every, now).toISOString()
+      const once = job.every.trim().toLowerCase() === 'once'
+      const next = once ? null : nextRecurringRun(job.every, now).toISOString()
       const input = isRecord(job.input) ? { ...job.input, recurringJobId: job.id } : { value: job.input, recurringJobId: job.id }
       if (isRecord(job.input) && job.input.placeholder === true) {
         const message = `Skipped recurring placeholder ${job.id}. / تم تخطي المهمة المجدولة الوهمية ${job.id}.`
         this.onEvent?.(message)
         this.jobs.recordRecurringRun(job.id, now.toISOString(), next)
+        continue
+      }
+      if (once && job.workflow === 'invoice-follow-up') {
+        this.onEvent?.(`Completed one-time invoice follow-up ${job.id}.`)
+        this.jobs.recordRecurringRun(job.id, now.toISOString(), null)
         continue
       }
       try {

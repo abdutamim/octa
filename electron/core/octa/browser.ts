@@ -57,6 +57,18 @@ export interface PageReadResult {
   title?: string
 }
 
+export interface CrawledPage extends PageReadResult {
+  links: string[]
+  technology: string[]
+  analytics: string[]
+}
+
+export interface CrawlResult {
+  startUrl: string
+  pages: CrawledPage[]
+  truncated: boolean
+}
+
 export interface ScrollCollectResult extends PageReadResult {
   pages: number
 }
@@ -465,6 +477,74 @@ export class ResearchBrowser {
     const markdown = `# ${title || url}\n\n${body}`.trim()
     const screenshotPath = await this.screenshot(page, url)
     return { markdown, screenshot_path: screenshotPath, url: page.url() || url, title: title || undefined }
+  }
+
+  /**
+   * Read-only same-origin crawl used by the website review workflow. Every
+   * visited page goes through the normal pacing/challenge checks and gets its
+   * own full-page screenshot, so the evidence pack is reproducible and never
+   * reaches a composer or an outward-action control.
+   */
+  async crawl(url: string, maxPages = 200): Promise<CrawlResult> {
+    const start = new URL(url)
+    if (!['http:', 'https:'].includes(start.protocol)) throw new Error('Website crawl requires an HTTP(S) URL.')
+    const rootHost = normalizeHost(start.hostname)
+    const limit = Math.max(1, Math.min(200, Math.trunc(maxPages)))
+    const queue = [start.toString()]
+    const seen = new Set<string>()
+    const pages: CrawledPage[] = []
+
+    while (queue.length > 0 && pages.length < limit) {
+      const current = queue.shift()!
+      if (seen.has(current)) continue
+      seen.add(current)
+      const page = await this.navigate(current)
+      const title = await page.title().catch(() => '')
+      const body = await this.pageText(page)
+      const evidence = await page.evaluate(() => {
+        const links = Array.from(document.querySelectorAll('a[href]'))
+          .map((anchor) => (anchor as HTMLAnchorElement).href)
+          .filter(Boolean)
+        const technology = [
+          ...Array.from(document.querySelectorAll('meta[name="generator"], meta[name="framework"]'))
+            .map((meta) => meta.getAttribute('content') ?? ''),
+          ...Array.from(document.querySelectorAll('script[src]'))
+            .map((script) => (script as HTMLScriptElement).src)
+            .filter((src) => /next|nuxt|astro|gatsby|wordpress|shopify|react|vue|gtag|analytics/i.test(src))
+        ]
+        const analytics = Array.from(document.scripts)
+          .map((script) => script.src || script.textContent || '')
+          .filter((source) => /gtag|google-analytics|googletagmanager|plausible|matomo|segment|hotjar|clarity/i.test(source))
+        return { links, technology, analytics }
+      }).catch(() => ({ links: [], technology: [], analytics: [] }))
+      const screenshotPath = await this.screenshot(page, current)
+      const resolved = page.url() || current
+      const crawled: CrawledPage = {
+        markdown: `# ${title || resolved}\n\n${body}`.trim(),
+        screenshot_path: screenshotPath,
+        url: resolved,
+        title: title || undefined,
+        links: [...new Set(evidence.links)],
+        technology: [...new Set(evidence.technology.filter(Boolean))],
+        analytics: [...new Set(evidence.analytics.filter(Boolean))]
+      }
+      pages.push(crawled)
+
+      for (const link of crawled.links) {
+        if (queue.length + pages.length >= limit) break
+        try {
+          const candidate = new URL(link, resolved)
+          candidate.hash = ''
+          if (!['http:', 'https:'].includes(candidate.protocol)) continue
+          if (normalizeHost(candidate.hostname) !== rootHost) continue
+          const normalized = candidate.toString()
+          if (!seen.has(normalized) && !queue.includes(normalized)) queue.push(normalized)
+        } catch {
+          // Ignore malformed or non-URL hrefs in public HTML.
+        }
+      }
+    }
+    return { startUrl: start.toString(), pages, truncated: queue.length > 0 }
   }
 
   async scrollCollect(url: string, n: number): Promise<ScrollCollectResult> {

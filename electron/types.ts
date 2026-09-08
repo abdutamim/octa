@@ -70,6 +70,169 @@ export interface JobResult {
   notes: string
 }
 
+export type TaskStatus = 'inbox' | 'todo' | 'doing' | 'done' | 'dropped'
+export type TaskSource = 'manual' | 'voice' | 'screenshot' | 'text' | 'phone' | 'link'
+
+export const TASK_STATUSES: readonly TaskStatus[] = [
+  'inbox',
+  'todo',
+  'doing',
+  'done',
+  'dropped'
+]
+
+export interface TaskRecord {
+  id: string
+  title: string
+  notes: string
+  project: string
+  status: TaskStatus
+  priority: number
+  dueAt: number | null
+  estimateMinutes: number | null
+  trackedSeconds: number
+  runningSince: number | null
+  createdAt: number
+  updatedAt: number
+  completedAt: number | null
+  source: TaskSource
+  vaultNote: string | null
+}
+
+export interface TaskSession {
+  id: string
+  taskId: string
+  startedAt: number
+  endedAt: number | null
+}
+
+export interface TaskFilter {
+  status?: TaskStatus
+  project?: string
+  query?: string
+}
+
+export interface NewTask {
+  title: string
+  notes?: string
+  project?: string
+  status?: TaskStatus
+  priority?: number
+  dueAt?: number | null
+  estimateMinutes?: number | null
+  source?: TaskSource
+  vaultNote?: string | null
+}
+
+export interface DocumentBrand {
+  id: string
+  label: string
+  name: string
+  tagline: string
+  website: string
+  signatureName: string
+  signatureRole: string
+  signatureImage: string | null
+  signatureWidthMm: number
+  accent: string
+  isDefault: boolean
+}
+
+export const DEFAULT_BRAND: Omit<DocumentBrand, 'id'> = {
+  label: 'Tamim Works',
+  name: 'ABDULLAH TAMIM',
+  tagline: 'BUSINESS DOCUMENT SYSTEM',
+  website: 'tamim.works',
+  signatureName: '\u0639\u0628\u062f\u0627\u0644\u0644\u0647 \u062a\u0645\u064a\u0645',
+  signatureRole: '\u0645\u0637\u0648\u0651\u0631 \u0648\u0645\u0635\u0645\u0651\u0645 \u0645\u0646\u062a\u062c\u0627\u062a \u0631\u0642\u0645\u064a\u0629',
+  signatureImage: null,
+  signatureWidthMm: 50,
+  accent: '#f25b1b',
+  isDefault: true
+}
+
+export type DocumentKind = 'invoice' | 'contract' | 'proposal'
+
+export interface DocumentRecord {
+  id: string
+  kind: DocumentKind
+  clientId: string | null
+  clientName: string
+  brandId: string
+  reference: string
+  title: string
+  fields: Record<string, unknown>
+  overrides: Record<string, string>
+  createdAt: number
+  updatedAt: number
+  pdfPath: string | null
+}
+
+export interface TimeUsageEntry {
+  name: string
+  seconds: number
+}
+
+export interface TimeReport {
+  day: string
+  available: boolean
+  reason?: string
+  totalSeconds: number
+  apps: TimeUsageEntry[]
+  titles: TimeUsageEntry[]
+}
+
+export interface SavedLink {
+  id: string
+  url: string
+  title: string
+  summary: string
+  tags: string[]
+  project: string
+  createdAt: number
+  notePath: string | null
+  readable: boolean
+}
+
+export interface ClientRecord {
+  id: string
+  name: string
+  email: string
+  phone: string
+  vaultNote: string | null
+  createdAt: number
+  notionPageId: string | null
+}
+
+export type InvoiceCurrency = 'EGP' | 'USD'
+export type InvoiceStoredStatus = 'draft' | 'sent' | 'paid'
+export type InvoiceDisplayStatus = InvoiceStoredStatus | 'overdue'
+
+export interface InvoiceItem {
+  id?: string
+  description: string
+  qty: number
+  unitPrice: number
+}
+
+export interface InvoiceRecord {
+  id: string
+  clientId: string
+  clientName: string
+  number: string
+  currency: InvoiceCurrency
+  issuedAt: number
+  dueAt: number
+  status: InvoiceDisplayStatus
+  storedStatus: InvoiceStoredStatus
+  notes: string
+  paymentLink: string
+  projectNote: string | null
+  items: InvoiceItem[]
+  total: number
+  notionPageId: string | null
+}
+
 export interface JobRecord {
   id: string
   workflowRunId: string | null
