@@ -5,6 +5,7 @@ import {
   Cloud,
   FolderOpen,
   Globe2,
+  HeartPulse,
   KeyRound,
   Languages,
   LogIn,
@@ -80,13 +81,17 @@ export function SettingsPage({
   locale,
   onUpdate,
   onAiTest,
-  onNotifyTest
+  onNotifyTest,
+  onOpenFirstRun,
+  version
 }: {
   settings: AppSettings
   locale: Locale
   onUpdate: (update: Partial<AppSettings>) => Promise<AppSettings>
   onAiTest: () => Promise<AiTestResult>
   onNotifyTest: () => Promise<boolean>
+  onOpenFirstRun: () => void
+  version: string
 }): React.JSX.Element {
   const [draft, setDraft] = useState<AppSettings>(settings)
   const [saveState, setSaveState] = useState<SaveState>('idle')
@@ -212,10 +217,17 @@ export function SettingsPage({
           <h1>{label('settingsTitle')}</h1>
           <p>{label('settingsIntro')}</p>
         </div>
-        <button className="language-chip" onClick={() => void onUpdate({ locale: locale === 'ar' ? 'en' : 'ar' })} type="button">
-          <Languages size={15} />
-          {locale === 'ar' ? label('english') : label('arabic')}
-        </button>
+        <div className="settings-heading-actions">
+          <span className="settings-version">{label('versionLabel')} {version}</span>
+          <button className="quiet-button" onClick={onOpenFirstRun} type="button">
+            <HeartPulse size={15} aria-hidden="true" />
+            {label('openSetupWizard')}
+          </button>
+          <button className="language-chip" onClick={() => void onUpdate({ locale: locale === 'ar' ? 'en' : 'ar' })} type="button">
+            <Languages size={15} />
+            {locale === 'ar' ? label('english') : label('arabic')}
+          </button>
+        </div>
       </header>
 
       <div className="settings-card glass">
