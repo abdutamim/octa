@@ -1,7 +1,15 @@
-import { app, BrowserWindow, ipcMain, Notification, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, Notification, screen, shell } from 'electron'
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { GeminiClient } from './cloud/gemini'
+import {
+  DEFAULT_GEMINI_LIVE_MODEL,
+  GeminiLiveSession,
+  type PcmAudioOutput,
+  resolveGeminiLiveModel
+} from './cloud/gemini-live'
+import { GeminiVoiceFallback } from './cloud/gemini-tts'
+import { VoiceController } from './core/dictation'
 import { CompanyBrain } from './core/octa/brain'
 import { IntakeInterview } from './core/octa/intake'
 import {
@@ -12,10 +20,14 @@ import {
   type PlannerResult
 } from './core/octa/planner'
 import { Notifier } from './core/notify'
-import { requireAiAuth } from './cloud/vertex'
+import { requireAiAuth, resolveAiAuth } from './cloud/vertex'
 import { SettingsRepository } from './db/settings'
 import { JobsRepository } from './db/jobs'
 import { JobRunner, type JobSpec } from './core/jobs/runner'
+import { ConversationRepository } from './core/voice/conversation'
+import { WorkflowGateRegistry, type WorkflowGateApproveRequest } from './core/voice/workflow-gate'
+import { createWakeWordDetector } from './core/wake-word'
+import { GlobalTriggerManager } from './input/trigger'
 import { SkillRegistry, type SkillListOptions } from './core/skills/registry'
 import {
   RESEARCH_LOGIN_SITES,
@@ -24,7 +36,17 @@ import {
   type ResearchStartRequest,
   type ResearchStartResponse
 } from './core/octa/research'
-import type { AiTestResult, AppSettings, JobRecord, JobStartResponse, RendererState } from './types'
+import type {
+  AiTestResult,
+  AppSettings,
+  JobRecord,
+  JobStartResponse,
+  RendererState,
+  VoiceAudioEvent,
+  VoiceState,
+  VoiceTranscriptEvent
+} from './types'
+import { voiceAudioEvent } from './core/dictation'
 
 export const DEFAULT_OCTA_HOME = 'C:\\Octa'
 
@@ -38,6 +60,7 @@ mkdirSync(octaHome, { recursive: true })
 app.setPath('userData', octaHome)
 
 let mainWindow: BrowserWindow | undefined
+let overlayWindow: BrowserWindow | undefined
 let repository: SettingsRepository | undefined
 let jobsRepository: JobsRepository | undefined
 let jobRunner: JobRunner | undefined
@@ -47,12 +70,28 @@ let notifier: Notifier | undefined
 let brain: CompanyBrain | undefined
 let intake: IntakeInterview | undefined
 let planner: Planner | undefined
+let conversations: ConversationRepository | undefined
+let workflowGates: WorkflowGateRegistry | undefined
+let voiceController: VoiceController | undefined
+let triggerManager: GlobalTriggerManager | undefined
+let voiceAudioOutput: PcmAudioOutput | undefined
 let ipcRegistered = false
 
 function broadcast(channel: string, payload: unknown): void {
   for (const window of BrowserWindow.getAllWindows()) {
     if (!window.isDestroyed()) window.webContents.send(channel, payload)
   }
+}
+
+function loadRenderer(window: BrowserWindow, overlay = false): void {
+  const rendererUrl = process.env.ELECTRON_RENDERER_URL
+  if (rendererUrl) {
+    const url = new URL(rendererUrl)
+    if (overlay) url.searchParams.set('overlay', '1')
+    void window.loadURL(url.toString())
+    return
+  }
+  void window.loadFile(join(__dirname, '../renderer/index.html'), overlay ? { query: { overlay: '1' } } : undefined)
 }
 
 function createWindow(): BrowserWindow {
@@ -71,13 +110,100 @@ function createWindow(): BrowserWindow {
     }
   })
 
-  const rendererUrl = process.env.ELECTRON_RENDERER_URL
-  if (rendererUrl) {
-    void window.loadURL(rendererUrl)
-  } else {
-    void window.loadFile(join(__dirname, '../renderer/index.html'))
-  }
+  loadRenderer(window)
   return window
+}
+
+function createOverlayWindow(): BrowserWindow {
+  const window = new BrowserWindow({
+    width: 360,
+    height: 84,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    movable: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    focusable: false,
+    show: false,
+    backgroundColor: '#00000000',
+    webPreferences: {
+      preload: join(__dirname, '../preload/preload.mjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  })
+  loadRenderer(window, true)
+  return window
+}
+
+function attachMainWindow(window: BrowserWindow): void {
+  mainWindow = window
+  window.on('hide', () => updateVoiceOverlay(voiceController?.currentState ?? defaultVoiceState()))
+  window.on('show', () => updateVoiceOverlay(voiceController?.currentState ?? defaultVoiceState()))
+  window.on('closed', () => {
+    if (mainWindow === window) mainWindow = undefined
+    if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.close()
+  })
+}
+
+function defaultVoiceState(): VoiceState {
+  return { phase: 'idle', source: null, transcript: '', language: null, model: null }
+}
+
+function updateVoiceOverlay(state: VoiceState): void {
+  if (!overlayWindow || overlayWindow.isDestroyed()) return
+  const hidden = !mainWindow || mainWindow.isDestroyed() || !mainWindow.isVisible()
+  if (!hidden || state.phase === 'idle') {
+    overlayWindow.hide()
+    return
+  }
+  try {
+    const workArea = screen.getPrimaryDisplay().workArea
+    const x = Math.max(workArea.x, workArea.x + workArea.width - 380)
+    const y = Math.max(workArea.y, workArea.y + workArea.height - 110)
+    overlayWindow.setPosition(x, y, false)
+    overlayWindow.showInactive()
+  } catch {
+    // Electron can briefly reject display queries while a monitor is changing.
+  }
+}
+
+function emitVoiceState(state: VoiceState): void {
+  broadcast('voice:state', state)
+  updateVoiceOverlay(state)
+}
+
+function emitVoiceTranscript(event: VoiceTranscriptEvent): void {
+  broadcast('voice:transcript', event)
+}
+
+function emitVoiceAudio(event: VoiceAudioEvent): void {
+  broadcast('voice:audio', event)
+}
+
+function workflowGateRequest(value: unknown): WorkflowGateApproveRequest {
+  if (!value || typeof value !== 'object') throw new Error('A workflow gate approval is required.')
+  const request = value as Partial<WorkflowGateApproveRequest>
+  if (typeof request.gateId !== 'string' || !request.gateId.trim()) {
+    throw new Error('A workflow gate id is required.')
+  }
+  if (request.channel !== 'in-app' && request.channel !== 'ntfy' && request.channel !== 'voice') {
+    throw new Error('The workflow approval channel is invalid.')
+  }
+  return {
+    gateId: request.gateId.trim(),
+    payload: request.payload,
+    channel: request.channel
+  }
+}
+
+function normalizeSettingsUpdate(update: Partial<AppSettings>): Partial<AppSettings> {
+  const next = { ...update }
+  if (update.pushToTalkKey !== undefined && update.hotkey === undefined) next.hotkey = update.pushToTalkKey
+  if (update.hotkey !== undefined && update.pushToTalkKey === undefined) next.pushToTalkKey = update.hotkey
+  return next
 }
 
 function requireBrain(): CompanyBrain {
@@ -173,13 +299,91 @@ function registerIpc(): void {
 
   ipcMain.handle('settings:update', async (_event, update: Partial<AppSettings>): Promise<AppSettings> => {
     if (!repository) throw new Error('Settings storage is unavailable.')
-    const next = repository.setSettings(update)
+    const before = repository.getSettings()
+    const normalized = normalizeSettingsUpdate(update)
+    let next = repository.setSettings(normalized)
+    if (
+      before.geminiApiKey !== next.geminiApiKey &&
+      next.geminiApiKey.trim() &&
+      !next.geminiLiveModelOverride.trim()
+    ) {
+      await resolveGeminiLiveModel({
+        apiKey: next.geminiApiKey,
+        storedModel: next.geminiLiveModel,
+        onSelectedModel: (model) => {
+          repository?.setSettings({ geminiLiveModel: model })
+        }
+      })
+      next = repository.getSettings()
+    }
     if (!brain || update.vaultPath !== undefined || update.octaHomePath !== undefined) {
       await configureBrain(next)
     }
     if (update.skillsLibraryPath !== undefined) skillsRegistry?.reload()
+    if (triggerManager && Object.keys(normalized).some((key) =>
+      key === 'pushToTalkEnabled' || key === 'pushToTalkKey' || key === 'hotkey' ||
+      key === 'triggerType' || key === 'mouseButton'
+    )) {
+      triggerManager.update(next)
+    }
+    if (voiceController && Object.keys(normalized).some((key) =>
+      key === 'wakeWordEnabled' || key === 'wakeWordModelPath' || key === 'wakeWordSensitivity'
+    )) {
+      await voiceController.replaceDetector(await createWakeWordDetector(next))
+    }
+    if (voiceController && voiceAudioOutput && Object.keys(normalized).some((key) =>
+      key === 'aiProvider' || key === 'geminiApiKey' || key === 'vertexKeyPath' ||
+      key === 'vertexProjectId' || key === 'vertexLocation'
+    )) {
+      const auth = resolveAiAuth(next)
+      voiceController.replaceFallback(auth ? new GeminiVoiceFallback(auth, voiceAudioOutput) : undefined)
+    }
     broadcast('settings:changed', next)
     return next
+  })
+
+  ipcMain.handle('voice:state', (): VoiceState => voiceController?.currentState ?? defaultVoiceState())
+  ipcMain.handle('voice:toggle', async (): Promise<VoiceState> => {
+    await voiceController?.pushToTalk()
+    return voiceController?.currentState ?? defaultVoiceState()
+  })
+  ipcMain.handle('voice:push-to-talk', async (): Promise<VoiceState> => {
+    await voiceController?.pushToTalk()
+    return voiceController?.currentState ?? defaultVoiceState()
+  })
+  ipcMain.handle('voice:stop', (): VoiceState => {
+    voiceController?.stopSession()
+    return voiceController?.currentState ?? defaultVoiceState()
+  })
+  ipcMain.handle('voice:interrupt', async (): Promise<VoiceState> => {
+    await voiceController?.interrupt()
+    return voiceController?.currentState ?? defaultVoiceState()
+  })
+  ipcMain.on('voice:pcm', (_event, value: unknown) => {
+    if (!voiceController) return
+    if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) voiceController.feedPcm(value)
+  })
+  ipcMain.on('voice:microphone-error', (_event, message: unknown) => {
+    const text = typeof message === 'string' ? message.slice(0, 512) : 'Microphone access failed.'
+    broadcast('voice:message', text)
+  })
+  ipcMain.handle('voice:readback', async (_event, value: unknown): Promise<void> => {
+    if (!value || typeof value !== 'object') throw new Error('A voice read-back is required.')
+    const request = value as { payload?: unknown; text?: unknown; gateId?: unknown }
+    if (typeof request.text !== 'string' || !request.text.trim()) throw new Error('Read-back text is required.')
+    await voiceController?.readBackPayload(
+      request.payload,
+      request.text,
+      typeof request.gateId === 'string' ? request.gateId : undefined
+    )
+  })
+  ipcMain.handle('voice:approve', async (_event, transcript: unknown) => {
+    if (!voiceController) throw new Error('Voice is unavailable.')
+    return voiceController.approveTranscript(typeof transcript === 'string' ? transcript : '')
+  })
+  ipcMain.handle('workflows:gate:approve', (_event, value: unknown) => {
+    if (!workflowGates) throw new Error('Workflow gates are unavailable.')
+    return workflowGates.approve(workflowGateRequest(value))
   })
 
   ipcMain.handle('ai:test', async (): Promise<AiTestResult> => {
@@ -238,12 +442,13 @@ function registerIpc(): void {
   ipcMain.handle('planner:plan', async (_event, request: PlannerPlanRequest): Promise<PlannerResult> => {
     const settings = repository?.getSettings()
     if (!settings) throw new Error('Settings storage is unavailable.')
+    const language = request.language ?? conversations?.getLanguage(request.conversationId) ?? undefined
     const options = {
       homePath: settings.octaHomePath,
       skillsLibraryPath: settings.skillsLibraryPath || undefined,
       conversationId: request.conversationId,
       planId: request.planId,
-      language: request.language,
+      language,
       client: request.client,
       maxDebateRounds: request.maxDebateRounds,
       maxQuestionRounds: request.maxQuestionRounds
@@ -254,7 +459,7 @@ function registerIpc(): void {
           request.conversation ?? [],
           request.attachments ?? [],
           requireBrain(),
-          { homePath: settings.octaHomePath, planId: request.planId, language: request.language }
+          { homePath: settings.octaHomePath, planId: request.planId, language }
         )
     return requirePlanner().plan(brief, options)
   })
@@ -367,7 +572,24 @@ async function start(): Promise<void> {
       if (!repository) throw new Error('Settings storage is unavailable.')
       return repository.getSettings()
     },
-    onEvent: (event) => broadcast('jobs:events', event)
+    onEvent: (event) => {
+      broadcast('jobs:events', event)
+      if (event.type !== 'done' || !event.result) return
+      const resultText = event.result.notes.trim() ||
+        (event.result.questions.length > 0 ? JSON.stringify(event.result.questions) : '') ||
+        `Job ${event.jobId} finished with status ${event.status}.`
+      if (event.status === 'needs_approval') {
+        void voiceController?.readBackPayload(
+          { kind: 'job-result', jobId: event.jobId, result: event.result },
+          resultText,
+          event.jobId
+        ).catch((error: unknown) => console.error('[voice] job read-back failed:', error))
+      } else {
+        void voiceController?.speak(resultText).catch((error: unknown) => {
+          console.error('[voice] job result speech failed:', error)
+        })
+      }
+    }
   })
   researchManager = new ResearchManager({
     runner: jobRunner,
@@ -392,16 +614,85 @@ async function start(): Promise<void> {
       return true
     }
   })
-  await configureBrain(repository.getSettings())
+
+  conversations = new ConversationRepository(repository.getDatabase())
+  workflowGates = new WorkflowGateRegistry()
+  const initialSettings = repository.getSettings()
+  if (initialSettings.geminiApiKey.trim()) {
+    await resolveGeminiLiveModel({
+      apiKey: initialSettings.geminiApiKey,
+      override: initialSettings.geminiLiveModelOverride,
+      storedModel: initialSettings.geminiLiveModel,
+      onSelectedModel: (model) => {
+        repository?.setSettings({ geminiLiveModel: model })
+      }
+    })
+  }
+
+  const wakeDetector = await createWakeWordDetector(initialSettings)
+  const audioOutput = {
+    play: (data: Buffer, mimeType: string): void => emitVoiceAudio(voiceAudioEvent(data, mimeType)),
+    stop: (): void => broadcast('voice:audio-stop', undefined),
+    clear: (): void => broadcast('voice:audio-stop', undefined)
+  }
+  voiceAudioOutput = audioOutput
+  const fallbackAuth = resolveAiAuth(initialSettings)
+  voiceController = new VoiceController({
+    settings: () => {
+      if (!repository) throw new Error('Settings storage is unavailable.')
+      return repository.getSettings()
+    },
+    detector: wakeDetector,
+    conversation: conversations,
+    conversationId: 'default',
+    fallback: fallbackAuth ? new GeminiVoiceFallback(fallbackAuth, audioOutput) : undefined,
+    createSession: ({ model, onEvent }) => {
+      if (!repository) throw new Error('Settings storage is unavailable.')
+      const settings = repository.getSettings()
+      if (!settings.geminiApiKey.trim()) throw new Error('Add a Gemini AI Studio key before starting voice.')
+      return new GeminiLiveSession({
+        apiKey: settings.geminiApiKey,
+        model: settings.geminiLiveModelOverride.trim() || settings.geminiLiveModel.trim() || model || DEFAULT_GEMINI_LIVE_MODEL,
+        audioOutput,
+        onEvent
+      })
+    },
+    onState: emitVoiceState,
+    onTranscript: emitVoiceTranscript,
+    onMessage: (message) => broadcast('voice:message', message),
+    approveGate: (request) => {
+      if (!workflowGates) throw new Error('Workflow gates are unavailable.')
+      return workflowGates.approve(request)
+    }
+  })
+  triggerManager = new GlobalTriggerManager(
+    () => void voiceController?.pushToTalk(),
+    join(initialSettings.octaHomePath, 'tools', 'mouse-hook.exe')
+  )
+  triggerManager.update(initialSettings)
+  await voiceController.start()
+
+  await configureBrain(initialSettings)
   planner = new Planner({
     jobs: jobsRepository,
     jobRunner,
     homePath: repository.getSettings().octaHomePath,
     skillsLibraryPath: repository.getSettings().skillsLibraryPath || undefined,
-    onEvent: (event) => broadcast(event.type, event)
+    onEvent: (event) => {
+      broadcast(event.type, event)
+      if (event.type !== 'planner:questions' || event.questions.length === 0) return
+      const text = event.questions.map((question) => question.text.trim()).filter(Boolean).join('\n')
+      if (!text) return
+      void voiceController?.readBackPayload(
+        { kind: 'planner-questions', planId: event.planId, questions: event.questions },
+        text,
+        `planner:${event.planId}`
+      ).catch((error: unknown) => console.error('[voice] planner read-back failed:', error))
+    }
   })
   registerIpc()
-  mainWindow = createWindow()
+  attachMainWindow(createWindow())
+  overlayWindow = createOverlayWindow()
 }
 
 app.whenReady().then(() => start()).catch((error: unknown) => {
@@ -410,10 +701,20 @@ app.whenReady().then(() => start()).catch((error: unknown) => {
 })
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) mainWindow = createWindow()
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    attachMainWindow(createWindow())
+    if (!overlayWindow || overlayWindow.isDestroyed()) overlayWindow = createOverlayWindow()
+  }
 })
 
 app.on('before-quit', () => {
+  triggerManager?.dispose()
+  triggerManager = undefined
+  voiceController?.dispose()
+  voiceController = undefined
+  voiceAudioOutput = undefined
+  if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.close()
+  overlayWindow = undefined
   void researchManager?.close()
   researchManager = undefined
   brain?.close()
@@ -430,6 +731,8 @@ app.on('before-quit', () => {
   jobsRepository = undefined
   jobRunner = undefined
   skillsRegistry = undefined
+  conversations = undefined
+  workflowGates = undefined
 })
 
 app.on('window-all-closed', () => {

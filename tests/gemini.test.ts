@@ -141,3 +141,25 @@ describe('Gemini transcription', () => {
     expect((error as GeminiApiError).status).toBe(400)
   })
 })
+
+describe('Gemini voice fallback TTS', () => {
+  it('requests native audio from the configured fallback model', async () => {
+    const fetcher = mockFetch(
+      new Response(
+        JSON.stringify({
+          candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/pcm;rate=24000', data: 'AQID' } }] } }]
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    )
+    const client = new GeminiClient('test_api_key', fetcher)
+    const result = await client.synthesizeSpeech('Read this payload back.')
+
+    expect(new Uint8Array(result.audio)).toEqual(new Uint8Array([1, 2, 3]))
+    expect(result.mimeType).toBe('audio/pcm;rate=24000')
+    const [url, init] = vi.mocked(fetcher).mock.calls[0]
+    expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent')
+    const body = JSON.parse(init?.body as string) as { generationConfig: { responseModalities: string[] } }
+    expect(body.generationConfig.responseModalities).toEqual(['AUDIO'])
+  })
+})

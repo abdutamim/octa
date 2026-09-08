@@ -19,13 +19,34 @@ const SETTING_KEYS: readonly (keyof AppSettings)[] = [
   'photoshopPath',
   'braveSearchApiKey',
   'theme',
-  'locale'
+  'locale',
+  'geminiLiveModel',
+  'geminiLiveModelOverride',
+  'wakeWordEnabled',
+  'wakeWordModelPath',
+  'wakeWordSensitivity',
+  'pushToTalkEnabled',
+  'pushToTalkKey',
+  'hotkey',
+  'triggerType',
+  'mouseButton',
+  'wakeGreeting'
 ]
 
 const SETTING_KEY_SET = new Set<string>(SETTING_KEYS)
 
 function stringSetting(value: unknown, maxLength: number, fallback = ''): string {
   return typeof value === 'string' ? value.trim().slice(0, maxLength) : fallback
+}
+
+function booleanSetting(value: unknown, fallback: boolean): boolean {
+  return typeof value === 'boolean' ? value : fallback
+}
+
+function sensitivitySetting(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.min(1, Math.max(0, value))
+    : DEFAULT_SETTINGS.wakeWordSensitivity
 }
 
 function validNtfyServer(value: unknown): string {
@@ -81,6 +102,17 @@ export class SettingsRepository {
 
   getSettings(): AppSettings {
     const stored = readStored(this.database)
+    const legacyHotkey = stringSetting(stored.hotkey, 256, DEFAULT_SETTINGS.hotkey)
+    const pushToTalkKey = stringSetting(
+      stored.pushToTalkKey,
+      256,
+      stored.hotkey === undefined ? DEFAULT_SETTINGS.pushToTalkKey : legacyHotkey
+    )
+    const hotkey = stringSetting(
+      stored.hotkey,
+      256,
+      pushToTalkKey
+    )
     return {
       geminiApiKey: stringSetting(stored.geminiApiKey, 2_048),
       groqApiKey: stringSetting(stored.groqApiKey, 2_048),
@@ -96,7 +128,18 @@ export class SettingsRepository {
       photoshopPath: stringSetting(stored.photoshopPath, 2_048),
       braveSearchApiKey: stringSetting(stored.braveSearchApiKey, 2_048),
       theme: stored.theme === 'light' ? 'light' : 'dark',
-      locale: stored.locale === 'en' ? 'en' : 'ar'
+      locale: stored.locale === 'en' ? 'en' : 'ar',
+      geminiLiveModel: stringSetting(stored.geminiLiveModel, 256),
+      geminiLiveModelOverride: stringSetting(stored.geminiLiveModelOverride, 256),
+      wakeWordEnabled: booleanSetting(stored.wakeWordEnabled, DEFAULT_SETTINGS.wakeWordEnabled),
+      wakeWordModelPath: stringSetting(stored.wakeWordModelPath, 2_048, DEFAULT_SETTINGS.wakeWordModelPath),
+      wakeWordSensitivity: sensitivitySetting(stored.wakeWordSensitivity),
+      pushToTalkEnabled: booleanSetting(stored.pushToTalkEnabled, DEFAULT_SETTINGS.pushToTalkEnabled),
+      pushToTalkKey,
+      hotkey,
+      triggerType: stored.triggerType === 'mouse' ? 'mouse' : 'keyboard',
+      mouseButton: stored.mouseButton === 3 || stored.mouseButton === 5 ? stored.mouseButton : 4,
+      wakeGreeting: stringSetting(stored.wakeGreeting, 512, DEFAULT_SETTINGS.wakeGreeting)
     }
   }
 
