@@ -1,0 +1,302 @@
+/* Octa Code visual system — loaded after the bundled application styles. */
+:root,
+:root[data-theme] {
+  --font-sans: "Outfit", "Segoe UI Variable", "Segoe UI", sans-serif;
+  --background: #f6f3fb;
+  --foreground: #21182d;
+  --card: #fff;
+  --card-foreground: #21182d;
+  --primary: #9d78d2;
+  --primary-foreground: #fff;
+  --secondary: #eee9f5;
+  --secondary-foreground: #2e223d;
+  --muted: #f0ebf6;
+  --muted-foreground: #746b7f;
+  --accent: #eae1f7;
+  --accent-foreground: #7049a6;
+  --border: #ddd5e7;
+  --input: #d6cce1;
+  --ring: #9d78d2;
+  --sidebar: #fbf9fe;
+  --sidebar-foreground: #21182d;
+  --popover: #fff;
+  --popover-foreground: #21182d;
+  --shadow-sm: 0 1px 2px rgba(62, 42, 86, .08);
+  --shadow-md: 0 8px 24px rgba(62, 42, 86, .10);
+  --shadow-lg: 0 18px 45px rgba(62, 42, 86, .13);
+  --shadow-xl: 0 28px 70px rgba(62, 42, 86, .16);
+  --shadow-focus: 0 0 0 3px rgba(157, 120, 210, .28);
+  --radius: 14px;
+}
+
+.dark,
+.dark[data-theme] {
+  --background: #0d0913;
+  --foreground: #f5f0fb;
+  --card: #181120;
+  --card-foreground: #f5f0fb;
+  --primary: #c8b2f2;
+  --primary-foreground: #21152f;
+  --secondary: #1d1626;
+  --secondary-foreground: #eee6f8;
+  --muted: #191221;
+  --muted-foreground: #9c91a8;
+  --accent: #2a2037;
+  --accent-foreground: #d7c4fa;
+  --border: #2d2438;
+  --input: #372b44;
+  --ring: #c8b2f2;
+  --sidebar: #110c18;
+  --sidebar-foreground: #f5f0fb;
+  --popover: #1b1424;
+  --popover-foreground: #f5f0fb;
+  --shadow-sm: 0 1px 2px rgba(4, 2, 7, .52);
+  --shadow-md: 0 10px 28px rgba(4, 2, 7, .46);
+  --shadow-lg: 0 22px 55px rgba(4, 2, 7, .52);
+  --shadow-xl: 0 34px 90px rgba(4, 2, 7, .58);
+  --shadow-focus: 0 0 0 3px rgba(200, 178, 242, .24);
+}
+
+html,
+body,
+#root {
+  min-width: 100%;
+  min-height: 100%;
+  background: var(--background);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01" 1, "cv02" 1;
+  letter-spacing: -.006em;
+}
+
+::selection {
+  color: var(--foreground);
+  background: rgba(200, 178, 242, .38);
+}
+
+button,
+[role="button"],
+a,
+input,
+textarea,
+select {
+  transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, opacity 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+button:active:not(:disabled),
+[role="button"]:active:not([aria-disabled="true"]) {
+  transform: translateY(1px) scale(.99);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.octa-shell {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 78% -12%, rgba(200, 178, 242, .10), transparent 34rem),
+    var(--background);
+}
+
+.octa-shell::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  opacity: .22;
+  background-image: radial-gradient(rgba(200, 178, 242, .17) .55px, transparent .55px);
+  background-size: 9px 9px;
+  mask-image: linear-gradient(to bottom, #000, transparent 58%);
+}
+
+.octa-sidebar {
+  width: 17rem;
+  flex: 0 0 17rem;
+  background: color-mix(in srgb, var(--sidebar) 94%, transparent);
+  border-right-color: color-mix(in srgb, var(--border) 72%, transparent);
+  box-shadow: 12px 0 38px rgba(8, 4, 13, .12);
+  backdrop-filter: blur(18px);
+}
+
+.octa-sidebar--collapsed {
+  width: 4.5rem;
+  flex-basis: 4.5rem;
+}
+
+.octa-brand {
+  min-height: 5rem;
+  height: 5rem;
+  padding-top: 1.15rem;
+}
+
+.octa-brand-lockup {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: .7rem;
+}
+
+.octa-brand-mark {
+  width: 2.2rem;
+  height: 2.2rem;
+  flex: 0 0 2.2rem;
+  filter: drop-shadow(0 8px 16px rgba(83, 49, 125, .26));
+}
+
+.octa-brand-copy {
+  display: grid;
+  min-width: 0;
+  gap: .05rem;
+}
+
+.octa-brand-name {
+  color: var(--foreground);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -.035em;
+}
+
+.octa-brand-tagline {
+  color: var(--muted-foreground);
+  font-size: .66rem;
+  font-weight: 500;
+  letter-spacing: .035em;
+}
+
+.octa-nav-item {
+  position: relative;
+  min-height: 2.55rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+}
+
+.octa-nav-item:hover {
+  border-color: color-mix(in srgb, var(--primary) 16%, transparent);
+  background: color-mix(in srgb, var(--accent) 76%, transparent);
+}
+
+.octa-nav-item--active {
+  color: var(--accent-foreground);
+  border-color: color-mix(in srgb, var(--primary) 22%, transparent);
+  background: color-mix(in srgb, var(--accent) 88%, transparent);
+  box-shadow: inset 3px 0 0 var(--primary), 0 8px 20px rgba(55, 34, 82, .08);
+}
+
+.octa-projectbar {
+  min-height: 3.35rem;
+  background: color-mix(in srgb, var(--background) 88%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--border) 78%, transparent);
+  box-shadow: 0 10px 30px rgba(8, 4, 13, .08);
+  backdrop-filter: blur(20px);
+}
+
+.octa-workspace {
+  min-width: 0;
+}
+
+.octa-main {
+  position: relative;
+}
+
+.octa-kanban {
+  background: transparent;
+}
+
+.octa-kanban-board {
+  gap: 1rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+  scroll-padding-inline: 1.5rem;
+}
+
+.octa-kanban-column {
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--border) 82%, transparent) !important;
+  background: color-mix(in srgb, var(--card) 74%, transparent) !important;
+  box-shadow: 0 14px 36px rgba(7, 4, 11, .13);
+  backdrop-filter: blur(16px);
+}
+
+.card-surface.task-card-enhanced {
+  border-color: color-mix(in srgb, var(--border) 84%, transparent);
+  background: color-mix(in srgb, var(--card) 95%, transparent);
+  box-shadow: 0 5px 16px rgba(6, 3, 10, .12);
+}
+
+.card-surface.task-card-enhanced:hover {
+  border-color: color-mix(in srgb, var(--primary) 46%, var(--border));
+  box-shadow: 0 12px 28px rgba(39, 23, 59, .22);
+  transform: translateY(-2px);
+}
+
+.task-card-glow:hover,
+:root .task-card-glow:hover {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 54%, transparent), 0 12px 30px rgba(39, 23, 59, .20);
+}
+
+.task-running-pulse {
+  animation-name: octa-task-pulse;
+}
+
+@keyframes octa-task-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 178, 242, .08); }
+  50% { box-shadow: 0 0 0 4px rgba(200, 178, 242, .12); }
+}
+
+.column-count-badge {
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  background: color-mix(in srgb, var(--secondary) 86%, transparent);
+}
+
+.empty-column-dropzone {
+  border-color: color-mix(in srgb, var(--border) 68%, transparent);
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
+}
+
+.dark .empty-column-dropzone:hover,
+.dark .empty-column-dropzone.active {
+  border-color: color-mix(in srgb, var(--primary) 44%, transparent);
+  background: rgba(200, 178, 242, .06);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--muted-foreground) 38%, transparent);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--primary) 55%, transparent);
+  background-clip: padding-box;
+}
+
+@media (max-width: 980px) {
+  .octa-sidebar--expanded {
+    width: 15rem;
+    flex-basis: 15rem;
+  }
+
+  .octa-brand-tagline {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .octa-shell *,
+  .octa-shell *::before,
+  .octa-shell *::after {
+    scroll-behavior: auto !important;
+  }
+}
