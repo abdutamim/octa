@@ -1,0 +1,25 @@
+{
+  "id": "W2",
+  "name": "build-website",
+  "version": 1,
+  "description": "Plan, design, build, QA, and hand off a client website.",
+  "autonomy": "assisted",
+  "acceptance": [
+    "The preview URL opens.",
+    "Home performance and SEO score at least 90.",
+    "All sitemap pages exist and RTL is correct when required."
+  ],
+  "steps": [
+    { "id": "s1", "runner": "gemini-inline", "prompt": "Collect pages, languages, CMS, hosting, deadline, and budget for the website.", "input": { "project": "{{brief.project}}", "goal": "{{brief.goal}}" }, "needs": [], "gate": "none", "autonomy": "assisted", "acceptance": ["Blocking website decisions are explicit."] },
+    { "id": "s2", "runner": "claude-skill", "skill": "product-marketing", "input": { "project": "{{brief.project}}", "brief": "{{steps.s1.out}}" }, "needs": ["s1"], "gate": "review", "autonomy": "assisted", "acceptance": ["A client context proposal is written."] },
+    { "id": "s3", "runner": "codex-scout", "prompt": "Research the market and competitors when the client has no existing persona.", "input": { "project": "{{brief.project}}" }, "needs": ["s1"], "gate": "none", "autonomy": "assisted", "acceptance": ["Market evidence reaches the research depth gate."], "todo": true },
+    { "id": "s4", "runner": "claude-skill", "skill": "site-architecture", "input": { "brief": "{{steps.s1.out}}", "context": "{{steps.s2.out}}", "research": "{{steps.s3.out}}" }, "needs": ["s2", "s3"], "gate": "review", "autonomy": "assisted", "acceptance": ["A sitemap, navigation, and URL plan are written."] },
+    { "id": "s5", "runner": "claude-skill", "skill": "copywriting", "input": { "sitemap": "{{steps.s4.out}}", "brand": "{{steps.s2.out}}" }, "needs": ["s4"], "gate": "review", "autonomy": "assisted", "acceptance": ["Copy exists for every sitemap page in the correct language."] },
+    { "id": "s6", "runner": "claude-skill", "skill": "web-ui-designer", "input": { "sitemap": "{{steps.s4.out}}", "copy": "{{steps.s5.out}}" }, "needs": ["s4", "s5"], "gate": "review", "autonomy": "assisted", "acceptance": ["The design system defines palette, type, and components."] },
+    { "id": "s7", "runner": "claude-skill", "skill": "frontend-ui-polisher", "input": { "design": "{{steps.s6.out}}", "copy": "{{steps.s5.out}}" }, "needs": ["s6"], "gate": "approve", "autonomy": "assisted", "acceptance": ["A home and inner-page prototype is available."], "todo": true },
+    { "id": "s8", "runner": "octa-code", "prompt": "Build the approved website in an isolated workspace and run its QA loop.", "input": { "architecture": "{{steps.s4.out}}", "copy": "{{steps.s5.out}}", "design": "{{steps.s6.out}}", "prototype": "{{steps.s7.out}}" }, "needs": ["s4", "s5", "s6", "s7"], "gate": "review", "autonomy": "assisted", "acceptance": ["The website build returns a preview URL.", "The build passes its QA loop."], "todo": true },
+    { "id": "s9", "runner": "claude-skill", "skill": "seo-audit", "input": { "preview": "{{steps.s8.out}}" }, "needs": ["s8"], "gate": "none", "autonomy": "assisted", "acceptance": ["Preview SEO, schema, and performance findings are recorded."], "todo": true },
+    { "id": "s10", "runner": "claude-skill", "skill": "prism-store-builder", "input": { "preview": "{{steps.s8.out}}" }, "needs": ["s8"], "gate": "review", "autonomy": "assisted", "acceptance": ["A Shopify theme branch is returned when this is a store."], "todo": true },
+    { "id": "s11", "runner": "claude-skill", "skill": "launch", "input": { "build": "{{steps.s8.out}}", "qa": "{{steps.s9.out}}" }, "needs": ["s8", "s9", "s10"], "gate": "approve", "autonomy": "assisted", "acceptance": ["The handoff and launch checklist are complete."], "todo": true }
+  ]
+}

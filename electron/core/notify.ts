@@ -6,6 +6,15 @@ export interface NotifyOptions {
   priority?: 'low' | 'default' | 'high'
   tags?: string[]
   clickUrl?: string
+  /** ntfy action buttons. URLs are identifiers only; the app still verifies the gate payload. */
+  actions?: NotifyAction[]
+}
+
+export interface NotifyAction {
+  action: 'view' | 'http' | 'broadcast'
+  label: string
+  url?: string
+  clear?: boolean
 }
 
 interface NotifierRuntime {
@@ -50,6 +59,14 @@ export class Notifier {
       }
       if (options.tags?.length) headers.Tags = options.tags.join(',')
       if (options.clickUrl) headers.Click = options.clickUrl
+      if (options.actions?.length) {
+        headers.Actions = options.actions.map((action) => {
+          const parts = [action.action, action.label]
+          if (action.url) parts.push(action.url)
+          if (action.clear) parts.push('clear=true')
+          return parts.join(', ')
+        }).join('; ')
+      }
 
       const response = await this.runtime.fetch(target, {
         method: 'POST',
