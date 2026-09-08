@@ -22,6 +22,8 @@ const CLEANUP_MODEL = 'gemini-3.5-flash-lite'
 // *-latest aliases REJECT thinkingBudget:0 (HTTP 400) and cannot be used here —
 // verify a candidate accepts it before ever swapping this constant.
 const TRANSCRIBE_MODEL = 'gemini-3.5-flash'
+/** Gemini's native audio response surface used when a Live session is down. */
+export const GEMINI_TTS_MODEL = 'gemini-3.5-flash'
 const TRANSCRIBE_GENERATION_CONFIG = { temperature: 0, thinkingConfig: { thinkingBudget: 0 } }
 // Files/recordings can be hours long, so give them a large token ceiling and a
 // generous timeout — a whole meeting must not be cut off or aborted mid-flight.
@@ -525,6 +527,64 @@ export class GeminiClient {
     } finally {
       clearHeadersTimer()
       signal?.removeEventListener('abort', forwardAbort)
+    }
+  }
+
+  /**
+   * Synthesize exact read-back text through Gemini's audio response modality.
+   * Live is the preferred conversational transport; this method is deliberately
+   * unary so it remains useful while a Live socket is reconnecting.
+   */
+  async synthesizeSpeech(
+    text: string,
+    options: { model?: string; voiceName?: string } = {},
+    signal?: AbortSignal
+  ): Promise<{ audio: ArrayBuffer; mimeType: string }> {
+    const value = text.trim()
+    if (!value) throw new Error('TTS text cannot be empty.')
+    const response = await this.fetcher(this.transport.nativeUrl(options.model ?? GEMINI_TTS_MODEL), {
+      method: 'POST',
+      headers: {
+        ...(await this.transport.nativeHeaders()),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: value }] }],
+        generationConfig: {
+          responseModalities: ['AUDIO'],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: options.voiceName ?? 'Kore' }
+            }
+          },
+          temperature: 0,
+          thinkingConfig: { thinkingBudget: 0 }
+        }
+      }),
+      signal: signal ?? AbortSignal.timeout(30_000)
+    })
+    if (!response.ok) throw await errorFromResponse(response)
+    const payload = (await response.json()) as {
+      candidates?: Array<{ content?: { parts?: Array<{
+        inlineData?: { data?: unknown; mimeType?: unknown }
+        inline_data?: { data?: unknown; mime_type?: unknown }
+      }> } }>
+    }
+    const audioPart = payload.candidates?.[0]?.content?.parts?.find((part) => {
+      return typeof part.inlineData?.data === 'string' || typeof part.inline_data?.data === 'string'
+    })
+    const data = audioPart?.inlineData?.data ?? audioPart?.inline_data?.data
+    if (typeof data !== 'string' || !data) {
+      throw new GeminiApiError('Gemini returned no audio for the TTS request.', 502)
+    }
+    const mimeType =
+      (typeof audioPart?.inlineData?.mimeType === 'string' && audioPart.inlineData.mimeType) ||
+      (typeof audioPart?.inline_data?.mime_type === 'string' && audioPart.inline_data.mime_type) ||
+      'audio/pcm;rate=24000'
+    const audio = Buffer.from(data, 'base64')
+    return {
+      audio: audio.buffer.slice(audio.byteOffset, audio.byteOffset + audio.byteLength),
+      mimeType
     }
   }
 }

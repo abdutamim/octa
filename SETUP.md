@@ -60,3 +60,56 @@ runtime.
 
 The default Octa home is `C:\Octa`. The current database remains at that home;
 the configurable home value is the location later job runners will use.
+
+## Voice setup (spec 007)
+
+Octa uses the Gemini Live WebSocket only after a wake-word hit or push-to-talk
+activation. Before activation, microphone PCM is passed to the local detector in
+the main process and is never sent to a cloud endpoint. Add the Gemini AI Studio
+key in Settings for Live model discovery, Live audio, and the Gemini TTS/STT
+fallback. At startup Octa lists the available models, selects the newest model
+whose id contains `live` or `native-audio`, and stores it in SQLite. Entering a
+model id in **Manual Live model override** takes precedence over discovery.
+
+### Obtain the offline Arabic wake-word model
+
+The detector is openWakeWord-compatible ONNX, which supports shipping a custom
+Arabic phrase model without sending microphone audio to a service. The model
+bundle has three files in one directory:
+
+```text
+C:\Octa\models\octa.onnx
+C:\Octa\models\melspectrogram.onnx
+C:\Octa\models\embedding_model.onnx
+```
+
+1. Use the openWakeWord custom-model notebook/training utility to create one
+   classifier with positive phrase variants for both `أوكتا` and `يا أوكتا`.
+   Include clean recordings in the target Egyptian-Arabic pronunciation and
+   varied negative speech/noise. Export the classifier as `octa.onnx`.
+2. Download the matching openWakeWord `melspectrogram.onnx` and
+   `embedding_model.onnx` feature models from the project release assets, or
+   export the same models using the project’s conversion notebook. Do not put
+   the model files in git; they are machine-specific assets under `C:\Octa`.
+3. Set the model path in Settings to the classifier file and choose a sensitivity
+   after testing. The loader expects the two shared feature models beside it.
+
+Training references:
+
+- https://github.com/dscripka/openWakeWord#training-new-models
+- https://github.com/dscripka/openWakeWord/tree/main/examples
+- https://github.com/dscripka/openWakeWord/releases
+
+The Node.js app uses `onnxruntime-node` with CPU execution and the development
+and rebuild scripts include it alongside `better-sqlite3` for Electron’s ABI.
+If no model or feature files are present, wake-word detection fails closed while
+push-to-talk remains available.
+
+### Push-to-talk and read-back approvals
+
+The default global shortcut is `CommandOrControl+Alt+Space`; it can be changed
+in Settings, or the copied native mouse trigger can be selected. Wake word and
+push-to-talk are independent and may both remain enabled. Planner questions and
+job results are spoken. A voice approval (`approve` / `موافق`) is accepted only
+for the exact payload most recently read back and only for 60 seconds; the
+approval is emitted through `workflows:gate:approve` with `channel: 'voice'`.

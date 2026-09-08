@@ -8,6 +8,8 @@ import {
   KeyRound,
   Languages,
   LogIn,
+  Mic,
+  MousePointer2,
   Moon,
   Palette,
   RefreshCw,
@@ -268,6 +270,53 @@ export function SettingsPage({
               {aiState === 'testing' ? label('testingAi') : label('testAi')}
             </button>
             {aiMessage && <span className={`inline-status ${aiState === 'error' ? 'error' : 'success'}`}>{aiMessage}</span>}
+          </div>
+        </section>
+
+        <section className="settings-section voice-settings-section">
+          <SectionHeading icon={<Mic size={19} />} title={label('voiceSection')} detail={label('voiceSectionDetail')} />
+          <div className="settings-fields">
+            <SettingField icon={<Mic size={18} />} label={label('voiceLiveModel')} detail={label('voiceLiveModelDetail')}>
+              <input aria-label={label('voiceLiveModel')} readOnly spellCheck={false} value={draft.geminiLiveModel || label('notAvailable')} />
+            </SettingField>
+            <SettingField icon={<Wrench size={18} />} label={label('voiceLiveModelOverride')} detail={label('voiceLiveModelOverrideDetail')}>
+              <input aria-label={label('voiceLiveModelOverride')} onChange={(event) => setValue('geminiLiveModelOverride', event.target.value)} placeholder={label('notAvailable')} spellCheck={false} value={draft.geminiLiveModelOverride} />
+            </SettingField>
+            <SettingField icon={<FolderOpen size={18} />} label={label('wakeWordModelPath')} detail={label('wakeWordModelPathDetail')}>
+              <input aria-label={label('wakeWordModelPath')} onChange={(event) => setValue('wakeWordModelPath', event.target.value)} spellCheck={false} value={draft.wakeWordModelPath} />
+            </SettingField>
+            <SettingField icon={<Mic size={18} />} label={label('wakeWordSensitivity')} detail={label('wakeWordSensitivityDetail')}>
+              <input aria-label={label('wakeWordSensitivity')} max="1" min="0" onChange={(event) => setValue('wakeWordSensitivity', Number(event.target.value))} step="0.01" type="range" value={draft.wakeWordSensitivity} />
+            </SettingField>
+            <SettingField icon={<Mic size={18} />} label={label('wakeGreeting')} detail={label('wakeGreetingDetail')}>
+              <input aria-label={label('wakeGreeting')} onChange={(event) => setValue('wakeGreeting', event.target.value)} value={draft.wakeGreeting} />
+            </SettingField>
+            <SettingField icon={<MousePointer2 size={18} />} label={label('triggerType')} detail={label('pushToTalkKeyDetail')}>
+              <select aria-label={label('triggerType')} onChange={(event) => setValue('triggerType', event.target.value as AppSettings['triggerType'])} value={draft.triggerType}>
+                <option value="keyboard">{label('keyboardTrigger')}</option>
+                <option value="mouse">{label('mouseTrigger')}</option>
+              </select>
+            </SettingField>
+            {draft.triggerType === 'mouse' ? (
+              <SettingField icon={<MousePointer2 size={18} />} label={label('mouseButton')} detail={label('pushToTalkKeyDetail')}>
+                <select aria-label={label('mouseButton')} onChange={(event) => setValue('mouseButton', Number(event.target.value) as AppSettings['mouseButton'])} value={draft.mouseButton}>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </SettingField>
+            ) : (
+              <SettingField icon={<KeyRound size={18} />} label={label('pushToTalkKey')} detail={label('pushToTalkKeyDetail')}>
+                <input aria-label={label('pushToTalkKey')} onChange={(event) => {
+                  setDraft((current) => ({ ...current, pushToTalkKey: event.target.value, hotkey: event.target.value }))
+                  setSaveState('idle')
+                }} spellCheck={false} value={draft.pushToTalkKey} />
+              </SettingField>
+            )}
+          </div>
+          <div className="voice-toggle-row">
+            <label><input checked={draft.wakeWordEnabled} onChange={(event) => setValue('wakeWordEnabled', event.target.checked)} type="checkbox" /> {label('wakeWordEnabled')}</label>
+            <label><input checked={draft.pushToTalkEnabled} onChange={(event) => setValue('pushToTalkEnabled', event.target.checked)} type="checkbox" /> {label('pushToTalkEnabled')}</label>
           </div>
         </section>
 
