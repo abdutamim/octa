@@ -10,6 +10,7 @@ import { MapPage } from './components/MapPage'
 import { SkillsPage } from './components/SkillsPage'
 import { OctaPage } from './components/OctaPage'
 import { WorkflowsPage } from './components/WorkflowsPage'
+import { BuildsPage } from './components/BuildsPage'
 import { Sidebar, type Page } from './components/Sidebar'
 import { VoiceBar } from './components/VoiceBar'
 import { VoiceAudioPlayback } from './components/VoiceAudioPlayback'
@@ -87,6 +88,7 @@ export function App(): React.JSX.Element {
           {page === 'jobs' && <JobsPage locale={locale} />}
           {page === 'workflows' && <WorkflowsPage locale={locale} />}
           {page === 'skills' && <SkillsPage locale={locale} />}
+          {page === 'builds' && <BuildsPage locale={locale} />}
         </section>
       </div>
     </div>
