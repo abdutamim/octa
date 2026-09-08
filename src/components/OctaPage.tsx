@@ -18,8 +18,11 @@ import {
   Terminal,
   X
 } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { OctaApi } from '../../electron/preload'
+import type { PlanRecord } from '../../electron/db/jobs'
+import type { HealthReport } from '../../electron/core/octa/health'
+import type { WorkflowListItem } from '../../electron/core/octa/workflows'
 import type { JobEvent, JobOutput, JobRecord, JobStatus } from '../../electron/types'
 import type { PlanStep, PlannerResult } from '../../electron/core/octa/planner'
 import type { SourceLedgerEntry } from '../../electron/core/octa/sources'
@@ -47,11 +50,17 @@ export interface OctaPanelState {
   events: readonly JobEvent[]
   outputs: readonly OctaOutput[]
   sources: readonly SourceLedgerEntry[]
+  health?: HealthReport | null
+  workflows?: readonly WorkflowListItem[]
+  recentPlans?: readonly PlanRecord[]
 }
 
 export type OctaPageApi = {
   jobs: Pick<OctaApi['jobs'], 'list' | 'cancel' | 'approve' | 'onEvent'>
+  plans?: Pick<OctaApi['plans'], 'list'>
   planner: Pick<OctaApi['planner'], 'plan' | 'answer' | 'approve' | 'get' | 'onQuestions' | 'onRound'>
+  health?: Pick<OctaApi['health'], 'run'>
+  workflows?: Pick<OctaApi['workflows'], 'list'>
   research?: Pick<OctaApi['research'], 'status'>
   files?: Pick<OctaApi['files'], 'read' | 'open'>
 }
@@ -65,6 +74,7 @@ export interface OctaPageProps {
   voiceBar?: ReactNode
   api?: OctaPageApi
   autoLoad?: boolean
+  onOpenSetup?: () => void
   onRejectGate?: (job: JobRecord) => Promise<void> | void
   onCommentGate?: (job: JobRecord, comment: string) => Promise<void> | void
 }
@@ -296,6 +306,159 @@ function formatTime(value: string | undefined, locale: Locale): string {
   return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-EG' : 'en-US', { hour: 'numeric', minute: '2-digit' }).format(date)
 }
 
+interface HomeWorkflowDefinition {
+  id: 'W1' | 'W2' | 'W3' | 'W4' | 'W5' | 'W6'
+  titleKey: TranslationKey
+  detailKey: TranslationKey
+  promptKey: TranslationKey
+}
+
+const HOME_WORKFLOWS: readonly HomeWorkflowDefinition[] = [
+  { id: 'W1', titleKey: 'homeWorkflowW1Title', detailKey: 'homeWorkflowW1Detail', promptKey: 'homeWorkflowW1Prompt' },
+  { id: 'W2', titleKey: 'homeWorkflowW2Title', detailKey: 'homeWorkflowW2Detail', promptKey: 'homeWorkflowW2Prompt' },
+  { id: 'W3', titleKey: 'homeWorkflowW3Title', detailKey: 'homeWorkflowW3Detail', promptKey: 'homeWorkflowW3Prompt' },
+  { id: 'W4', titleKey: 'homeWorkflowW4Title', detailKey: 'homeWorkflowW4Detail', promptKey: 'homeWorkflowW4Prompt' },
+  { id: 'W5', titleKey: 'homeWorkflowW5Title', detailKey: 'homeWorkflowW5Detail', promptKey: 'homeWorkflowW5Prompt' },
+  { id: 'W6', titleKey: 'homeWorkflowW6Title', detailKey: 'homeWorkflowW6Detail', promptKey: 'homeWorkflowW6Prompt' }
+]
+
+function setupMissingItems(report: HealthReport | null): TranslationKey[] {
+  if (!report) return ['setupMissingKeys', 'setupMissingVault', 'setupMissingLogins']
+  const failed = new Set(report.checks.filter((check) => !check.ok).map((check) => check.id))
+  const missing: TranslationKey[] = []
+  if (failed.has('gemini') || failed.has('brave')) missing.push('setupMissingKeys')
+  if (failed.has('vault') || failed.has('octa-home')) missing.push('setupMissingVault')
+  if (failed.has('research-browser')) missing.push('setupMissingLogins')
+  if (missing.length === 0 && !report.ok) missing.push('setupMissingRuntime')
+  return missing
+}
+
+function recentPlanTitle(record: PlanRecord, locale: Locale): string {
+  const plan = asRecord(record.plan)
+  for (const key of ['summary', 'title', 'name']) {
+    if (nonEmptyString(plan?.[key])) return plan[key]
+  }
+  const brief = record.briefMd.split(/\r?\n/u).map((line) => line.trim()).find(nonEmptyString)
+  return brief ?? `${label('recentPlans', locale)} · ${record.id.slice(0, 8)}`
+}
+
+function planStatusKey(status: PlanRecord['status']): TranslationKey {
+  return status === 'needs_input'
+    ? 'planStatusNeedsInput'
+    : status === 'needs_approval'
+      ? 'planStatusNeedsApproval'
+      : status === 'approved'
+        ? 'planStatusApproved'
+        : 'planStatusReady'
+}
+
+function WelcomeBlock({
+  locale,
+  health,
+  jobs,
+  plans,
+  workflows,
+  onOpenSetup,
+  onStartWorkflow
+}: {
+  locale: Locale
+  health: HealthReport | null
+  jobs: readonly JobRecord[]
+  plans: readonly PlanRecord[]
+  workflows: readonly WorkflowListItem[]
+  onOpenSetup?: () => void
+  onStartWorkflow: (prompt: string) => void
+}): React.JSX.Element {
+  const registryIds = new Set(workflows.map((workflow) => workflow.id))
+  const missing = setupMissingItems(health)
+  const setupNeeded = health?.ok !== true
+  const recentJobs = jobs.slice(0, 5)
+  const recentPlans = plans.slice(0, 5)
+
+  return (
+    <section className="octa-welcome" aria-labelledby="octa-welcome-title" data-testid="octa-welcome">
+      <div className="octa-welcome-intro">
+        <div>
+          <span className="octa-eyebrow">{label('octaEyebrow', locale)}</span>
+          <h2 id="octa-welcome-title">{label('welcomeGreeting', locale)}</h2>
+          <p>{label('welcomeDetail', locale)}</p>
+        </div>
+        <span className="octa-welcome-spark" aria-hidden="true"><Sparkles size={22} /></span>
+      </div>
+
+      {setupNeeded && (
+        <aside className="octa-setup-banner" data-testid="setup-banner" role="alert">
+          <div className="octa-setup-icon" aria-hidden="true"><ShieldAlert size={19} /></div>
+          <div className="octa-setup-copy">
+            <strong>{label('setupTitle', locale)}</strong>
+            <p>{health ? label('setupDetail', locale) : label('setupChecking', locale)}</p>
+            <ul>
+              {missing.map((item) => <li key={item}>{label(item, locale)}</li>)}
+            </ul>
+          </div>
+          <button className="accent-button" onClick={() => onOpenSetup?.()} type="button">
+            <ArrowUpRight size={15} aria-hidden="true" />
+            {label('openSetupWizard', locale)}
+          </button>
+        </aside>
+      )}
+
+      <section className="octa-workflow-home" aria-labelledby="octa-workflow-home-title">
+        <header className="octa-welcome-section-heading">
+          <div>
+            <span className="octa-eyebrow">{label('workflowsEyebrow', locale)}</span>
+            <h3 id="octa-workflow-home-title">{label('workflowsHomeTitle', locale)}</h3>
+          </div>
+          <p>{label('workflowsHomeDetail', locale)}</p>
+        </header>
+        <div className="octa-workflow-grid">
+          {HOME_WORKFLOWS.map((definition, index) => {
+            const title = label(definition.titleKey, locale)
+            return (
+              <article className={`octa-workflow-card ${registryIds.has(definition.id) ? 'is-registered' : ''}`} data-workflow-id={definition.id} key={definition.id}>
+                <div className="octa-workflow-card-topline"><span>W{index + 1}</span><span className="octa-workflow-card-dot" aria-hidden="true" /></div>
+                <h4>{title}</h4>
+                <p>{label(definition.detailKey, locale)}</p>
+                <button className="quiet-button" onClick={() => onStartWorkflow(label(definition.promptKey, locale))} type="button">
+                  <ArrowUpRight size={14} aria-hidden="true" />
+                  {label('workflowStart', locale)}
+                </button>
+              </article>
+            )
+          })}
+        </div>
+      </section>
+
+      <section className="octa-recent-home" aria-labelledby="octa-recent-title">
+        <div className="octa-welcome-section-heading octa-recent-heading">
+          <div>
+            <span className="octa-eyebrow">{label('recentActivity', locale)}</span>
+            <h3 id="octa-recent-title">{label('recentActivity', locale)}</h3>
+          </div>
+        </div>
+        <div className="octa-recent-grid">
+          <section className="octa-recent-card" aria-labelledby="octa-recent-jobs-title">
+            <header><h4 id="octa-recent-jobs-title">{label('recentJobs', locale)}</h4><span>{recentJobs.length}</span></header>
+            {recentJobs.length === 0 ? <p className="octa-recent-empty">{label('recentJobsEmpty', locale)}</p> : (
+              <ul>
+                {recentJobs.map((job) => <li key={job.id}><span className="octa-recent-item-copy"><strong>{job.workflow ?? job.skill ?? job.runner}</strong><small>{formatTime(job.startedAt ?? job.finishedAt ?? undefined, locale)}</small></span><span className={`octa-home-job-status status-${job.status}`}>{label(jobStatusKey(job.status), locale)}</span></li>)}
+              </ul>
+            )}
+          </section>
+          <section className="octa-recent-card" aria-labelledby="octa-recent-plans-title">
+            <header><h4 id="octa-recent-plans-title">{label('recentPlans', locale)}</h4><span>{recentPlans.length}</span></header>
+            {recentPlans.length === 0 ? <p className="octa-recent-empty">{label('recentPlansEmpty', locale)}</p> : (
+              <ul>
+                {recentPlans.map((record) => <li key={record.id}><span className="octa-recent-item-copy"><strong>{recentPlanTitle(record, locale)}</strong><small>{formatTime(record.createdAt, locale)}</small></span><span className="octa-home-plan-status">{label(planStatusKey(record.status), locale)}</span></li>)}
+              </ul>
+            )}
+          </section>
+        </div>
+      </section>
+    </section>
+  )
+}
+
 function ConversationColumn({
   locale,
   conversation,
@@ -303,7 +466,8 @@ function ConversationColumn({
   planning,
   draft,
   onDraftChange,
-  onSubmit
+  onSubmit,
+  inputRef
 }: {
   locale: Locale
   conversation: readonly ConversationMessage[]
@@ -312,6 +476,7 @@ function ConversationColumn({
   draft: string
   onDraftChange: (value: string) => void
   onSubmit: () => void
+  inputRef: React.RefObject<HTMLTextAreaElement | null>
 }): React.JSX.Element {
   const submitOnKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>): void => {
     if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
@@ -355,6 +520,7 @@ function ConversationColumn({
         <textarea
           aria-describedby="octa-message-shortcut"
           id="octa-message-input"
+          ref={inputRef}
           onChange={(event) => onDraftChange(event.target.value)}
           onKeyDown={submitOnKeyDown}
           placeholder={label('conversationPlaceholder', locale)}
@@ -644,6 +810,7 @@ export function OctaPage({
   voiceBar,
   api,
   autoLoad,
+  onOpenSetup,
   onRejectGate,
   onCommentGate
 }: OctaPageProps): React.JSX.Element {
@@ -664,6 +831,10 @@ export function OctaPage({
   const [error, setError] = useState<string | null>(null)
   const [viewer, setViewer] = useState<ViewerState | null>(null)
   const [gateComments, setGateComments] = useState<Record<string, string>>({})
+  const [health, setHealth] = useState<HealthReport | null>(seed?.health ?? null)
+  const [workflows, setWorkflows] = useState<WorkflowListItem[]>([...(seed?.workflows ?? [])])
+  const [recentPlans, setRecentPlans] = useState<PlanRecord[]>([...(seed?.recentPlans ?? [])])
+  const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const refreshJobs = useCallback(async (showLoading = false): Promise<void> => {
     if (!bridge) return
@@ -694,6 +865,29 @@ export function OctaPage({
     }
     void refreshJobs(true)
   }, [bridge, refreshJobs, shouldAutoLoad])
+
+  useEffect(() => {
+    if (!shouldAutoLoad || !bridge) return
+    let active = true
+    if (bridge.health) {
+      void bridge.health.run().then((report) => {
+        if (active) setHealth(report)
+      }).catch(() => undefined)
+    }
+    if (bridge.plans) {
+      void bridge.plans.list(5).then((plans) => {
+        if (active) setRecentPlans(plans.slice(0, 5))
+      }).catch(() => undefined)
+    }
+    if (bridge.workflows) {
+      void bridge.workflows.list().then((items) => {
+        if (active) setWorkflows(items)
+      }).catch(() => undefined)
+    }
+    return () => {
+      active = false
+    }
+  }, [bridge, shouldAutoLoad])
 
   useEffect(() => {
     if (!bridge) return
@@ -747,6 +941,11 @@ export function OctaPage({
   const currentState = pageState(plan, jobs, planning)
   const outputs = useMemo(() => mergeOutputs(outputRecords, outputsFromJobs(jobs)), [jobs, outputRecords])
   const sources = useMemo(() => mergeSources(sourceRecords, sourcesFromJobs(jobs)), [jobs, sourceRecords])
+
+  const startWorkflowPrompt = (prompt: string): void => {
+    setDraft(prompt)
+    if (typeof window !== 'undefined') window.requestAnimationFrame(() => inputRef.current?.focus())
+  }
 
   const submitConversation = async (): Promise<void> => {
     const text = draft.trim()
@@ -852,8 +1051,10 @@ export function OctaPage({
 
       {error && <p className="octa-page-error" role="alert"><AlertCircle size={15} />{error}</p>}
 
+      {!plan && !planning && <WelcomeBlock health={health} jobs={jobs} locale={locale} onOpenSetup={onOpenSetup} onStartWorkflow={startWorkflowPrompt} plans={recentPlans} workflows={workflows} />}
+
       <div className="octa-layout">
-        <ConversationColumn conversation={conversation} draft={draft} locale={locale} onDraftChange={setDraft} onSubmit={() => void submitConversation()} planning={planning} voiceBar={voiceBar} />
+        <ConversationColumn conversation={conversation} draft={draft} inputRef={inputRef} locale={locale} onDraftChange={setDraft} onSubmit={() => void submitConversation()} planning={planning} voiceBar={voiceBar} />
         <div className="octa-main-column">
           {plan ? <PlanCard locale={locale} onAnswer={answerPlan} onApprove={approvePlan} result={plan} /> : <PlanEmpty locale={locale} planning={planning} />}
           <FailureSummary jobs={jobs} locale={locale} />

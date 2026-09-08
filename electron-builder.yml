@@ -1,5 +1,5 @@
 appId: com.octa.assistant
-productName: Octa Assistant
+productName: Octa
 copyright: Copyright 2026 Octa contributors
 directories:
   output: release
@@ -22,14 +22,14 @@ win:
     - target: nsis
       arch:
         - x64
-  artifactName: Octa-Assistant-Setup-${version}.${ext}
+  artifactName: Octa-Setup-${version}.${ext}
   requestedExecutionLevel: asInvoker
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: Octa Assistant
+  shortcutName: Octa
   deleteAppDataOnUninstall: false
   include: installer/installer.nsh
   installerIcon: installer/icon.ico

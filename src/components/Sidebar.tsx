@@ -1,6 +1,7 @@
 import { Brain, Cloud, GitBranch, Hammer, HeartPulse, Languages, Library, ListTodo, Settings2, Sparkles, Users, Workflow } from 'lucide-react'
 import type { Locale, TranslationKey } from '../i18n'
 import { t } from '../i18n'
+import { OctaMark } from './OctaMark'
 
 export type Page = 'octa' | 'jobs' | 'tasks' | 'clients' | 'workflows' | 'skills' | 'brain' | 'map' | 'builds' | 'health' | 'settings'
 
@@ -19,11 +20,7 @@ export function Sidebar({
   return (
     <aside className="sidebar">
       <div className="brand-lockup">
-        <span className="brand-mark" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </span>
+        <OctaMark className="brand-mark" />
         <div>
           <strong>{label('brandName')}</strong>
           <span>{label('brandSubtitle')}</span>

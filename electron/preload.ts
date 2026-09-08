@@ -55,6 +55,7 @@ import type {
 } from './types'
 import type { UpdateCheckResult } from './core/octa/update'
 import type { ApprovalResult } from './core/voice/readback'
+import type { PlanRecord } from './db/jobs'
 
 const api = {
   state: (): Promise<RendererState> => ipcRenderer.invoke('app:state'),
@@ -185,6 +186,9 @@ const api = {
       ipcRenderer.on('jobs:events', wrapped)
       return () => ipcRenderer.removeListener('jobs:events', wrapped)
     }
+  },
+  plans: {
+    list: (limit = 5): Promise<PlanRecord[]> => ipcRenderer.invoke('plans:list', limit)
   },
   workflows: {
     list: (): Promise<WorkflowListItem[]> => ipcRenderer.invoke('workflows:list'),

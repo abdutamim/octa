@@ -21,7 +21,7 @@ if (!mainBundle.includes('../preload/preload.mjs')) {
 }
 
 const html = await readFile(resolve(root, 'out/renderer/index.html'), 'utf8')
-if (!html.includes('Octa Assistant') || !html.includes('/assets/')) {
+if (!html.includes('<title>Octa</title>') || !html.includes('/assets/')) {
   throw new Error('The renderer output is incomplete.')
 }
 
