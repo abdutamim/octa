@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, Notification, screen, shell } from 'electron'
 import { mkdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { readFile } from 'node:fs/promises'
+import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { GeminiClient } from './cloud/gemini'
 import {
   DEFAULT_GEMINI_LIVE_MODEL,
@@ -92,6 +93,18 @@ function loadRenderer(window: BrowserWindow, overlay = false): void {
     return
   }
   void window.loadFile(join(__dirname, '../renderer/index.html'), overlay ? { query: { overlay: '1' } } : undefined)
+}
+
+function outputFilePath(value: unknown): string {
+  if (typeof value !== 'string' || !value.trim()) throw new Error('An output file path is required.')
+  const configuredHome = repository?.getSettings().octaHomePath || DEFAULT_OCTA_HOME
+  const root = resolve(configuredHome)
+  const target = resolve(value)
+  const distance = relative(root, target)
+  if (distance === '..' || distance.startsWith(`..${sep}`) || isAbsolute(distance)) {
+    throw new Error('Output files must stay inside the Octa home folder.')
+  }
+  return target
 }
 
 function createWindow(): BrowserWindow {
@@ -545,6 +558,14 @@ function registerIpc(): void {
   ipcMain.handle('login:start', startLogin)
   ipcMain.handle('research:login:done', finishLogin)
   ipcMain.handle('login:done', finishLogin)
+
+  ipcMain.handle('files:read', async (_event, value: unknown): Promise<string> =>
+    readFile(outputFilePath(value), 'utf8')
+  )
+
+  ipcMain.handle('files:open', async (_event, value: unknown): Promise<string> =>
+    shell.openPath(outputFilePath(value))
+  )
 
   ipcMain.on('window:minimize', (event) => BrowserWindow.fromWebContents(event.sender)?.minimize())
   ipcMain.on('window:maximize', (event) => {

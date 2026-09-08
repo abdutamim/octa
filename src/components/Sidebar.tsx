@@ -1,8 +1,8 @@
-import { Brain, Cloud, GitBranch, Languages, Library, ListTodo, Settings2, Sparkles } from 'lucide-react'
+import { Brain, Cloud, GitBranch, Languages, Library, ListTodo, Settings2, Sparkles, Workflow } from 'lucide-react'
 import type { Locale, TranslationKey } from '../i18n'
 import { t } from '../i18n'
 
-export type Page = 'settings' | 'brain' | 'map' | 'jobs' | 'skills'
+export type Page = 'octa' | 'jobs' | 'workflows' | 'skills' | 'brain' | 'map' | 'settings'
 
 export function Sidebar({
   page,
@@ -30,57 +30,79 @@ export function Sidebar({
         </div>
       </div>
 
-      <nav aria-label={label('settings')}>
+      <nav aria-label={label('primaryNavigation')}>
         <button
+          aria-current={page === 'octa' ? 'page' : undefined}
+          className={`nav-item ${page === 'octa' ? 'active' : ''}`}
+          onClick={() => onChange('octa')}
+          type="button"
+        >
+          <Sparkles size={18} aria-hidden="true" />
+          <span>{label('octaNav')}</span>
+        </button>
+        <button
+          aria-current={page === 'jobs' ? 'page' : undefined}
+          className={`nav-item ${page === 'jobs' ? 'active' : ''}`}
+          onClick={() => onChange('jobs')}
+          type="button"
+        >
+          <ListTodo size={18} aria-hidden="true" />
+          <span>{label('jobs')}</span>
+        </button>
+        <button
+          aria-current={page === 'workflows' ? 'page' : undefined}
+          className={`nav-item ${page === 'workflows' ? 'active' : ''}`}
+          onClick={() => onChange('workflows')}
+          type="button"
+        >
+          <Workflow size={18} aria-hidden="true" />
+          <span>{label('workflows')}</span>
+        </button>
+        <button
+          aria-current={page === 'skills' ? 'page' : undefined}
+          className={`nav-item ${page === 'skills' ? 'active' : ''}`}
+          onClick={() => onChange('skills')}
+          type="button"
+        >
+          <Library size={18} aria-hidden="true" />
+          <span>{label('skills')}</span>
+        </button>
+        <button
+          aria-current={page === 'brain' ? 'page' : undefined}
           className={`nav-item ${page === 'brain' ? 'active' : ''}`}
           onClick={() => onChange('brain')}
           type="button"
         >
-          <Brain size={18} />
-          <span>{label('brain')}</span>
+          <Brain size={18} aria-hidden="true" />
+          <span>{label('brainNav')}</span>
         </button>
         <button
           className={`nav-item ${page === 'map' ? 'active' : ''}`}
           onClick={() => onChange('map')}
           type="button"
         >
-          <GitBranch size={18} />
+          <GitBranch size={18} aria-hidden="true" />
           <span>{label('map')}</span>
         </button>
         <button
+          aria-current={page === 'settings' ? 'page' : undefined}
           className={`nav-item ${page === 'settings' ? 'active' : ''}`}
           onClick={() => onChange('settings')}
           type="button"
         >
-          <Settings2 size={18} />
+          <Settings2 size={18} aria-hidden="true" />
           <span>{label('settings')}</span>
-        </button>
-        <button
-          className={`nav-item ${page === 'jobs' ? 'active' : ''}`}
-          onClick={() => onChange('jobs')}
-          type="button"
-        >
-          <ListTodo size={18} />
-          <span>{label('jobs')}</span>
-        </button>
-        <button
-          className={`nav-item ${page === 'skills' ? 'active' : ''}`}
-          onClick={() => onChange('skills')}
-          type="button"
-        >
-          <Library size={18} />
-          <span>{label('skills')}</span>
         </button>
       </nav>
 
       <div className="sidebar-footer">
         <div className="cloud-badge">
-          <Cloud size={17} />
+          <Cloud size={17} aria-hidden="true" />
           <div>
             <strong>{label('cloudStatus')}</strong>
             <span>{label('cloudStatusDetail')}</span>
           </div>
-          <Sparkles size={14} />
+          <Sparkles size={14} aria-hidden="true" />
         </div>
         <button
           className="locale-button"
@@ -88,7 +110,7 @@ export function Sidebar({
           type="button"
           title={label('languageHint')}
         >
-          <Languages size={16} />
+          <Languages size={16} aria-hidden="true" />
           <span>{label('language')}</span>
         </button>
       </div>
