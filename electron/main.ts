@@ -185,7 +185,7 @@ function createWindow(): BrowserWindow {
     icon: join(app.getAppPath(), 'installer', 'icon.ico'),
     backgroundColor: '#0d0913',
     webPreferences: {
-      preload: join(__dirname, '../preload/preload.mjs'),
+      preload: join(__dirname, '../preload/preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true
@@ -210,7 +210,7 @@ function createOverlayWindow(): BrowserWindow {
     show: false,
     backgroundColor: '#00000000',
     webPreferences: {
-      preload: join(__dirname, '../preload/preload.mjs'),
+      preload: join(__dirname, '../preload/preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true

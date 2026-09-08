@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 const root = resolve(import.meta.dirname, '..')
 const required = [
   'out/main/main.js',
-  'out/preload/preload.mjs',
+  'out/preload/preload.cjs',
   'out/renderer/index.html'
 ]
 
@@ -16,7 +16,7 @@ if (packageJson.main !== './out/main/main.js') {
 }
 
 const mainBundle = await readFile(resolve(root, 'out/main/main.js'), 'utf8')
-if (!mainBundle.includes('../preload/preload.mjs')) {
+if (!mainBundle.includes('../preload/preload.cjs')) {
   throw new Error('The main bundle does not reference the built preload entry.')
 }
 
