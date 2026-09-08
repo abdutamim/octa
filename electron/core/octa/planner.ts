@@ -165,6 +165,9 @@ export interface PlannerOptions {
   conversationId?: string | null
   planId?: string
   language?: PlanLanguage
+  /** Selects the planner contract used by a caller. The build pipeline uses
+   * the spec profile while preserving the normal planner behaviour. */
+  profile?: 'default' | 'spec'
   client?: string
   sourceLedger?: LedgerInput
   maxDebateRounds?: number
@@ -203,6 +206,7 @@ export interface PlannerPlanRequest {
   conversationId?: string | null
   planId?: string
   language?: PlanLanguage
+  profile?: 'default' | 'spec'
   client?: string
   maxDebateRounds?: number
   maxQuestionRounds?: number
@@ -724,8 +728,11 @@ function questionPrompt(language: PlanLanguage): string {
       : 'Mirror the Arabic/English mix of the last user turn, ask blocking questions clearly, and do not guess.'
 }
 
-function draftPrompt(brief: string, language: PlanLanguage, schemaPath: string): string {
-  return `You are Fable drafting v0 for Octa. Language: ${language}. ${questionPrompt(language)}\n\nRead this brief and the injected company brain. Produce only one JSON plan matching ${schemaPath} and the Plan schema from the runtime contract. Every execution step needs a registered skill; the only exception is runner codex-exec with a free-form prompt. Questions that affect scope, audience, budget, timing, authority, or an outward action must be blocking. Never put an unsupported number in summary.\n\n${brief}`
+function draftPrompt(brief: string, language: PlanLanguage, schemaPath: string, profile: PlannerOptions['profile'] = 'default'): string {
+  const profileInstruction = profile === 'spec'
+    ? 'This is the native build spec profile. Make the codex-exec steps concrete: include the files to touch, dependencies, acceptance criteria, and verification commands in each step input. Do not invoke Octa Code or any Python backend.'
+    : ''
+  return `You are Fable drafting v0 for Octa. Language: ${language}. ${questionPrompt(language)} ${profileInstruction}\n\nRead this brief and the injected company brain. Produce only one JSON plan matching ${schemaPath} and the Plan schema from the runtime contract. Every execution step needs a registered skill; the only exception is runner codex-exec with a free-form prompt. Questions that affect scope, audience, budget, timing, authority, or an outward action must be blocking. Never put an unsupported number in summary.\n\n${brief}`
 }
 
 function critiquePrompt(brief: string, plan: OctaPlan, language: PlanLanguage, schemaPath: string): string {
@@ -934,7 +941,7 @@ export class Planner {
   ): Promise<{ plan: OctaPlan; replies: PlanReply[] }> {
     const schemaPath = join(workspace, 'plan.schema.json')
     const prompt = phase === 'draft'
-      ? draftPrompt(brief, language, schemaPath)
+      ? draftPrompt(brief, language, schemaPath, options.profile)
       : replyPrompt(brief, previousPlan!, critique!, language, schemaPath)
     const systemPrompt = phase === 'draft'
       ? readPrompt('planner.md')

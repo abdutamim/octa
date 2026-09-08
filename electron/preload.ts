@@ -15,6 +15,7 @@ import type {
   ResearchStartResponse,
   ResearchStatusResponse
 } from './core/octa/research'
+import type { BuildEvent, BuildState } from './core/octa/build'
 import type {
   AiTestResult,
   AppSettings,
@@ -100,6 +101,24 @@ const api = {
       const wrapped = (_event: Electron.IpcRendererEvent, browserEvent: BrowserChallengeEvent): void => listener(browserEvent)
       ipcRenderer.on('browser:challenge', wrapped)
       return () => ipcRenderer.removeListener('browser:challenge', wrapped)
+    }
+  },
+  builds: {
+    start: (request: { request: string; id?: string; projectPath?: string; mode?: 'isolated' | 'direct'; direct?: boolean; targetBranch?: string; complexity?: 'small' | 'medium' | 'large'; language?: 'ar-EG' | 'en' | 'mixed'; register?: boolean; registrationKind?: 'skill' | 'project' }): Promise<{ id: string; status: BuildState['status']; workspacePath: string; branch: string; specPath: string; planPath: string }> =>
+      ipcRenderer.invoke('build:start', request),
+    status: (id?: string): Promise<BuildState | BuildState[]> => ipcRenderer.invoke('build:status', id),
+    resume: (id: string): Promise<{ id: string; status: BuildState['status']; workspacePath: string; branch: string; specPath: string; planPath: string }> =>
+      ipcRenderer.invoke('build:resume', id),
+    merge: (id: string, options?: { strategy?: 'merge' | 'pr'; targetPath?: string }): Promise<unknown> =>
+      ipcRenderer.invoke('build:merge', { id, ...options }),
+    discard: (id: string): Promise<{ id: string; status: 'discarded' }> => ipcRenderer.invoke('build:discard', id),
+    review: (id: string): Promise<unknown> => ipcRenderer.invoke('build:review', id),
+    analyze: (request?: { id?: string; projectPath?: string; brief?: string; competitorBrief?: string; ideationPasses?: Array<'code-quality' | 'security' | 'performance' | 'ux' | 'documentation'> }): Promise<unknown> =>
+      ipcRenderer.invoke('build:analyze', request),
+    onEvent: (listener: (event: BuildEvent) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, buildEvent: BuildEvent): void => listener(buildEvent)
+      ipcRenderer.on('build:events', wrapped)
+      return () => ipcRenderer.removeListener('build:events', wrapped)
     }
   },
   window: {
