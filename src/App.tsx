@@ -8,6 +8,8 @@ import { BrainPage } from './components/BrainPage'
 import { JobsPage } from './components/JobsPage'
 import { MapPage } from './components/MapPage'
 import { SkillsPage } from './components/SkillsPage'
+import { OctaPage } from './components/OctaPage'
+import { WorkflowsPage } from './components/WorkflowsPage'
 import { Sidebar, type Page } from './components/Sidebar'
 import { VoiceBar } from './components/VoiceBar'
 import { VoiceAudioPlayback } from './components/VoiceAudioPlayback'
@@ -15,7 +17,7 @@ import { VoiceInputBridge } from './components/VoiceInputBridge'
 
 export function App(): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
-  const [page, setPage] = useState<Page>('settings')
+  const [page, setPage] = useState<Page>('octa')
   const [loading, setLoading] = useState(true)
   const locale: Locale = settings.locale
 
@@ -70,6 +72,7 @@ export function App(): React.JSX.Element {
         <Sidebar page={page} locale={locale} onChange={setPage} onToggleLocale={toggleLocale} />
         <section className="content">
           <VoiceBar locale={locale} />
+          {page === 'octa' && <OctaPage locale={locale} />}
           {page === 'settings' && (
             <SettingsPage
               settings={settings}
@@ -82,6 +85,7 @@ export function App(): React.JSX.Element {
           {page === 'brain' && <BrainPage locale={locale} />}
           {page === 'map' && <MapPage locale={locale} />}
           {page === 'jobs' && <JobsPage locale={locale} />}
+          {page === 'workflows' && <WorkflowsPage locale={locale} />}
           {page === 'skills' && <SkillsPage locale={locale} />}
         </section>
       </div>
