@@ -2,7 +2,9 @@ import { Check, GitBranch, MessageSquare, Play, RefreshCw, X } from 'lucide-reac
 import { useEffect, useMemo, useState } from 'react'
 import type {
   WorkflowDefinition,
+  WorkflowAutonomy,
   WorkflowGateActionRequest,
+  WorkflowGate,
   WorkflowListItem,
   WorkflowRunRecord,
   WorkflowStepDefinition,
@@ -55,6 +57,40 @@ function interpolateLabel(value: string, date: string): string {
   return value.replace('{date}', date)
 }
 
+function interpolate(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (result, [key, replacement]) => result.replaceAll(`{${key}}`, String(replacement)),
+    value
+  )
+}
+
+const WORKFLOW_COPY: Record<string, { title: TranslationKey; detail: TranslationKey }> = {
+  W1: { title: 'homeWorkflowW1Title', detail: 'homeWorkflowW1Detail' },
+  W2: { title: 'homeWorkflowW2Title', detail: 'homeWorkflowW2Detail' },
+  W3: { title: 'homeWorkflowW3Title', detail: 'homeWorkflowW3Detail' },
+  W4: { title: 'homeWorkflowW4Title', detail: 'homeWorkflowW4Detail' },
+  W5: { title: 'homeWorkflowW5Title', detail: 'homeWorkflowW5Detail' },
+  W6: { title: 'homeWorkflowW6Title', detail: 'homeWorkflowW6Detail' }
+}
+
+function autonomyLabel(value: WorkflowAutonomy, locale: Locale): string {
+  const keys: Record<WorkflowAutonomy, TranslationKey> = {
+    auto: 'skillAutonomyAuto',
+    assisted: 'skillAutonomyAssisted',
+    led: 'skillAutonomyLed'
+  }
+  return t(keys[value], locale)
+}
+
+function gateLabel(value: WorkflowGate, locale: Locale): string {
+  const keys: Record<WorkflowGate, TranslationKey> = {
+    none: 'workflowGateNone',
+    review: 'workflowGateReview',
+    approve: 'workflowGateApprove'
+  }
+  return t(keys[value], locale)
+}
+
 export function WorkflowsPage({ locale }: { locale: Locale }): React.JSX.Element {
   const [workflows, setWorkflows] = useState<WorkflowListItem[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -67,6 +103,14 @@ export function WorkflowsPage({ locale }: { locale: Locale }): React.JSX.Element
   const [error, setError] = useState('')
 
   const label = (key: TranslationKey): string => t(key, locale)
+  const workflowTitle = (workflow: WorkflowListItem): string => {
+    const copy = WORKFLOW_COPY[workflow.id]
+    return copy ? label(copy.title) : workflow.name
+  }
+  const workflowDetail = (workflow: WorkflowListItem): string => {
+    const copy = WORKFLOW_COPY[workflow.id]
+    return copy ? label(copy.detail) : workflow.description ?? label('workflowsIntro')
+  }
   const selected = useMemo(
     () => workflows.find((workflow) => workflow.id === selectedId) ?? workflows[0],
     [selectedId, workflows]
@@ -171,7 +215,7 @@ export function WorkflowsPage({ locale }: { locale: Locale }): React.JSX.Element
     run?.steps.find((item) => item.id === step.id)
 
   return (
-    <main className="page workflows-page">
+    <main className="page workflows-page" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <header className="page-heading">
         <div>
           <span className="eyebrow">{label('workflowsEyebrow')}</span>
@@ -179,7 +223,7 @@ export function WorkflowsPage({ locale }: { locale: Locale }): React.JSX.Element
           <p>{label('workflowsIntro')}</p>
         </div>
         <button className="language-chip" disabled={loading} onClick={() => void load()} type="button">
-          <RefreshCw className={loading ? 'spin' : ''} size={15} />
+          <RefreshCw className={loading ? 'spin' : ''} size={15} aria-hidden="true" />
           {label('refreshWorkflows')}
         </button>
       </header>
@@ -193,22 +237,30 @@ export function WorkflowsPage({ locale }: { locale: Locale }): React.JSX.Element
               <span className="job-card-eyebrow">{label('workflowRuns')}</span>
               <h2>{workflows.length}</h2>
             </div>
-            <GitBranch size={16} />
+            <GitBranch size={16} aria-hidden="true" />
           </div>
           <div className="workflow-list-items">
-            {workflows.length === 0 && <p className="empty-state">{label('workflowNoRuns')}</p>}
+            {workflows.length === 0 && <p className="workflow-empty-state">{label('workflowNoWorkflows')}</p>}
             {workflows.map((workflow) => (
               <button
                 className={`workflow-list-item ${selected?.id === workflow.id ? 'selected' : ''}`}
                 key={workflow.id}
                 onClick={() => selectWorkflow(workflow)}
+                aria-label={`${label('workflowCardSelect')}: ${workflowTitle(workflow)}`}
                 type="button"
               >
-                <span className="workflow-list-copy">
-                  <strong>{workflow.name}</strong>
-                  <small>{workflow.id} · {workflow.stats.autonomy}</small>
+                <span className="workflow-card-topline">
+                  <span>{workflow.id}</span>
+                  <span className="workflow-card-dot" aria-hidden="true" />
                 </span>
-                <span className="workflow-list-count">{workflow.steps.length}</span>
+                <span className="workflow-list-copy">
+                  <strong>{workflowTitle(workflow)}</strong>
+                  <small>{workflowDetail(workflow)}</small>
+                </span>
+                <span className="workflow-card-footer">
+                  <span className="workflow-list-count">{interpolate(label('workflowCardSteps'), { count: workflow.steps.length })}</span>
+                  <span>{autonomyLabel(workflow.stats.autonomy, locale)}</span>
+                </span>
               </button>
             ))}
           </div>
@@ -221,13 +273,13 @@ export function WorkflowsPage({ locale }: { locale: Locale }): React.JSX.Element
               <header className="workflow-control-heading">
                 <div>
                   <span className="job-card-eyebrow">{selected.id}</span>
-                  <h2>{selected.name}</h2>
-                  <p>{selected.description ?? label('workflowsIntro')}</p>
+                  <h2>{workflowTitle(selected)}</h2>
+                  <p>{workflowDetail(selected)}</p>
                 </div>
                 <div className="workflow-stats">
                   <span>{label('workflowCleanRuns')} <strong>{selected.stats.cleanRuns}</strong></span>
                   <span>{label('workflowRejections')} <strong>{selected.stats.rejectionCount}</strong></span>
-                  <span>{label('workflowAutonomy')} <strong>{selected.stats.autonomy}</strong></span>
+                  <span>{label('workflowAutonomy')} <strong>{autonomyLabel(selected.stats.autonomy, locale)}</strong></span>
                 </div>
               </header>
 
@@ -241,7 +293,7 @@ export function WorkflowsPage({ locale }: { locale: Locale }): React.JSX.Element
                   value={brief}
                 />
                 <button className="accent-button" disabled={starting || !brief.trim()} onClick={() => void start()} type="button">
-                  <Play size={14} />
+                  <Play size={14} aria-hidden="true" />
                   {starting ? label('startingWorkflow') : label('startWorkflow')}
                 </button>
               </div>
@@ -265,7 +317,7 @@ export function WorkflowsPage({ locale }: { locale: Locale }): React.JSX.Element
                       <h3>{step.name ?? step.id}</h3>
                       <p><span>{label('workflowRunner')}</span> {step.runner}{step.skill ? ` · ${step.skill}` : ''}</p>
                       <p><span>{label('workflowNeeds')}</span> {step.needs.join(', ') || label('notAvailable')}</p>
-                      <p><span>{label('workflowGate')}</span> {step.gate}</p>
+                      <p><span>{label('workflowGate')}</span> {gateLabel(step.gate, locale)}</p>
                       {step.todo && <small className="workflow-todo">{label('workflowTodo')}</small>}
                       {step.acceptance.length > 0 && (
                         <ul>
@@ -281,10 +333,10 @@ export function WorkflowsPage({ locale }: { locale: Locale }): React.JSX.Element
                 <section className="workflow-gate glass-heavy" aria-label={label('workflowPayload')}>
                   <div className="workflow-gate-heading">
                     <div>
-                      <span className="job-card-eyebrow">{run.currentGate.gate}</span>
+                      <span className="job-card-eyebrow">{gateLabel(run.currentGate.gate, locale)}</span>
                       <h3>{label('workflowPayload')}</h3>
                     </div>
-                    <small>{interpolateLabel(label('workflowGateExpires'), new Date(run.currentGate.expiresAt).toLocaleString(locale))}</small>
+                    <small>{interpolateLabel(label('workflowGateExpires'), new Date(run.currentGate.expiresAt).toLocaleString(locale === 'ar' ? 'ar-EG' : 'en-US'))}</small>
                   </div>
                   <pre className="workflow-payload">{run.currentGate.payload}</pre>
                   {run.currentGate.gate === 'review' && (
@@ -300,15 +352,15 @@ export function WorkflowsPage({ locale }: { locale: Locale }): React.JSX.Element
                   )}
                   <div className="workflow-gate-actions">
                     <button className="accent-button" disabled={gateBusy} onClick={() => void gateAction('approve')} type="button">
-                      <Check size={14} /> {label('workflowApprove')}
+                      <Check size={14} aria-hidden="true" /> {label('workflowApprove')}
                     </button>
                     {run.currentGate.gate === 'review' && (
                       <button className="quiet-button" disabled={gateBusy || !comment.trim()} onClick={() => void gateAction('comment')} type="button">
-                        <MessageSquare size={14} /> {label('workflowSendComment')}
+                        <MessageSquare size={14} aria-hidden="true" /> {label('workflowSendComment')}
                       </button>
                     )}
                     <button className="quiet-button danger-button" disabled={gateBusy} onClick={() => void gateAction('reject')} type="button">
-                      <X size={14} /> {label('workflowReject')}
+                      <X size={14} aria-hidden="true" /> {label('workflowReject')}
                     </button>
                   </div>
                 </section>
