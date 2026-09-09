@@ -185,8 +185,8 @@ export function App(): React.JSX.Element {
           {page === 'brain' && <BrainPage locale={locale} />}
           {page === 'map' && <MapPage locale={locale} />}
           {page === 'jobs' && <JobsPage locale={locale} />}
-          {page === 'tasks' && <TasksPage onBack={() => setPage('octa')} />}
-          {page === 'clients' && <ClientsPage onBack={() => setPage('octa')} />}
+          {page === 'tasks' && <TasksPage locale={locale} onBack={() => setPage('octa')} />}
+          {page === 'clients' && <ClientsPage locale={locale} onBack={() => setPage('octa')} />}
           {page === 'workflows' && <WorkflowsPage locale={locale} />}
           {page === 'skills' && <SkillsPage locale={locale} />}
           {page === 'builds' && <BuildsPage locale={locale} />}
