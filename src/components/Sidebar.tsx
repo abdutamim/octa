@@ -1,4 +1,4 @@
-import { Brain, Cloud, GitBranch, Hammer, HeartPulse, Languages, Library, ListTodo, Settings2, Sparkles, Users, Workflow } from 'lucide-react'
+import { Brain, BriefcaseBusiness, Cloud, GitBranch, Hammer, HeartPulse, Languages, Library, ListTodo, Settings2, Sparkles, Users, Workflow } from 'lucide-react'
 import type { Locale, TranslationKey } from '../i18n'
 import { t } from '../i18n'
 import { OctaMark } from './OctaMark'
@@ -43,7 +43,7 @@ export function Sidebar({
           onClick={() => onChange('jobs')}
           type="button"
         >
-          <ListTodo size={18} aria-hidden="true" />
+          <BriefcaseBusiness size={18} aria-hidden="true" />
           <span>{label('jobs')}</span>
         </button>
         <button
@@ -92,6 +92,7 @@ export function Sidebar({
           <span>{label('brainNav')}</span>
         </button>
         <button
+          aria-current={page === 'map' ? 'page' : undefined}
           className={`nav-item ${page === 'map' ? 'active' : ''}`}
           onClick={() => onChange('map')}
           type="button"
@@ -100,6 +101,7 @@ export function Sidebar({
           <span>{label('map')}</span>
         </button>
         <button
+          aria-current={page === 'builds' ? 'page' : undefined}
           className={`nav-item ${page === 'builds' ? 'active' : ''}`}
           onClick={() => onChange('builds')}
           type="button"

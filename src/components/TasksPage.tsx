@@ -13,45 +13,88 @@ import {
   X
 } from 'lucide-react'
 import type { NewTask, TaskRecord, TaskStatus } from '../../electron/types'
+import type { Locale, TranslationKey } from '../i18n'
+import { t } from '../i18n'
 
-const COLUMNS: Array<{ status: TaskStatus; label: string }> = [
-  { status: 'doing', label: 'Doing' },
-  { status: 'todo', label: 'To do' },
-  { status: 'inbox', label: 'Inbox' },
-  { status: 'done', label: 'Done' }
+const COLUMNS: Array<{ status: TaskStatus; label: TranslationKey }> = [
+  { status: 'doing', label: 'tasksDoing' },
+  { status: 'todo', label: 'tasksTodo' },
+  { status: 'inbox', label: 'tasksInbox' },
+  { status: 'done', label: 'tasksDone' }
 ]
 
-const PRIORITY_LABEL = ['Normal', 'High', 'Urgent']
+const PRIORITY_KEYS: readonly TranslationKey[] = [
+  'taskPriorityNormal',
+  'taskPriorityHigh',
+  'taskPriorityUrgent'
+]
+
+function intlLocale(locale: Locale): string {
+  return locale === 'ar' ? 'ar-EG' : 'en-US'
+}
+
+function interpolate(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (result, [key, replacement]) => result.replaceAll(`{${key}}`, String(replacement)),
+    value
+  )
+}
+
+function label(key: TranslationKey, locale: Locale): string {
+  return t(key, locale)
+}
 
 function elapsed(task: TaskRecord, now: number): number {
   const open = task.runningSince ? Math.max(0, Math.floor((now - task.runningSince) / 1000)) : 0
   return task.trackedSeconds + open
 }
 
-export function formatDuration(seconds: number): string {
-  if (seconds <= 0) return '0m'
-  if (seconds < 60) return `${seconds}s`
+export function formatDuration(seconds: number, locale: Locale = 'en'): string {
+  const number = (value: number): string =>
+    new Intl.NumberFormat(intlLocale(locale), { useGrouping: false }).format(value)
+  if (seconds <= 0) return label('durationZero', locale)
+  if (seconds < 60) {
+    return interpolate(label('durationSeconds', locale), { count: number(seconds) })
+  }
   const total = Math.round(seconds / 60)
   const hours = Math.floor(total / 60)
-  return hours ? `${hours}h ${total % 60}m` : `${total}m`
+  if (hours) {
+    return interpolate(label('durationHours', locale), {
+      hours: number(hours),
+      minutes: number(total % 60)
+    })
+  }
+  return interpolate(label('durationMinutes', locale), { count: number(total) })
 }
 
-function dueLabel(dueAt: number | null, now: number): { text: string; tone: string } | undefined {
+function dueLabel(dueAt: number | null, now: number, locale: Locale): { text: string; tone: string } | undefined {
   if (!dueAt) return undefined
   const start = new Date(now)
   start.setHours(0, 0, 0, 0)
   const days = Math.round((dueAt - start.getTime()) / 86_400_000)
-  if (days < 0) return { text: `${Math.abs(days)}d overdue`, tone: 'overdue' }
-  if (days === 0) return { text: 'Today', tone: 'today' }
-  if (days === 1) return { text: 'Tomorrow', tone: 'soon' }
-  return { text: new Date(dueAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), tone: '' }
+  if (days < 0) {
+    return {
+      text: interpolate(label('taskOverdue', locale), {
+        count: new Intl.NumberFormat(intlLocale(locale), { useGrouping: false }).format(Math.abs(days))
+      }),
+      tone: 'overdue'
+    }
+  }
+  if (days === 0) return { text: label('taskToday', locale), tone: 'today' }
+  if (days === 1) return { text: label('taskTomorrow', locale), tone: 'soon' }
+  return {
+    text: new Date(dueAt).toLocaleDateString(intlLocale(locale), { month: 'short', day: 'numeric' }),
+    tone: ''
+  }
 }
 
 function TaskComposer({
   projects,
+  locale,
   onCreate
 }: {
   projects: string[]
+  locale: Locale
   onCreate: (input: NewTask) => void
 }): React.JSX.Element {
   const [title, setTitle] = useState('')
@@ -82,35 +125,37 @@ function TaskComposer({
   return (
     <section className="task-composer glass">
       <div className="task-composer-main">
-        <Plus size={17} />
+        <Plus size={17} aria-hidden="true" />
         <input
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           onKeyDown={(event) => event.key === 'Enter' && submit()}
-          placeholder="What needs doing?"
+          placeholder={label('taskComposerPlaceholder', locale)}
           dir="auto"
-          aria-label="New task title"
+          aria-label={label('taskNewTitleAria', locale)}
         />
         <button
           className="text-button"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
+          aria-controls="task-composer-details"
+          type="button"
         >
-          Details <ChevronDown size={14} className={open ? 'flipped' : ''} />
+          {label('taskDetails', locale)} <ChevronDown size={14} className={open ? 'flipped' : ''} aria-hidden="true" />
         </button>
-        <button className="primary-button compact" onClick={submit} disabled={!title.trim()}>
-          Add
+        <button className="primary-button compact" onClick={submit} disabled={!title.trim()} type="button">
+          {label('taskAdd', locale)}
         </button>
       </div>
       {open && (
-        <div className="task-composer-details">
+        <div className="task-composer-details" id="task-composer-details">
           <label>
-            <span>Project</span>
+            <span>{label('taskProject', locale)}</span>
             <input
               value={project}
               onChange={(event) => setProject(event.target.value)}
               list="task-projects"
-              placeholder="Outfred"
+              placeholder={label('taskProjectPlaceholder', locale)}
               dir="auto"
             />
             <datalist id="task-projects">
@@ -120,27 +165,27 @@ function TaskComposer({
             </datalist>
           </label>
           <label>
-            <span>Priority</span>
+            <span>{label('taskPriority', locale)}</span>
             <select value={priority} onChange={(event) => setPriority(Number(event.target.value))}>
-              {PRIORITY_LABEL.map((label, index) => (
-                <option key={label} value={index}>
-                  {label}
+              {PRIORITY_KEYS.map((key, index) => (
+                <option key={key} value={index}>
+                  {label(key, locale)}
                 </option>
               ))}
             </select>
           </label>
           <label>
-            <span>Due</span>
+            <span>{label('taskDue', locale)}</span>
             <input type="date" value={due} onChange={(event) => setDue(event.target.value)} />
           </label>
           <label>
-            <span>Estimate</span>
+            <span>{label('taskEstimate', locale)}</span>
             <input
               type="number"
               min={1}
               value={estimate}
               onChange={(event) => setEstimate(event.target.value)}
-              placeholder="minutes"
+              placeholder={label('taskMinutesPlaceholder', locale)}
             />
           </label>
         </div>
@@ -152,6 +197,7 @@ function TaskComposer({
 function TaskCard({
   task,
   now,
+  locale,
   onToggleTimer,
   onComplete,
   onDelete,
@@ -159,6 +205,7 @@ function TaskCard({
 }: {
   task: TaskRecord
   now: number
+  locale: Locale
   onToggleTimer: () => void
   onComplete: () => void
   onDelete: () => void
@@ -166,18 +213,21 @@ function TaskCard({
 }): React.JSX.Element {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(task.title)
-  const due = dueLabel(task.dueAt, now)
+  const due = dueLabel(task.dueAt, now, locale)
   const running = task.runningSince !== null
   const tracked = elapsed(task, now)
   const overBudget =
     task.estimateMinutes !== null && tracked > task.estimateMinutes * 60
+  const priorityKey = PRIORITY_KEYS[task.priority]
 
   return (
     <article className={`task-card${running ? ' running' : ''}`}>
       <button
         className="task-check"
         onClick={onComplete}
-        aria-label={task.status === 'done' ? 'Reopen task' : 'Complete task'}
+        aria-label={label(task.status === 'done' ? 'taskReopen' : 'taskComplete', locale)}
+        title={label(task.status === 'done' ? 'taskReopen' : 'taskComplete', locale)}
+        type="button"
       >
         {task.status === 'done' ? <Check size={14} /> : <CircleDashed size={15} />}
       </button>
@@ -212,18 +262,18 @@ function TaskCard({
         <div className="task-meta">
           {task.priority > 0 && (
             <span className={`task-flag p${task.priority}`}>
-              <Flame size={11} /> {PRIORITY_LABEL[task.priority]}
+              <Flame size={11} aria-hidden="true" /> {priorityKey ? label(priorityKey, locale) : ''}
             </span>
           )}
           {task.project && <span className="task-chip">{task.project}</span>}
           {due && <span className={`task-due ${due.tone}`}>{due.text}</span>}
           {(tracked > 0 || running) && (
             <span className={`task-time${overBudget ? ' over' : ''}${running ? ' live' : ''}`}>
-              {formatDuration(tracked)}
-              {task.estimateMinutes ? ` / ${formatDuration(task.estimateMinutes * 60)}` : ''}
+              {formatDuration(tracked, locale)}
+              {task.estimateMinutes ? ` / ${formatDuration(task.estimateMinutes * 60, locale)}` : ''}
             </span>
           )}
-          {task.source === 'voice' && <span className="task-chip subtle">voice</span>}
+          {task.source === 'voice' && <span className="task-chip subtle">{label('taskSourceVoice', locale)}</span>}
         </div>
       </div>
 
@@ -232,21 +282,22 @@ function TaskCard({
           <button
             className={`task-timer${running ? ' running' : ''}`}
             onClick={onToggleTimer}
-            aria-label={running ? 'Stop timing' : 'Start timing'}
-            title={running ? 'Stop timing' : 'Start timing'}
+            aria-label={label(running ? 'taskStopTiming' : 'taskStartTiming', locale)}
+            title={label(running ? 'taskStopTiming' : 'taskStartTiming', locale)}
+            type="button"
           >
             {running ? <Pause size={14} /> : <Play size={14} />}
           </button>
         )}
-        <button onClick={onDelete} aria-label="Delete task" title="Delete task">
-          <Trash2 size={14} />
+        <button onClick={onDelete} aria-label={label('taskDelete', locale)} title={label('taskDelete', locale)} type="button">
+          <Trash2 size={14} aria-hidden="true" />
         </button>
       </div>
     </article>
   )
 }
 
-export function TasksPage({ onBack }: { onBack: () => void }): React.JSX.Element {
+export function TasksPage({ onBack, locale }: { onBack: () => void; locale: Locale }): React.JSX.Element {
   const [tasks, setTasks] = useState<TaskRecord[]>([])
   const [projects, setProjects] = useState<string[]>([])
   const [query, setQuery] = useState('')
@@ -304,22 +355,25 @@ export function TasksPage({ onBack }: { onBack: () => void }): React.JSX.Element
   )
 
   return (
-    <div className="page">
+    <div className="page" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <header className="compact-heading">
         <div>
-          <span className="eyebrow">WORK</span>
-          <h1>Tasks</h1>
+          <span className="eyebrow">{label('tasksEyebrow', locale)}</span>
+          <h1>{label('tasksTitle', locale)}</h1>
         </div>
         <div className="heading-actions">
-          <span className="task-total">{formatDuration(totalToday)} tracked</span>
-          <button className="text-button" onClick={onBack}>
-            <ArrowLeft size={15} /> Back home
+          <span className="task-total">
+            {interpolate(label('tasksTracked', locale), { duration: formatDuration(totalToday, locale) })}
+          </span>
+          <button className="text-button" onClick={onBack} type="button">
+            <ArrowLeft size={15} aria-hidden="true" /> {label('tasksBackHome', locale)}
           </button>
         </div>
       </header>
 
       <TaskComposer
         projects={projects}
+        locale={locale}
         onCreate={(input) => void run(window.octa.tasks.create(input))}
       />
 
@@ -327,16 +381,17 @@ export function TasksPage({ onBack }: { onBack: () => void }): React.JSX.Element
 
       <div className="task-toolbar">
         <label className="search-box glass">
-          <Search size={17} />
+          <Search size={17} aria-hidden="true" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search tasks…"
+            placeholder={label('taskSearchPlaceholder', locale)}
             dir="auto"
+            aria-label={label('taskSearchPlaceholder', locale)}
           />
         </label>
-        <select value={project} onChange={(event) => setProject(event.target.value)} aria-label="Filter by project">
-          <option value="">All projects</option>
+        <select value={project} onChange={(event) => setProject(event.target.value)} aria-label={label('taskFilterProject', locale)}>
+          <option value="">{label('taskAllProjects', locale)}</option>
           {projects.map((name) => (
             <option key={name}>{name}</option>
           ))}
@@ -348,8 +403,9 @@ export function TasksPage({ onBack }: { onBack: () => void }): React.JSX.Element
               setQuery('')
               setProject('')
             }}
+            type="button"
           >
-            <X size={14} /> Clear
+            <X size={14} aria-hidden="true" /> {label('taskClearFilters', locale)}
           </button>
         )}
       </div>
@@ -358,7 +414,7 @@ export function TasksPage({ onBack }: { onBack: () => void }): React.JSX.Element
         {grouped.map((column) => (
           <section className="task-column" key={column.status}>
             <header>
-              <h3>{column.label}</h3>
+              <h3>{label(column.label, locale)}</h3>
               <span>{column.items.length}</span>
             </header>
             <div className="task-column-list">
@@ -367,6 +423,7 @@ export function TasksPage({ onBack }: { onBack: () => void }): React.JSX.Element
                   key={task.id}
                   task={task}
                   now={now}
+                  locale={locale}
                   onToggleTimer={() =>
                     void run(
                       task.runningSince
@@ -385,7 +442,7 @@ export function TasksPage({ onBack }: { onBack: () => void }): React.JSX.Element
                   onEdit={(patch) => void run(window.octa.tasks.update(task.id, patch))}
                 />
               ))}
-              {column.items.length === 0 && <p className="task-column-empty">Nothing here</p>}
+              {column.items.length === 0 && <p className="task-column-empty">{label('taskNothingHere', locale)}</p>}
             </div>
           </section>
         ))}

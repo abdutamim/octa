@@ -1,37 +1,43 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Check, FileDown, Loader2, Save } from 'lucide-react'
 import type { DocumentBrand, DocumentRecord } from '../../electron/types'
+import type { Locale, TranslationKey } from '../i18n'
+import { t } from '../i18n'
 
 /** Fields that must stay structured — they drive money, dates and page counts. */
 interface FieldSpec {
   key: string
-  label: string
+  label: TranslationKey
   type: 'text' | 'number' | 'money' | 'date' | 'multiline'
-  hint?: string
+  hint?: TranslationKey
 }
 
 const CONTRACT_FIELDS: FieldSpec[] = [
-  { key: 'projectName', label: 'المشروع', type: 'text' },
-  { key: 'clientDetails', label: 'بيانات العميل', type: 'text' },
-  { key: 'subject', label: 'موضوع الاتفاق', type: 'multiline' },
-  { key: 'amountMinor', label: 'قيمة المشروع', type: 'money' },
-  { key: 'durationDays', label: 'المدة (أيام)', type: 'number' },
-  { key: 'startAt', label: 'تاريخ البدء', type: 'date' },
-  { key: 'scopeIn', label: 'داخل النطاق', type: 'multiline', hint: 'سطر لكل بند' },
-  { key: 'scopeOut', label: 'خارج النطاق', type: 'multiline', hint: 'سطر لكل بند' },
-  { key: 'deliverables', label: 'التسليمات', type: 'multiline', hint: 'سطر لكل بند' }
+  { key: 'projectName', label: 'documentProject', type: 'text' },
+  { key: 'clientDetails', label: 'documentClientDetails', type: 'text' },
+  { key: 'subject', label: 'documentAgreementSubject', type: 'multiline' },
+  { key: 'amountMinor', label: 'documentProjectValue', type: 'money' },
+  { key: 'durationDays', label: 'documentDurationDays', type: 'number' },
+  { key: 'startAt', label: 'documentStartDate', type: 'date' },
+  { key: 'scopeIn', label: 'documentScopeIn', type: 'multiline', hint: 'documentLineHint' },
+  { key: 'scopeOut', label: 'documentScopeOut', type: 'multiline', hint: 'documentLineHint' },
+  { key: 'deliverables', label: 'documentDeliverables', type: 'multiline', hint: 'documentLineHint' }
 ]
 
 const PROPOSAL_FIELDS: FieldSpec[] = [
-  { key: 'title', label: 'العنوان', type: 'text' },
-  { key: 'titleAccent', label: 'تكملة العنوان (بلون الهوية)', type: 'text' },
-  { key: 'understanding', label: 'فهم المشروع', type: 'multiline' },
-  { key: 'amountMinor', label: 'قيمة العرض', type: 'money' },
-  { key: 'durationDays', label: 'المدة (أيام)', type: 'number' },
-  { key: 'clientNeeds', label: 'المطلوب من العميل', type: 'multiline', hint: 'سطر لكل بند' },
-  { key: 'includes', label: 'يشمل العرض', type: 'multiline', hint: 'سطر لكل بند' },
-  { key: 'excludes', label: 'لا يشمل العرض', type: 'multiline', hint: 'سطر لكل بند' }
+  { key: 'title', label: 'documentProposalTitle', type: 'text' },
+  { key: 'titleAccent', label: 'documentTitleAccent', type: 'text' },
+  { key: 'understanding', label: 'documentUnderstanding', type: 'multiline' },
+  { key: 'amountMinor', label: 'documentProposalValue', type: 'money' },
+  { key: 'durationDays', label: 'documentDurationDays', type: 'number' },
+  { key: 'clientNeeds', label: 'documentClientNeeds', type: 'multiline', hint: 'documentLineHint' },
+  { key: 'includes', label: 'documentIncludes', type: 'multiline', hint: 'documentLineHint' },
+  { key: 'excludes', label: 'documentExcludes', type: 'multiline', hint: 'documentLineHint' }
 ]
+
+function documentKindLabel(kind: DocumentRecord['kind'], locale: Locale): string {
+  return t(kind === 'contract' ? 'documentContract' : kind === 'invoice' ? 'documentInvoice' : 'documentProposal', locale)
+}
 
 function toDateInput(ms: unknown): string {
   const value = Number(ms)
@@ -43,10 +49,12 @@ function toDateInput(ms: unknown): string {
 export function DocumentEditor({
   record,
   brands,
+  locale,
   onClose
 }: {
   record: DocumentRecord
   brands: DocumentBrand[]
+  locale: Locale
   onClose: () => void
 }): React.JSX.Element {
   const [draft, setDraft] = useState<DocumentRecord>(record)
@@ -98,7 +106,7 @@ export function DocumentEditor({
   }, [draft.overrides])
 
   const save = async (): Promise<void> => {
-    setBusy('Saving…')
+    setBusy(t('documentSaving', locale))
     try {
       const next = { ...draft, overrides: harvestOverrides() }
       const stored = await window.octa.documents.save(next)
@@ -113,7 +121,7 @@ export function DocumentEditor({
   }
 
   const exportPdf = async (): Promise<void> => {
-    setBusy('Building PDF…')
+    setBusy(t('documentBuildingPdf', locale))
     try {
       const next = { ...draft, overrides: harvestOverrides() }
       const stored = await window.octa.documents.save(next)
@@ -136,17 +144,17 @@ export function DocumentEditor({
   )
 
   return (
-    <div className="page editor-page">
+    <div className="page editor-page" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <header className="compact-heading">
         <div>
           <span className="eyebrow">{draft.reference}</span>
-          <h1>{draft.kind === 'contract' ? 'Contract' : draft.kind === 'invoice' ? 'Invoice' : 'Proposal'}</h1>
+          <h1>{documentKindLabel(draft.kind, locale)}</h1>
         </div>
         <div className="heading-actions">
           <select
             value={draft.brandId}
             onChange={(event) => setDraft({ ...draft, brandId: event.target.value })}
-            aria-label="Brand"
+            aria-label={t('documentBrand', locale)}
           >
             {brands.map((entry) => (
               <option key={entry.id} value={entry.id}>
@@ -154,14 +162,14 @@ export function DocumentEditor({
               </option>
             ))}
           </select>
-          <button className="secondary-button" onClick={() => void save()} disabled={Boolean(busy)}>
-            {saved ? <Check size={14} /> : <Save size={14} />} {saved ? 'Saved' : 'Save'}
+          <button className="secondary-button" onClick={() => void save()} disabled={Boolean(busy)} type="button">
+            {saved ? <Check size={14} aria-hidden="true" /> : <Save size={14} aria-hidden="true" />} {saved ? t('documentSaved', locale) : t('documentSave', locale)}
           </button>
-          <button className="primary-button compact" onClick={() => void exportPdf()} disabled={Boolean(busy)}>
-            <FileDown size={14} /> PDF
+          <button className="primary-button compact" onClick={() => void exportPdf()} disabled={Boolean(busy)} type="button">
+            <FileDown size={14} aria-hidden="true" /> {t('documentExportPdf', locale)}
           </button>
-          <button className="text-button" onClick={onClose}>
-            <ArrowLeft size={15} /> Back
+          <button className="text-button" onClick={onClose} type="button">
+            <ArrowLeft size={15} aria-hidden="true" /> {t('documentBack', locale)}
           </button>
         </div>
       </header>
@@ -172,16 +180,15 @@ export function DocumentEditor({
       <div className="editor-layout">
         <aside className="editor-fields glass">
           <div className="section-title">
-            <h3>Fields</h3>
+            <h3>{t('documentFields', locale)}</h3>
             <span>{brand?.label}</span>
           </div>
           <p className="editor-hint">
-            Amounts and dates live here so totals stay correct. Every other word can be edited
-            straight on the document.
+            {t('documentFieldsHint', locale)}
           </p>
 
           <label className="editor-field">
-            <span>Title</span>
+            <span>{t('documentTitle', locale)}</span>
             <input
               value={draft.title}
               dir="auto"
@@ -191,7 +198,7 @@ export function DocumentEditor({
 
           {isInvoice ? (
             <p className="task-column-empty">
-              Invoice content comes from the invoice record itself. Edit its text on the page.
+               {t('documentInvoiceHint', locale)}
             </p>
           ) : (
             specs.map((spec) => {
@@ -200,8 +207,8 @@ export function DocumentEditor({
                 return (
                   <label className="editor-field" key={spec.key}>
                     <span>
-                      {spec.label}
-                      {spec.hint ? <small> · {spec.hint}</small> : null}
+                      {t(spec.label, locale)}
+                      {spec.hint ? <small> · {t(spec.hint, locale)}</small> : null}
                     </span>
                     <textarea
                       rows={4}
@@ -215,7 +222,7 @@ export function DocumentEditor({
               if (spec.type === 'money') {
                 return (
                   <label className="editor-field" key={spec.key}>
-                    <span>{spec.label}</span>
+                    <span>{t(spec.label, locale)}</span>
                     <input
                       type="number"
                       min={0}
@@ -231,7 +238,7 @@ export function DocumentEditor({
               if (spec.type === 'date') {
                 return (
                   <label className="editor-field" key={spec.key}>
-                    <span>{spec.label}</span>
+                    <span>{t(spec.label, locale)}</span>
                     <input
                       type="date"
                       value={toDateInput(value)}
@@ -244,7 +251,7 @@ export function DocumentEditor({
               }
               return (
                 <label className="editor-field" key={spec.key}>
-                  <span>{spec.label}</span>
+                  <span>{t(spec.label, locale)}</span>
                   <input
                     type={spec.type === 'number' ? 'number' : 'text'}
                     dir="auto"
@@ -267,17 +274,17 @@ export function DocumentEditor({
             <span>
               {rendering ? (
                 <>
-                  <Loader2 size={13} className="spin" /> Rendering…
+                   <Loader2 size={13} className="spin" aria-hidden="true" /> {t('documentRendering', locale)}
                 </>
               ) : (
-                'Click any dashed text on the page to edit it'
+                t('documentPreviewHint', locale)
               )}
             </span>
           </div>
           <iframe
             ref={frame}
             className="editor-frame"
-            title="Document preview"
+            title={t('documentPreviewTitle', locale)}
             sandbox="allow-same-origin"
             srcDoc={html}
           />
