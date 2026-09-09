@@ -57,6 +57,8 @@ import type { UpdateCheckResult } from './core/octa/update'
 import type { ApprovalResult } from './core/voice/readback'
 import type { PlanRecord } from './db/jobs'
 
+export interface WindowChromeState { maximized: boolean; focused: boolean }
+
 const api = {
   state: (): Promise<RendererState> => ipcRenderer.invoke('app:state'),
   update: {
@@ -297,7 +299,13 @@ const api = {
   window: {
     minimize: (): void => ipcRenderer.send('window:minimize'),
     maximize: (): void => ipcRenderer.send('window:maximize'),
-    close: (): void => ipcRenderer.send('window:close')
+    close: (): void => ipcRenderer.send('window:close'),
+    state: (): Promise<WindowChromeState> => ipcRenderer.invoke('window:state'),
+    onState: (listener: (state: WindowChromeState) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, state: WindowChromeState): void => listener(state)
+      ipcRenderer.on('window:state', wrapped)
+      return () => ipcRenderer.removeListener('window:state', wrapped)
+    }
   },
   onSettingsChanged: (listener: (settings: AppSettings) => void): (() => void) => {
     const wrapped = (_event: Electron.IpcRendererEvent, settings: AppSettings): void => listener(settings)

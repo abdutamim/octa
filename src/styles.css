@@ -1222,3 +1222,66 @@ kbd { min-width: 23px; padding: 3px 6px; border: 1px solid var(--line); border-b
     var(--background);
 }
 :root[data-theme="light"] .app-shell.octa-shell::before { opacity: .22; }
+
+
+/* ---------- macOS-style window chrome ---------- */
+html, body, #root { background: transparent !important; }
+.mac-window {
+  --mac-inset: 10px;
+  --mac-radius: 16px;
+  --mac-titlebar: 40px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - var(--mac-inset) * 2);
+  height: calc(100% - var(--mac-inset) * 2);
+  margin: var(--mac-inset);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--foreground) 14%, transparent);
+  border-radius: var(--mac-radius);
+  background: var(--background);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .45), 0 24px 70px rgba(0, 0, 0, .55), 0 8px 24px rgba(0, 0, 0, .35);
+}
+.mac-window.is-maximized { --mac-inset: 0px; --mac-radius: 0px; border-color: transparent; box-shadow: none; }
+.mac-window.is-blurred { border-color: color-mix(in srgb, var(--foreground) 8%, transparent); }
+.mac-titlebar {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: var(--mac-titlebar);
+  flex: 0 0 var(--mac-titlebar);
+  padding: 0 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--sidebar) 92%, var(--background));
+  -webkit-app-region: drag;
+  user-select: none;
+}
+[dir="rtl"] .mac-titlebar { direction: ltr; }
+.mac-title { justify-self: center; color: var(--muted-foreground); font-family: var(--font-sans); font-size: 12.5px; font-weight: 600; letter-spacing: .01em; }
+.mac-window.is-blurred .mac-title { opacity: .55; }
+.traffic-lights { display: flex; gap: 8px; align-items: center; -webkit-app-region: no-drag; }
+.traffic-light {
+  display: grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, .28);
+  border-radius: 50%;
+  background: #5a5560;
+  cursor: default;
+  transition: background 120ms ease, transform 120ms ease;
+}
+.traffic-light svg { width: 8px; height: 8px; opacity: 0; fill: none; stroke: rgba(0, 0, 0, .62); stroke-width: 1.6; stroke-linecap: round; transition: opacity 120ms ease; }
+.traffic-light.close { background: #ff5f57; border-color: #e0443e; }
+.traffic-light.minimize { background: #febc2e; border-color: #dea123; }
+.traffic-light.zoom { background: #28c840; border-color: #1aab29; }
+.mac-window.is-blurred .traffic-light { background: #4a4550; border-color: rgba(0, 0, 0, .3); }
+.traffic-lights:hover .traffic-light svg { opacity: 1; }
+.traffic-light:active { filter: brightness(.85); }
+.traffic-light:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.mac-window-body { position: relative; flex: 1 1 auto; min-height: 0; display: flex; }
+.mac-window-body > * { flex: 1 1 auto; min-height: 0; }
+.mac-window-body .app-shell, .mac-window-body .first-run-shell, .mac-window-body .app-loading { height: 100%; }
