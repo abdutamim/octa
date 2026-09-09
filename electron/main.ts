@@ -183,7 +183,11 @@ function createWindow(): BrowserWindow {
     minHeight: 620,
     title: 'Octa',
     icon: join(app.getAppPath(), 'installer', 'icon.ico'),
-    backgroundColor: '#0d0913',
+    // macOS-style chrome: no native frame; the renderer draws rounded corners, padding and traffic lights.
+    frame: false,
+    transparent: true,
+    hasShadow: true,
+    backgroundColor: '#00000000',
     webPreferences: {
       preload: join(__dirname, '../preload/preload.cjs'),
       contextIsolation: true,
@@ -192,6 +196,13 @@ function createWindow(): BrowserWindow {
     }
   })
 
+  const emitWindowState = (): void => {
+    if (!window.isDestroyed()) window.webContents.send('window:state', { maximized: window.isMaximized(), focused: window.isFocused() })
+  }
+  window.on('maximize', emitWindowState)
+  window.on('unmaximize', emitWindowState)
+  window.on('focus', emitWindowState)
+  window.on('blur', emitWindowState)
   loadRenderer(window)
   return window
 }
@@ -1137,6 +1148,10 @@ function registerIpc(): void {
     else window?.maximize()
   })
   ipcMain.on('window:close', (event) => BrowserWindow.fromWebContents(event.sender)?.close())
+  ipcMain.handle('window:state', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    return { maximized: window?.isMaximized() ?? false, focused: window?.isFocused() ?? true }
+  })
 }
 
 async function start(): Promise<void> {

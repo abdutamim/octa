@@ -20,6 +20,7 @@ import { VoiceBar } from './components/VoiceBar'
 import { VoiceAudioPlayback } from './components/VoiceAudioPlayback'
 import { VoiceInputBridge } from './components/VoiceInputBridge'
 import { OctaMark } from './components/OctaMark'
+import { WindowChrome } from './components/WindowChrome'
 
 function UpdateBanner({
   update,
@@ -123,14 +124,17 @@ export function App(): React.JSX.Element {
 
   if (loading) {
     return (
-      <div className="app-loading">
-        <OctaMark className="brand-mark" alt={t('brandName', locale)} />
-      </div>
+      <WindowChrome locale={locale}>
+        <div className="app-loading">
+          <OctaMark className="brand-mark" alt={t('brandName', locale)} />
+        </div>
+      </WindowChrome>
     )
   }
 
   if (showFirstRun) {
     return (
+      <WindowChrome locale={locale}>
       <FirstRun
         locale={locale}
         onCancel={() => setShowFirstRun(false)}
@@ -142,10 +146,12 @@ export function App(): React.JSX.Element {
         required={firstRun}
         settings={settings}
       />
+      </WindowChrome>
     )
   }
 
   return (
+    <WindowChrome locale={locale}>
     <div className="app-shell octa-shell">
       <VoiceAudioPlayback />
       <VoiceInputBridge enabled={settings.wakeWordEnabled || settings.pushToTalkEnabled} />
@@ -187,5 +193,6 @@ export function App(): React.JSX.Element {
         </section>
       </div>
     </div>
+    </WindowChrome>
   )
 }
