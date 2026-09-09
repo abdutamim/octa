@@ -8,8 +8,8 @@
   background: var(--background);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --font-sans: "Outfit", "Segoe UI Variable", "Segoe UI", sans-serif;
-  --font-arabic: "Noto Naskh Arabic", "Segoe UI", "Segoe UI Variable", sans-serif;
+  --font-sans: "Thmanyah Sans", "Outfit", "Segoe UI Variable", "Segoe UI", sans-serif;
+  --font-arabic: "Thmanyah Sans", "Segoe UI", "Noto Naskh Arabic", Tahoma, sans-serif;
   --background: #0d0913;
   --foreground: #f5f0fb;
   --card: #181120;
@@ -198,8 +198,8 @@ body, button, input, select, textarea { font-family: var(--font-sans); }
   color-scheme: light;
   color: var(--foreground);
   background: var(--background);
-  --font-sans: "Outfit", "Segoe UI Variable", "Segoe UI", sans-serif;
-  --font-arabic: "Noto Naskh Arabic", "Segoe UI", "Segoe UI Variable", sans-serif;
+  --font-sans: "Thmanyah Sans", "Outfit", "Segoe UI Variable", "Segoe UI", sans-serif;
+  --font-arabic: "Thmanyah Sans", "Segoe UI", "Noto Naskh Arabic", Tahoma, sans-serif;
   --background: #f6f3fb;
   --foreground: #21182d;
   --card: #fff;
