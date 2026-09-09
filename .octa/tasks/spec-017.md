@@ -1,0 +1,14 @@
+# Task: spec 017 — Tasks, Clients, Documents and Workflows pages: translate, restyle, make them Octa
+
+The owner opened the Tasks page and it was broken: unstyled (the page was copied from the reference app without its CSS), English-only strings inside an Arabic UI, and "المهام" appeared twice in the sidebar. A first-aid pass already copied the reference CSS rules into `src/styles.css` (section "Rules copied from Tamim OS…") and renamed the sidebar labels (jobs = التشغيلات, tasks = المهام, clients = العملاء). Finish the job properly.
+
+Pages in scope: `src/components/TasksPage.tsx`, `ClientsPage.tsx`, `DocumentEditor.tsx`, `BrandEditor.tsx` (all copied from `C:\Users\Admin\Desktop\Projects\tamim-os`), and `WorkflowsPage.tsx` (spec 006).
+
+Do:
+1. **Bilingual everything.** Replace every hardcoded English string in the four copied pages with `t('key', locale)` and add the keys to `src/i18n/en.ts` and `ar.ts` (Egyptian Arabic, same tone as the rest of the app: "المهام", "بيتعمل دلوقتي", "للعمل", "الوارد", "خلص", "إيه اللي محتاج يتعمل؟", "دوّر في المهام…", "مفيش حاجة هنا"...). Placeholders, empty states, buttons, column headings, tooltips, aria-labels, date formats (use the locale for Intl). The pages already receive `locale`; if one does not, thread it from `App.tsx`.
+2. **Octa design.** Re-express the copied CSS in the Octa token system (lavender tokens, 14px radius, `--shadow-*`, Thmanyah Sans). Remove any leftover Tamim OS values (burgundy/plum/cream hexes, hard-coded `#fff`/`#000` where a token exists). Layouts must work RTL and LTR: logical properties (`margin-inline-start`, `padding-inline`), no `left/right` for alignment; the task composer, search, kanban-style columns (Doing / To do / Inbox / Done) and the client list must look like the rest of Octa (same card, input and button classes as OctaPage / SettingsPage). Read `skills-library/skills/ui-forge/SKILL.md` non-negotiables and apply them.
+3. **Workflows page polish.** Same treatment: check RTL, spacing, empty state, gate cards; make the six workflow cards match the home cards.
+4. **Sidebar.** One entry per page, no duplicates, consistent icons; keep the order: Octa, Jobs (التشغيلات), Tasks (المهام), Clients (العملاء), Workflows (مسارات العمل), Skills, Brain, Map, Builds, Health, Settings.
+5. **Verify.** `npm run typecheck`, `npm test` green; render tests for Tasks and Clients in both locales (mock IPC) asserting no English literal leaks when `locale='ar'` (grep the rendered HTML for a list of the old English strings); `npx impeccable detect` on the changed files with no findings; screenshots of Tasks, Clients, Workflows in dark Arabic under `.octa/reports/spec-017/` using the spec-008 Playwright harness. Commit and write `.octa/reports/spec-017.md`.
+
+Note: `npm test` needs the host SQLite ABI: run `npm rebuild better-sqlite3` before tests and `npm run rebuild:electron` afterwards (both exist as scripts/commands).
