@@ -428,9 +428,9 @@ button:active:not(:disabled), [role="button"]:active:not([aria-disabled="true"])
 
 /* First-run setup uses the same Octa palette, but gives the sequence a clear
    rail so the user always knows what has been saved and what is next. */
-.first-run-shell { display: grid; width: 100%; height: 100%; place-items: center; overflow: auto; padding: 28px; background: radial-gradient(circle at 84% 10%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 34%), linear-gradient(145deg, var(--card) 0%, var(--muted-foreground) 52%, var(--card) 100%); }
-.first-run-panel { display: grid; grid-template-columns: 270px minmax(0, 1fr); width: min(1060px, 100%); min-height: 650px; overflow: hidden; border: 1px solid var(--line); border-radius: 22px; background: var(--glass-heavy); box-shadow: 0 18px 55px color-mix(in srgb, var(--primary) 12%, transparent); }
-.first-run-rail { display: flex; min-width: 0; flex-direction: column; padding: 28px 22px; border-inline-end: 1px solid var(--line); background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 12%, transparent), color-mix(in srgb, var(--primary) 12%, transparent)); }
+.first-run-shell { display: grid; width: 100%; height: 100%; place-items: center; overflow: auto; padding: 28px; background: radial-gradient(circle at 84% 10%, color-mix(in srgb, var(--primary) 16%, transparent), transparent 36%), var(--background); }
+.first-run-panel { display: grid; grid-template-columns: 270px minmax(0, 1fr); width: min(1060px, 100%); min-height: 650px; overflow: hidden; border: 1px solid var(--border); border-radius: 22px; background: var(--card); box-shadow: var(--shadow-lg); }
+.first-run-rail { display: flex; min-width: 0; flex-direction: column; padding: 28px 22px; border-inline-end: 1px solid var(--line); background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 10%, var(--card)), var(--card)); }
 .first-run-brand { display: flex; align-items: center; gap: 11px; }
 .first-run-brand > div { display: flex; min-width: 0; flex-direction: column; }
 .first-run-brand strong { color: var(--foreground); font-size: 14px; }
@@ -439,51 +439,51 @@ button:active:not(:disabled), [role="button"]:active:not([aria-disabled="true"])
 .first-run-rail-copy > span { color: var(--foreground); font-family: var(--font-sans); font-size: 23px; line-height: 1.12; }
 .first-run-rail-copy p { margin: 10px 0 0; color: var(--muted-foreground); font-size: 10px; line-height: 1.6; }
 .first-run-steps { display: flex; flex-direction: column; gap: 7px; margin: 0; padding: 0; list-style: none; }
-.first-run-steps li button { display: flex; width: 100%; align-items: center; gap: 10px; padding: 10px 9px; border: 1px solid transparent; border-radius: 10px; color: var(--text-faint); background: transparent; font-size: 10px; text-align: start; }
-.first-run-steps li button:hover { color: var(--secondary-foreground); background: color-mix(in srgb, var(--primary) 12%, transparent); }
-.first-run-steps li.active button { border-color: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--foreground); background: color-mix(in srgb, var(--primary) 12%, transparent); }
+.first-run-steps li button { display: flex; width: 100%; align-items: center; gap: 10px; padding: 10px 9px; border: 1px solid transparent; border-radius: 10px; color: var(--muted-foreground); background: transparent; font-size: 10px; text-align: start; cursor: pointer; }
+.first-run-steps li button:hover { color: var(--foreground); background: color-mix(in srgb, var(--primary) 10%, transparent); }
+.first-run-steps li.active button { border-color: color-mix(in srgb, var(--primary) 40%, transparent); color: var(--foreground); background: color-mix(in srgb, var(--primary) 16%, transparent); }
 .first-run-steps li.done button { color: var(--success); }
-.first-run-steps li button > span { display: grid; width: 22px; height: 22px; flex: 0 0 22px; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: inherit; font-family: "Cascadia Mono", Consolas, monospace; font-size: 8px; }
+.first-run-steps li button > span { display: grid; width: 22px; height: 22px; flex: 0 0 22px; place-items: center; border: 1px solid var(--border); border-radius: 50%; color: inherit; font-family: "Cascadia Mono", Consolas, monospace; font-size: 8px; }
 .first-run-main { display: flex; min-width: 0; flex-direction: column; padding: 31px 35px 24px; }
 .first-run-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
 .first-run-heading h1 { margin: 8px 0 8px; color: var(--foreground); font-family: var(--font-sans); font-size: clamp(30px, 4vw, 44px); font-weight: 500; line-height: 1; letter-spacing: -0.04em; }
 .first-run-heading p { max-width: 550px; margin: 0; color: var(--muted-foreground); font-size: 11px; line-height: 1.55; }
 .first-run-step-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 31px 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
-.first-run-step-heading > span { color: var(--secondary-foreground); font-size: 12px; font-weight: 700; }
+.first-run-step-heading > span { color: var(--foreground); font-size: 12px; font-weight: 700; }
 .first-run-step-heading small { color: var(--text-faint); font-family: "Cascadia Mono", Consolas, monospace; font-size: 8px; }
 .first-run-form, .first-run-research { display: flex; min-width: 0; flex-direction: column; gap: 13px; }
 .first-run-form-intro { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 3px; color: var(--primary); }
 .first-run-form-intro p { max-width: 620px; margin: 0; color: var(--muted-foreground); font-size: 10px; line-height: 1.55; }
 .first-run-done-note { margin-bottom: 2px; }
 .first-run-language-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.first-run-language-option { display: flex; min-height: 105px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 7px; padding: 16px; border: 1px solid var(--line); border-radius: 13px; color: var(--secondary-foreground); background: color-mix(in srgb, var(--primary) 12%, transparent); text-align: start; }
-.first-run-language-option:hover, .first-run-language-option.selected { border-color: color-mix(in srgb, var(--primary) 12%, transparent); background: color-mix(in srgb, var(--primary) 12%, transparent); }
+.first-run-language-option { display: flex; min-height: 105px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 7px; padding: 16px; border: 1px solid var(--border); border-radius: 13px; color: var(--foreground); background: var(--secondary); text-align: start; cursor: pointer; transition: border-color 120ms ease, background 120ms ease; }
+.first-run-language-option:hover { border-color: color-mix(in srgb, var(--primary) 45%, var(--border)); }
+.first-run-language-option.selected { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 14%, var(--card)); box-shadow: var(--shadow-focus); }
 .first-run-language-option strong { color: var(--foreground); font-size: 13px; }
 .first-run-language-option span { color: var(--muted-foreground); font-size: 10px; }
 .first-run-language-option svg { margin-top: 2px; color: var(--success); }
-.first-run-field { display: grid; grid-template-columns: minmax(145px, 0.7fr) minmax(190px, 1fr); align-items: center; gap: 3px 15px; padding: 10px 0; border-bottom: 1px solid color-mix(in srgb, var(--primary) 12%, transparent); }
-.first-run-field-label { color: var(--secondary-foreground); font-size: 10px; font-weight: 700; }
+.first-run-field { display: grid; grid-template-columns: minmax(145px, 0.7fr) minmax(190px, 1fr); align-items: center; gap: 3px 15px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.first-run-field-label { color: var(--foreground); font-size: 10px; font-weight: 700; }
 .first-run-field-label b { color: var(--destructive); }
-.first-run-field-detail { grid-column: 1; color: var(--text-faint); font-size: 8px; line-height: 1.4; }
-.first-run-field input { grid-column: 2; grid-row: 1 / span 2; width: 100%; height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; outline: 0; color: var(--secondary-foreground); background: var(--octa-input); font-family: "Cascadia Mono", Consolas, monospace; font-size: 9px; }
-.first-run-field input:focus { border-color: color-mix(in srgb, var(--primary) 12%, transparent); }
+.first-run-field-detail { grid-column: 1; color: var(--muted-foreground); font-size: 8px; line-height: 1.4; }
+.first-run-field input { grid-column: 2; grid-row: 1 / span 2; width: 100%; height: 36px; padding: 0 10px; border: 1px solid var(--input); border-radius: 9px; outline: 0; color: var(--foreground); background: var(--background); font-family: "Cascadia Mono", Consolas, monospace; font-size: 9px; }
+.first-run-field input:focus { border-color: var(--ring); box-shadow: var(--shadow-focus); }
 .first-run-field input::placeholder { color: var(--text-faint); }
-.first-run-note { display: flex; align-items: flex-start; gap: 8px; margin-top: 3px; padding: 10px 11px; border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent); border-radius: 10px; color: var(--warning); background: color-mix(in srgb, var(--primary) 12%, transparent); font-size: 9px; line-height: 1.5; }
+.first-run-note { display: flex; align-items: flex-start; gap: 8px; margin-top: 3px; padding: 10px 11px; border: 1px solid color-mix(in srgb, var(--warning) 45%, transparent); border-radius: 10px; color: var(--foreground); background: color-mix(in srgb, var(--warning) 12%, var(--card)); font-size: 9px; line-height: 1.5; }
+.first-run-note svg { flex: 0 0 auto; color: var(--warning); }
 .first-run-login-list { display: flex; flex-direction: column; }
-.first-run-login-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 11px; min-height: 60px; border-bottom: 1px solid color-mix(in srgb, var(--primary) 12%, transparent); }
-.first-run-login-icon { display: grid; width: 29px; height: 29px; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, transparent); }
+.first-run-login-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 11px; min-height: 60px; border-bottom: 1px solid var(--line); }
+.first-run-login-icon { display: grid; width: 29px; height: 29px; place-items: center; border: 1px solid var(--border); border-radius: 50%; color: var(--primary); background: color-mix(in srgb, var(--primary) 14%, var(--card)); }
 .first-run-login-row > div { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
-.first-run-login-row strong { color: var(--secondary-foreground); font-size: 10px; }
-.first-run-login-row span { color: var(--text-faint); font-size: 8px; }
+.first-run-login-row strong { color: var(--foreground); font-size: 10px; }
+.first-run-login-row span { color: var(--muted-foreground); font-size: 8px; }
 .first-run-research-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 13px; }
 .first-run-research-footer > span { min-width: 0; overflow: hidden; color: var(--text-faint); font-family: "Cascadia Mono", Consolas, monospace; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .first-run-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 24px; }
 .first-run-nav { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+.first-run-error { color: var(--destructive); font-size: 9px; }
 
-:root[data-theme="light"] .first-run-shell { background: radial-gradient(circle at 84% 10%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 34%), var(--muted-foreground); }
-:root[data-theme="light"] .first-run-panel { background: color-mix(in srgb, var(--primary) 12%, transparent); box-shadow: 0 18px 55px color-mix(in srgb, var(--primary) 12%, transparent); }
-:root[data-theme="light"] .first-run-rail { background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 12%, transparent), color-mix(in srgb, var(--primary) 12%, transparent)); }
-:root[data-theme="light"] .first-run-field input { color: var(--card); background: color-mix(in srgb, var(--primary) 12%, transparent); }
+/* Both themes come from the tokens above; no per-theme overrides are needed for the wizard. */
 
 @media (max-width: 900px) {
   .settings-heading-actions { justify-content: flex-start; }
