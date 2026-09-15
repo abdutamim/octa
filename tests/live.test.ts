@@ -32,10 +32,10 @@ describe('Gemini Live framing', () => {
       setup: {
         model: 'models/gemini-test-live',
         generationConfig: {
-          responseModalities: ['AUDIO'],
-          inputAudioTranscription: {},
-          outputAudioTranscription: {}
-        }
+          responseModalities: ['AUDIO']
+        },
+        inputAudioTranscription: {},
+        outputAudioTranscription: {}
       }
     })
     expect(JSON.stringify(setup)).toContain('بنفس لغة المستخدم')

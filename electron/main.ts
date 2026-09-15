@@ -1306,6 +1306,9 @@ async function start(): Promise<void> {
       if (!repository) throw new Error('Settings storage is unavailable.')
       const settings = repository.getSettings()
       if (!settings.geminiApiKey.trim()) throw new Error('Add a Gemini AI Studio key before starting voice.')
+      if (!/^AIza[0-9A-Za-z_-]{20,}$/.test(settings.geminiApiKey.trim())) {
+        throw new Error('The Gemini key in Settings is not an AI Studio API key (they start with "AIza"). Create one at aistudio.google.com/apikey.')
+      }
       return new GeminiLiveSession({
         apiKey: settings.geminiApiKey,
         model: settings.geminiLiveModelOverride.trim() || settings.geminiLiveModel.trim() || model || DEFAULT_GEMINI_LIVE_MODEL,

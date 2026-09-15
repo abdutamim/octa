@@ -205,10 +205,12 @@ export function createGeminiLiveSetup(options: GeminiLiveSetupOptions): Record<s
           voiceConfig: {
             prebuiltVoiceConfig: { voiceName: options.voiceName ?? 'Kore' }
           }
-        },
-        inputAudioTranscription: {},
-        outputAudioTranscription: {}
+        }
       },
+      // Transcription belongs to the setup message itself; inside generationConfig Gemini rejects the
+      // payload with close code 1007 "Unknown name inputAudioTranscription".
+      inputAudioTranscription: {},
+      outputAudioTranscription: {},
       systemInstruction: { parts: [{ text: instruction }] }
     }
   }
@@ -489,7 +491,7 @@ export class GeminiLiveSession {
         attachSocketListener(this.socket, 'open', () => this.handleOpen()),
         attachSocketListener(this.socket, 'message', (event) => this.handleMessage(socketData(event))),
         attachSocketListener(this.socket, 'error', (event) => this.handleSocketError(event)),
-        attachSocketListener(this.socket, 'close', () => this.handleClose())
+        attachSocketListener(this.socket, 'close', (event) => this.handleClose(event))
       )
       if (this.socket.readyState === 1) this.handleOpen()
     } catch (error) {
@@ -605,8 +607,14 @@ export class GeminiLiveSession {
     this.state = 'error'
   }
 
-  private handleClose(): void {
-    if (this.state === 'connecting') this.failOpen(new GeminiLiveError('Gemini Live WebSocket closed during setup.'))
+  private handleClose(event?: unknown): void {
+    if (this.state === 'connecting') {
+      const closeEvent = event && typeof event === 'object' ? (event as { code?: unknown; reason?: unknown }) : undefined
+      const code = typeof closeEvent?.code === 'number' ? closeEvent.code : undefined
+      const reason = typeof closeEvent?.reason === 'string' ? closeEvent.reason.trim() : ''
+      const detail = [code !== undefined ? `code ${code}` : '', reason].filter(Boolean).join(': ')
+      this.failOpen(new GeminiLiveError(`Gemini Live WebSocket closed during setup${detail ? ` (${detail})` : ''}.`, code))
+    }
     if (this.state !== 'closed') this.state = 'closed'
   }
 
