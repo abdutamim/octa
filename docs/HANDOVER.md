@@ -114,7 +114,7 @@ electron/db               settings, jobs, documents, tasks, operations
 src/components            OctaPage, JobsPage, WorkflowsPage, SkillsPage, BrainPage, MapPage, BuildsPage, HealthPage, FirstRun, Settings, Tasks, Clients, DocumentEditor, VoiceBar
 skills-library            MANIFEST.json, REVIEW.md, skills/<name>/SKILL.md
 docs/00..07               plan, runtime contract, research engine, brain, workflows, environment, specs, decisions
-.octa/tasks, .octa/reports  the spec tasks and the per-spec build reports
+.octa/tasks               the spec tasks (build reports and screenshots stay local, ignored by git)
 ```
 
 ### 4. Commands

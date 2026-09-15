@@ -11,3 +11,27 @@ release/
 .octa/logs/
 .octa/worktrees/
 C:/
+
+# Local agent/editor config and notes (personal, never published)
+CLAUDE.md
+.claude/
+.codex/
+.cursor/
+*.local.md
+
+# Worker-loop outputs (logs, reports, screenshots, stray tests)
+.octa/reports/
+.octa/tests/
+.octa/logs/*
+.octa/worktrees/*
+
+# Personal assets: signature, licensed fonts, personal brand profiles
+assets/documents/*-Signature.png
+assets/documents/PingAR-*.otf
+skills-library/skills/growth-os/profiles/tamim*.md
+
+# OS / editor noise
+Thumbs.db
+.DS_Store
+*.swp
+.octa/vitest-demo.config.mjs
