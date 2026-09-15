@@ -108,3 +108,14 @@ describe('Gemini Live framing', () => {
     session.close()
   })
 })
+
+describe('gemini live binary frames', () => {
+  it('parses ArrayBuffer and Uint8Array frames like text frames', async () => {
+    const { parseGeminiLiveMessage } = await import('../electron/cloud/gemini-live')
+    const json = JSON.stringify({ setupComplete: {} })
+    const bytes = new TextEncoder().encode(json)
+    expect(parseGeminiLiveMessage(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength))).toEqual([{ type: 'setup-complete' }])
+    expect(parseGeminiLiveMessage(bytes)).toEqual([{ type: 'setup-complete' }])
+    expect(parseGeminiLiveMessage(json)).toEqual([{ type: 'setup-complete' }])
+  })
+})

@@ -404,7 +404,14 @@ function defaultSocketFactory(url: string): LiveWebSocket {
     WebSocket?: new (url: string) => LiveWebSocket
   }).WebSocket
   if (!constructor) throw new GeminiLiveError('This Electron runtime has no WebSocket implementation.')
-  return new constructor(url)
+  const socket = new constructor(url)
+  // Gemini sends its JSON frames as binary; without this Node hands us a Blob and the parser sees "non-text".
+  try {
+    ;(socket as { binaryType?: string }).binaryType = 'arraybuffer'
+  } catch {
+    // Some socket implementations expose no binaryType; Blob frames are decoded asynchronously below.
+  }
+  return socket
 }
 
 function socketData(event: unknown): unknown {
@@ -489,7 +496,7 @@ export class GeminiLiveSession {
       )
       this.detach.push(
         attachSocketListener(this.socket, 'open', () => this.handleOpen()),
-        attachSocketListener(this.socket, 'message', (event) => this.handleMessage(socketData(event))),
+        attachSocketListener(this.socket, 'message', (event) => this.receiveFrame(socketData(event))),
         attachSocketListener(this.socket, 'error', (event) => this.handleSocketError(event)),
         attachSocketListener(this.socket, 'close', (event) => this.handleClose(event))
       )
@@ -573,6 +580,16 @@ export class GeminiLiveSession {
     } catch (error) {
       this.failOpen(error)
     }
+  }
+
+  private receiveFrame(raw: unknown): void {
+    if (raw && typeof raw === 'object' && typeof (raw as { arrayBuffer?: unknown }).arrayBuffer === 'function') {
+      void (raw as { arrayBuffer: () => Promise<ArrayBuffer> }).arrayBuffer()
+        .then((buffer) => this.handleMessage(buffer))
+        .catch((error: unknown) => this.options.onEvent?.({ type: 'error', message: error instanceof Error ? error.message : String(error) }))
+      return
+    }
+    this.handleMessage(raw)
   }
 
   private handleMessage(raw: unknown): void {
