@@ -25,6 +25,20 @@ npm test
 
 Installer: `npm run dist` → `release/`.
 
+## Releases and updates
+
+Pushing a tag `vX.Y.Z` runs the Release workflow, which builds the NSIS installer and attaches
+three files to the GitHub release: `Octa-Setup-X.Y.Z.exe`, its `.blockmap`, and `latest.yml`.
+Installed copies check that repository on start; when a newer version exists, the banner offers a
+**differential download**: electron-updater compares the two blockmaps and fetches only the blocks
+of the installer that changed, then installs silently on restart. Keep the old releases' assets
+online, otherwise the updater falls back to a full download.
+
+```powershell
+npm version minor      # or patch / major → bumps package.json and creates the tag
+git push origin main --follow-tags
+```
+
 ## License
 
 MIT for Octa's own code. The build pipeline design follows Auto-Claude (AGPL-3.0), credited in [NOTICE.md](NOTICE.md); no Auto-Claude code is included.

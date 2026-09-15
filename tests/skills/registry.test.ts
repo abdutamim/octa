@@ -221,3 +221,16 @@ describe('skill assistant tools', () => {
     }), undefined)
   })
 })
+
+describe('skills registry startup resilience', () => {
+  it('does not throw when the library is missing and reports the reason', async () => {
+    const { SkillRegistry, skillsLibraryCandidates } = await import('../../electron/core/skills/registry')
+    const errors: string[] = []
+    const registry = new SkillRegistry({ skillsLibraryPath: 'Z:\definitely\missing\skills-library', watch: false, onError: (e) => errors.push(e.message) })
+    expect(registry.listSkills()).toEqual([])
+    expect(registry.lastError?.message).toMatch(/manifest was not found/i)
+    expect(errors).toHaveLength(1)
+    expect(skillsLibraryCandidates().some((c) => /skills-library$/.test(c))).toBe(true)
+    registry.close()
+  })
+})

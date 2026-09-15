@@ -76,6 +76,8 @@ docs\00..07             التصميم الكامل والقرارات
 
 اتبع `SETUP.md` (عربي وإنجليزي): سطّب Node 22 وClaude Code وCodex، سجّل دخول فيهم، افتح Octa، امشي مع المعالج، اعمل المقابلة. الـ skills والكود مشتركين من GitHub، بس كل واحد له عقل شركة ومفاتيح خاصة.
 
+**التحديثات:** أول مرة بس بتسطّب المثبّت من صفحة الإصدارات. بعد كده البرنامج بيفحص GitHub لوحده لما يفتح، ولو فيه إصدار أجدد بيظهر شريط فوق: "نزّل التحديث". التنزيل تفاضلي، يعني بينزّل الجزء اللي اتغيّر من المثبّت بس مش البرنامج كله، وبيوريك النسبة والحجم، وبعدها زرار "أعد التشغيل وحدّث" بيسطّب بصمت ويفتح البرنامج تاني. علشان كده ما تمسحش ملفات الإصدارات القديمة من GitHub.
+
 ### 8. حالة الاختبار بصراحة
 
 - 220 اختبار آلي خضر على كل الوحدات.
@@ -126,7 +128,18 @@ npm run build && npx electron-vite preview
 npm rebuild better-sqlite3    # before npm test (host ABI)
 npm test                      # 220 tests
 npm run dist                  # NSIS installer in release/
+npm version patch             # bump + tag; pushing the tag publishes a GitHub release
 ```
+
+### 4b. Releases and differential updates
+
+The Release workflow (`.github/workflows/release.yml`) runs on every `v*` tag and attaches the
+installer, its `.blockmap` and `latest.yml` to the GitHub release. Installed copies check the
+repository configured in Settings; the update banner downloads **only the changed blocks** of the
+new installer (electron-updater differential download over the blockmaps), shows progress, and
+installs silently when the user clicks "Restart and update". Do not delete old release assets: the
+old blockmap is what makes the next update small. Dev builds (`electron-vite preview`) cannot
+self-update and open the release page instead.
 
 ### 5. Owner checklist before daily use
 

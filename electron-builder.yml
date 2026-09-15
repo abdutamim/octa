@@ -10,6 +10,15 @@ files:
   - "!node_modules/uiohook-napi/prebuilds/linux-*/**"
   - "!node_modules/uiohook-napi/prebuilds/win32-arm64/**"
 asar: true
+# The skills library ships next to the app (resources/skills-library) so a fresh install has every skill.
+extraResources:
+  - from: skills-library
+    to: skills-library
+    filter:
+      - "**/*"
+      - "!**/out/**"
+      - "!**/node_modules/**"
+      - "!**/*.psd"
 asarUnpack:
   - node_modules/better-sqlite3/**/*
   - node_modules/uiohook-napi/**/*
@@ -31,7 +40,15 @@ nsis:
   createStartMenuShortcut: true
   shortcutName: Octa
   deleteAppDataOnUninstall: false
+  differentialPackage: true
   include: installer/installer.nsh
   installerIcon: installer/icon.ico
   uninstallerIcon: installer/icon.ico
 compression: normal
+# Publishing metadata: electron-builder emits latest.yml + .blockmap next to the installer so
+# electron-updater can download only the changed blocks of a new release (differential update).
+publish:
+  provider: github
+  owner: abdutamim
+  repo: octa
+  releaseType: release

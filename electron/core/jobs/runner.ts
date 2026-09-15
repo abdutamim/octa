@@ -626,7 +626,9 @@ function defaultSkillsLibraryCandidates(settings?: Pick<AppSettings, 'skillsLibr
     process.env.OCTA_SKILLS_LIBRARY_PATH,
     resolve(process.cwd(), 'skills-library'),
     resolve(__dirname, '../../../skills-library'),
-    resolve(__dirname, '../../../../skills-library')
+    resolve(__dirname, '../../../../skills-library'),
+    process.resourcesPath ? resolve(process.resourcesPath, 'skills-library') : undefined,
+    resolve(process.env.OCTA_HOME?.trim() || DEFAULT_OCTA_HOME, 'skills-library')
   ]
   return candidates.filter((value, index, all): value is string => Boolean(value?.trim()) && all.indexOf(value) === index)
 }

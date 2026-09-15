@@ -358,6 +358,23 @@ export interface AppUpdate {
   error?: string
 }
 
+export type UpdateProgressPhase = 'idle' | 'checking' | 'available' | 'current' | 'downloading' | 'downloaded' | 'error' | 'unsupported'
+
+/** Live state of the in-app differential download (electron-updater). */
+export interface UpdateProgress {
+  phase: UpdateProgressPhase
+  currentVersion: string
+  version?: string
+  percent: number
+  transferred: number
+  total: number
+  bytesPerSecond: number
+  /** True when only the changed blocks of the installer were downloaded. */
+  differential: boolean
+  error?: string
+  updatedAt?: number
+}
+
 /** Settings that belong to the Octa foundation and are safe to expose to the renderer. */
 export interface AppSettings {
   geminiApiKey: string

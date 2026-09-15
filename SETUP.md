@@ -68,4 +68,6 @@ repository. Runtime data stays in `C:\Octa` unless you choose another folder.
    vault after saving.
 
 If the repository is moved or forked, change the GitHub `owner/repo` value in
-Settings so the in-app update check follows the new public releases.
+Settings so the in-app update check follows the new public releases. Updates are
+differential: only the changed blocks of the installer are downloaded, and the
+app installs them silently after you click "Restart and update".

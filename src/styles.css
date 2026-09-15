@@ -2566,3 +2566,11 @@ html, body, #root { background: transparent !important; }
 }
 
 /* End Octa target work surfaces. */
+
+
+/* ---------- In-app differential update banner ---------- */
+.update-banner-actions { display: flex; flex: 0 0 auto; gap: 8px; align-items: center; }
+button.update-banner-link { cursor: pointer; font-family: inherit; }
+.update-banner-link.secondary { background: transparent; }
+.update-progress { width: 100%; height: 6px; margin-top: 4px; border-radius: 999px; background: color-mix(in srgb, var(--primary) 14%, transparent); overflow: hidden; }
+.update-progress-fill { height: 100%; border-radius: inherit; background: var(--primary); transition: width 240ms ease; }

@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, Notification, screen, shell } from 'electron'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { GeminiClient } from './cloud/gemini'
@@ -19,6 +19,7 @@ import { brandedDocument, PdfRenderer } from './core/pdf'
 import { TimeTracker } from './core/time-tracking'
 import { matchTaskTrigger, splitTitleAndNotes } from './core/task-trigger'
 import { checkForUpdate, type UpdateCheckResult } from './core/octa/update'
+import { AutoUpdateController } from './core/octa/auto-update'
 import {
   runGuidedInstall,
   runHealthChecks,
@@ -70,7 +71,8 @@ import type {
   TaskRecord,
   VoiceAudioEvent,
   VoiceState,
-  VoiceTranscriptEvent
+  VoiceTranscriptEvent,
+  UpdateProgress
 } from './types'
 import { voiceAudioEvent } from './core/dictation'
 import {
@@ -98,6 +100,8 @@ app.setName('Octa')
 let mainWindow: BrowserWindow | undefined
 let overlayWindow: BrowserWindow | undefined
 let repository: SettingsRepository | undefined
+let autoUpdate: AutoUpdateController | null = null
+let autoUpdateError: string | null = null
 let jobsRepository: JobsRepository | undefined
 let tasksRepository: TaskRepository | undefined
 let operationsRepository: OperationsRepository | undefined
@@ -627,6 +631,18 @@ function registerIpc(): void {
     shell.openExternal(externalUpdateUrl(value))
   )
 
+  ipcMain.handle('app:update:download', async (): Promise<UpdateProgress> => {
+    if (!autoUpdate) throw new Error(`The updater is not available: ${autoUpdateError ?? 'not initialised'}`)
+    return autoUpdate.download()
+  })
+
+  ipcMain.handle('app:update:install', (): boolean => autoUpdate?.install() ?? false)
+
+  ipcMain.handle('app:update:progress', (): UpdateProgress => {
+    if (!autoUpdate) throw new Error(`The updater is not available: ${autoUpdateError ?? 'not initialised'}`)
+    return autoUpdate.state()
+  })
+
   ipcMain.handle('first-run:complete', (): RendererState => {
     if (!repository) throw new Error('Settings storage is unavailable.')
     repository.setValue('firstRunCompleted', true)
@@ -1154,8 +1170,43 @@ function registerIpc(): void {
   })
 }
 
+// electron-updater constructs its NSIS updater on import and must only load after app.whenReady(); importing it
+// at module level froze the packaged executable before the ready event (2026-09-15).
+async function createAutoUpdate(): Promise<AutoUpdateController | null> {
+  try {
+  // electron-updater is CommonJS and exposes autoUpdater through a lazy getter that ESM named imports cannot see.
+  const updaterModule = await import('electron-updater')
+  const autoUpdater = (updaterModule.default ?? updaterModule).autoUpdater
+  if (!autoUpdater) throw new Error('electron-updater did not expose autoUpdater.')
+  const controller = new AutoUpdateController({
+    updater: autoUpdater,
+    packaged: app.isPackaged,
+    currentVersion: app.getVersion(),
+    getRepository: () => repository?.getSettings().updateRepository,
+    onProgress: (progress) => broadcast('app:update:progress', progress)
+  })
+  // electron-updater only reports "differential" through its logger, so listen for that line.
+  autoUpdater.logger = {
+    info: (message: unknown) => {
+      const text = String(message)
+      if (/differential download/i.test(text)) controller.markDifferential(!/failed|cannot|disabled/i.test(text))
+      console.log('[updater]', text)
+    },
+    warn: (message: unknown) => console.warn('[updater]', message),
+    error: (message: unknown) => console.error('[updater]', message),
+    debug: () => {}
+  }
+  return controller
+  } catch (error) {
+    autoUpdateError = error instanceof Error ? (error.stack ?? error.message) : String(error)
+    console.error('[updater] unavailable:', autoUpdateError)
+    return null
+  }
+}
+
 async function start(): Promise<void> {
   repository = new SettingsRepository(join(octaHome, 'octa.db'))
+  autoUpdate = await createAutoUpdate()
   jobsRepository = new JobsRepository(join(octaHome, 'octa.db'))
   const databasePath = join(octaHome, 'octa.db')
   tasksRepository = new TaskRepository(databasePath)
@@ -1408,8 +1459,23 @@ async function start(): Promise<void> {
   overlayWindow = createOverlayWindow()
 }
 
+function logStartupError(source: string, error: unknown): void {
+  const text = error instanceof Error ? (error.stack ?? error.message) : String(error)
+  console.error(`[${source}] ${text}`)
+  try {
+    mkdirSync(octaHome, { recursive: true })
+    appendFileSync(join(octaHome, 'startup-error.log'), `${new Date().toISOString()} [${source}] ${text}
+`)
+  } catch {
+    // The log is best-effort; never mask the original failure.
+  }
+}
+
+process.on('uncaughtException', (error) => logStartupError('uncaught', error))
+process.on('unhandledRejection', (reason) => logStartupError('unhandled', reason))
+
 app.whenReady().then(() => process.argv.includes('--smoke-test') ? runSmokeTest() : start()).catch((error: unknown) => {
-  console.error('[startup] Octa could not start:', error)
+  logStartupError('startup', error)
   app.exit(1)
 })
 

@@ -129,8 +129,27 @@ function readManifest(libraryPath: string): Skill[] {
   return manifestEntries(parsed, manifestPath).map((entry) => publicEntry(entry, libraryPath))
 }
 
-export function defaultSkillsLibraryPath(repoPath = process.cwd()): string {
-  return resolve(repoPath, 'skills-library')
+/**
+ * Library roots to try when Settings has no explicit path, in priority order: the repository checkout
+ * (dev), the copy shipped inside the installer (`resources/skills-library`), and the Octa home folder.
+ * The packaged app is started by Explorer with cwd = C:\Windows\system32, so cwd alone is never enough.
+ */
+export function skillsLibraryCandidates(repoPath?: string): string[] {
+  const candidates = [
+    repoPath ? resolve(repoPath, 'skills-library') : undefined,
+    process.env.OCTA_SKILLS_LIBRARY_PATH,
+    resolve(process.cwd(), 'skills-library'),
+    resolve(__dirname, '../../../skills-library'),
+    resolve(__dirname, '../../../../skills-library'),
+    process.resourcesPath ? join(process.resourcesPath, 'skills-library') : undefined,
+    join(process.env.OCTA_HOME?.trim() || 'C:\\Octa', 'skills-library')
+  ]
+  return candidates.filter((value, index, all): value is string => Boolean(value?.trim()) && all.indexOf(value) === index)
+}
+
+export function defaultSkillsLibraryPath(repoPath?: string): string {
+  const candidates = skillsLibraryCandidates(repoPath)
+  return candidates.find((candidate) => existsSync(join(candidate, 'MANIFEST.json'))) ?? candidates[0]
 }
 
 /** Load a library once without creating a watcher. */
@@ -151,7 +170,15 @@ export class SkillRegistry {
   constructor(options: SkillRegistryOptions = {}) {
     this.options = options
     this.currentLibraryPath = this.resolveLibraryPath()
-    this.reload()
+    this.currentManifestPath = join(this.currentLibraryPath, 'MANIFEST.json')
+    // A missing or broken library must never stop the app from starting: the registry stays empty,
+    // `lastError` explains why, and the watcher (if the folder exists) reloads it when it appears.
+    try {
+      this.reload()
+    } catch (error) {
+      this.reportError(error)
+      if (options.watch !== false) this.startWatching(this.currentLibraryPath)
+    }
   }
 
   get libraryPath(): string {

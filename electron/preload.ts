@@ -51,7 +51,8 @@ import type {
   TimeReport,
   VoiceAudioEvent,
   VoiceState,
-  VoiceTranscriptEvent
+  VoiceTranscriptEvent,
+  UpdateProgress
 } from './types'
 import type { UpdateCheckResult } from './core/octa/update'
 import type { ApprovalResult } from './core/voice/readback'
@@ -63,7 +64,16 @@ const api = {
   state: (): Promise<RendererState> => ipcRenderer.invoke('app:state'),
   update: {
     check: (): Promise<UpdateCheckResult> => ipcRenderer.invoke('app:update:check'),
-    open: (url: string): Promise<void> => ipcRenderer.invoke('app:update:open', url)
+    open: (url: string): Promise<void> => ipcRenderer.invoke('app:update:open', url),
+    /** Differential download of the latest release (only changed installer blocks). */
+    download: (): Promise<UpdateProgress> => ipcRenderer.invoke('app:update:download'),
+    install: (): Promise<boolean> => ipcRenderer.invoke('app:update:install'),
+    progress: (): Promise<UpdateProgress> => ipcRenderer.invoke('app:update:progress'),
+    onProgress: (listener: (progress: UpdateProgress) => void): (() => void) => {
+      const wrapped = (_event: Electron.IpcRendererEvent, progress: UpdateProgress): void => listener(progress)
+      ipcRenderer.on('app:update:progress', wrapped)
+      return () => ipcRenderer.removeListener('app:update:progress', wrapped)
+    }
   },
   settings: {
     update: (update: Partial<AppSettings>): Promise<AppSettings> =>

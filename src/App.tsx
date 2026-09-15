@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { AppSettings, AppUpdate } from '../electron/types'
+import type { AppSettings, AppUpdate, UpdateProgress } from '../electron/types'
 import { DEFAULT_SETTINGS } from '../electron/types'
 import { applyLocale, type Locale } from './i18n'
 import { t } from './i18n'
@@ -22,35 +22,89 @@ import { VoiceInputBridge } from './components/VoiceInputBridge'
 import { OctaMark } from './components/OctaMark'
 import { WindowChrome } from './components/WindowChrome'
 
+function formatBytes(value: number, locale: Locale): string {
+  const units = locale === 'ar' ? ['بايت', 'ك.ب', 'م.ب', 'ج.ب'] : ['B', 'KB', 'MB', 'GB']
+  let size = Math.max(0, value)
+  let unit = 0
+  while (size >= 1024 && unit < units.length - 1) {
+    size /= 1024
+    unit += 1
+  }
+  return `${new Intl.NumberFormat(locale === 'ar' ? 'ar-EG' : 'en-US', { maximumFractionDigits: unit >= 2 ? 1 : 0 }).format(size)} ${units[unit]}`
+}
+
+function fill(template: string, values: Record<string, string>): string {
+  return Object.entries(values).reduce((text, [key, value]) => text.replaceAll(`{${key}}`, value), template)
+}
+
 function UpdateBanner({
   update,
+  progress,
   locale,
-  onOpen
+  onOpen,
+  onDownload,
+  onInstall
 }: {
   update: AppUpdate
+  progress: UpdateProgress | null
   locale: Locale
   onOpen: (url: string) => Promise<void>
+  onDownload: () => Promise<void>
+  onInstall: () => Promise<void>
 }): React.JSX.Element | null {
   if (update.status !== 'available' || !update.downloadUrl || !update.latestVersion) return null
   const version = update.latestVersion.replace(/^v/i, '')
+  const phase = progress?.phase ?? 'idle'
+  const numbers = new Intl.NumberFormat(locale === 'ar' ? 'ar-EG' : 'en-US')
+  const releaseUrl = update.releaseUrl ?? update.downloadUrl
+  const releaseLink = (
+    <a className="update-banner-link secondary" href={releaseUrl} onClick={(event) => { event.preventDefault(); void onOpen(releaseUrl) }} rel="noreferrer" target="_blank">
+      {t('updateOpenRelease', locale)}
+    </a>
+  )
+
+  let detail = t('updateBannerDetail', locale)
+  let action: React.ReactNode = (
+    <button className="update-banner-link" onClick={() => void onDownload()} type="button">{t('updateDownload', locale)}</button>
+  )
+  if (phase === 'checking' || phase === 'available') {
+    detail = t('updateChecking', locale)
+    action = null
+  } else if (phase === 'downloading' && progress) {
+    detail = fill(t(progress.differential ? 'updateDownloadingDelta' : 'updateDownloading', locale), {
+      percent: numbers.format(progress.percent),
+      transferred: formatBytes(progress.transferred, locale),
+      total: formatBytes(progress.total, locale)
+    })
+    action = null
+  } else if (phase === 'downloaded') {
+    detail = fill(t('updateDownloaded', locale), { version })
+    action = <button className="update-banner-link" onClick={() => void onInstall()} type="button">{t('updateInstall', locale)}</button>
+  } else if (phase === 'error' && progress) {
+    detail = fill(t('updateFailed', locale), { error: progress.error ?? '' })
+    action = (
+      <>
+        <button className="update-banner-link" onClick={() => void onDownload()} type="button">{t('updateRetry', locale)}</button>
+        {releaseLink}
+      </>
+    )
+  } else if (phase === 'unsupported') {
+    detail = t('updateUnsupported', locale)
+    action = releaseLink
+  }
+
   return (
-    <aside className="update-banner" role="status">
+    <aside className="update-banner" role="status" aria-live="polite">
       <div className="update-banner-copy">
-        <strong>{t('updateAvailable', locale).replace('{version}', version)}</strong>
-        <span>{t('updateBannerDetail', locale)}</span>
+        <strong>{fill(t('updateAvailable', locale), { version })}</strong>
+        <span>{detail}</span>
+        {phase === 'downloading' && progress && (
+          <div className="update-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress.percent}>
+            <div className="update-progress-fill" style={{ width: `${progress.percent}%` }} />
+          </div>
+        )}
       </div>
-      <a
-        className="update-banner-link"
-        href={update.downloadUrl}
-        onClick={(event) => {
-          event.preventDefault()
-          void onOpen(update.downloadUrl!)
-        }}
-        rel="noreferrer"
-        target="_blank"
-      >
-        {t('updateDownload', locale)}
-      </a>
+      <div className="update-banner-actions">{action}</div>
     </aside>
   )
 }
@@ -63,6 +117,7 @@ export function App(): React.JSX.Element {
   const [showFirstRun, setShowFirstRun] = useState(false)
   const [version, setVersion] = useState('0.1.0')
   const [update, setUpdate] = useState<AppUpdate | null>(null)
+  const [updateProgress, setUpdateProgress] = useState<UpdateProgress | null>(null)
   const locale: Locale = settings.locale
 
   useEffect(() => {
@@ -88,6 +143,7 @@ export function App(): React.JSX.Element {
   }, [])
 
   useEffect(() => window.octa.onSettingsChanged(setSettings), [])
+  useEffect(() => window.octa.update.onProgress(setUpdateProgress), [])
 
   useEffect(() => {
     let active = true
@@ -158,7 +214,16 @@ export function App(): React.JSX.Element {
       <div className="workspace">
         <Sidebar page={page} locale={locale} onChange={setPage} onToggleLocale={toggleLocale} />
         <section className="content">
-          {update && <UpdateBanner update={update} locale={locale} onOpen={(url) => window.octa.update.open(url)} />}
+          {update && (
+            <UpdateBanner
+              update={update}
+              progress={updateProgress}
+              locale={locale}
+              onOpen={(url) => window.octa.update.open(url)}
+              onDownload={async () => { setUpdateProgress(await window.octa.update.download()) }}
+              onInstall={async () => { await window.octa.update.install() }}
+            />
+          )}
           <VoiceBar locale={locale} />
           {page === 'octa' && <OctaPage locale={locale} onOpenSetup={() => setShowFirstRun(true)} />}
           {page === 'settings' && (
